@@ -621,6 +621,7 @@ public class MainHelper {
             inputHandler.getTiltSensor().disable();
 
 		int state = mm.getInputHandler().getTouchController().getState();
+		boolean forceHidden = mm.getMahjongHelper() != null && mm.getMahjongHelper().isOscForceHidden();
 
 		Emulator.setEmuFiltering(prefsHelper.isBitmapFiltering());
 
@@ -629,14 +630,13 @@ public class MainHelper {
             ((IEmuView) emuView).setScaleType(prefsHelper
                     .getPortraitScaleMode());
 
+            boolean wantPortraitPad = prefsHelper.isPortraitTouchController() && !forceHidden;
             if (state == TouchController.STATE_SHOWING_CONTROLLER
-                    && !prefsHelper.isPortraitTouchController())
-                // {reload();return;}
+                    && !wantPortraitPad)
                 inputHandler.getTouchController().changeState();
 
             if (state == TouchController.STATE_SHOWING_NONE
-                    && prefsHelper.isPortraitTouchController())
-                // {reload();return;}
+                    && wantPortraitPad)
                 inputHandler.getTouchController().changeState();
 
 			int oldState = state;
@@ -683,14 +683,13 @@ public class MainHelper {
             ((IEmuView) emuView).setScaleType(mm.getPrefsHelper()
                     .getLandscapeScaleMode());
 
+			boolean wantLandscapePad = prefsHelper.isLandscapeTouchController() && !forceHidden;
 			if (state == TouchController.STATE_SHOWING_CONTROLLER
-                    && !prefsHelper.isLandscapeTouchController())
-                // {reload();return;}
+                    && !wantLandscapePad)
                 inputHandler.getTouchController().changeState();
 
             if (state == TouchController.STATE_SHOWING_NONE
-                    && prefsHelper.isLandscapeTouchController())
-                // {reload();return;}
+                    && wantLandscapePad)
                 inputHandler.getTouchController().changeState();
 
             state = mm.getInputHandler().getTouchController().getState();

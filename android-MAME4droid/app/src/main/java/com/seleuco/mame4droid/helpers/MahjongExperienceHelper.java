@@ -31,6 +31,7 @@ public class MahjongExperienceHelper {
 	private static final String TAG = "MahjongExperience";
 	private static final String PREF_SEEDED = "mahjong_defaults_v1";
 	private static final String PREF_SEEDED_V2 = "mahjong_defaults_v2";
+	private static final String PREF_SEEDED_V3 = "mahjong_defaults_v3";
 	private static final String ORIENT_FILE = ".device_orientation";
 	private static final int TOGGLE_BTN_ID = 0x6D6A7467; // 'mjtg'
 
@@ -43,6 +44,8 @@ public class MahjongExperienceHelper {
 	private String lastWrittenOrient = null;
 	private String lastForcedRom = null;
 	private TextView toggleBtn = null;
+	/** User tapped "hide pad"; blocks prefs from forcing the OSC back on. */
+	private boolean oscForceHidden = false;
 
 	public MahjongExperienceHelper(MAME4droid mm) {
 		this.mm = mm;
@@ -69,10 +72,25 @@ public class MahjongExperienceHelper {
 			e.putBoolean(PREF_SEEDED_V2, true);
 		}
 
+		if (!p.getBoolean(PREF_SEEDED_V3, false)) {
+			if (e == null) e = p.edit();
+			// Show A+B on landscape / portrait-fullscreen OSC (was 0 = none).
+			e.putString(PrefsHelper.PREF_NUMBUTTONS, "2");
+			e.putBoolean(PREF_SEEDED_V3, true);
+		}
+
 		if (e != null) {
 			e.apply();
 			Log.i(TAG, "Seeded mahjong SharedPreferences defaults");
 		}
+	}
+
+	public boolean isOscForceHidden() {
+		return oscForceHidden;
+	}
+
+	public void setOscForceHidden(boolean hidden) {
+		oscForceHidden = hidden;
 	}
 
 	/**
@@ -118,9 +136,15 @@ public class MahjongExperienceHelper {
 			if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
 				return;
 			}
-			mm.getInputHandler().getTouchController().changeState();
+			TouchController tc = mm.getInputHandler().getTouchController();
+			boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER;
+			// Prefer a force-hidden flag: updateMAME4droid() otherwise re-enables OSC from prefs.
+			setOscForceHidden(showing);
 			mm.getMainHelper().updateMAME4droid();
 			refreshToggleLabel();
+			if (toggleBtn != null) {
+				toggleBtn.bringToFront();
+			}
 		});
 
 		emulatorFrame.addView(btn);
@@ -135,10 +159,12 @@ public class MahjongExperienceHelper {
 		}
 		TouchController tc = mm.getInputHandler() != null
 				? mm.getInputHandler().getTouchController() : null;
-		boolean showing = tc != null && tc.getState() == TouchController.STATE_SHOWING_CONTROLLER;
+		boolean showing = tc != null && tc.getState() == TouchController.STATE_SHOWING_CONTROLLER
+				&& !oscForceHidden;
 		toggleBtn.setText(showing
 				? mm.getString(R.string.mj_hide_controller)
 				: mm.getString(R.string.mj_show_controller));
+		toggleBtn.bringToFront();
 	}
 
 	/**
