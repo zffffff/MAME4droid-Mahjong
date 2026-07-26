@@ -28,4 +28,4 @@ alwaysApply: true
 ## CI / 核心
 
 - `libMAME4droid.so` 不在仓内；用 `scripts/fetch-mame-lib.sh` 或 GitHub Actions 拉取
-- 不要提交 `release/`、本地 so、密钥；发版靠 push `main` 触发 Build APK
+- 不要提交 `release/`、本地 so、密钥；需要 APK 时在 Actions 手动 Run **Build APK**（push 不会自动打包）

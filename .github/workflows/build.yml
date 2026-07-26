@@ -1,9 +1,7 @@
 name: Build APK
 
+# Manual only — push/PR no longer builds APKs (saves Actions minutes).
 on:
-  push:
-    branches: [main, master]
-  pull_request:
   workflow_dispatch:
 
 env:
