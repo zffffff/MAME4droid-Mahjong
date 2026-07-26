@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<mamelayout version="2">
+
+    <element name="bg_panel"> <image file="bg.png" /> </element>
+
+    <element name="button_start_donden"> <image file="start_donden_up.png" state="0" /> <image file="start_donden_down.png" state="1" /> </element>
+    <element name="button_double"> <image file="double_up.png" state="0" /> <image file="double_down.png" state="1" /> </element>
+    <element name="button_big"> <image file="big_up.png" state="0" /> <image file="big_down.png" state="1" /> </element>
+    <element name="button_small"> <image file="small_up.png" state="0" /> <image file="small_down.png" state="1" /> </element>
+    <element name="button_take"> <image file="take_up.png" state="0" /> <image file="take_down.png" state="1" /> </element>
+    <element name="button_keyin"> <image file="keyin_up.png" state="0" /> <image file="keyin_down.png" state="1" /> </element>
+    <element name="button_bet"> <image file="bet_up.png" state="0" /> <image file="bet_down.png" state="1" /> </element>
+    <element name="button_chi"> <image file="chi_up.png" state="0" /> <image file="chi_down.png" state="1" /> </element>
+    <element name="button_pon"> <image file="pon_up.png" state="0" /> <image file="pon_down.png" state="1" /> </element>
+    <element name="button_kan"> <image file="kan_up.png" state="0" /> <image file="kan_down.png" state="1" /> </element>
+    <element name="button_reach"> <image file="reach_up.png" state="0" /> <image file="reach_down.png" state="1" /> </element>
+    <element name="button_ron"> <image file="ron_up.png" state="0" /> <image file="ron_down.png" state="1" /> </element>
+    
+    <element name="lamp_chi_glow"> <image file="chi_glow.png" /> </element>
+    <element name="lamp_pon_glow"> <image file="pon_glow.png" /> </element>
+    <element name="lamp_kan_glow"> <image file="kan_glow.png" /> </element>
+    <element name="lamp_reach_glow"> <image file="reach_glow.png" /> </element>
+    <element name="lamp_ron_glow"> <image file="ron_glow.png" /> </element>
+
+    <element name="button_a"> <image file="a_up.png" state="0" /> <image file="a_down.png" state="1" /> </element>
+    <element name="button_b"> <image file="b_up.png" state="0" /> <image file="b_down.png" state="1" /> </element>
+    <element name="button_c"> <image file="c_up.png" state="0" /> <image file="c_down.png" state="1" /> </element>
+    <element name="button_d"> <image file="d_up.png" state="0" /> <image file="d_down.png" state="1" /> </element>
+    <element name="button_e"> <image file="e_up.png" state="0" /> <image file="e_down.png" state="1" /> </element>
+    <element name="button_f"> <image file="f_up.png" state="0" /> <image file="f_down.png" state="1" /> </element>
+    <element name="button_g"> <image file="g_up.png" state="0" /> <image file="g_down.png" state="1" /> </element>
+    <element name="button_h"> <image file="h_up.png" state="0" /> <image file="h_down.png" state="1" /> </element>
+    <element name="button_i"> <image file="i_up.png" state="0" /> <image file="i_down.png" state="1" /> </element>
+    <element name="button_j"> <image file="j_up.png" state="0" /> <image file="j_down.png" state="1" /> </element>
+    <element name="button_k"> <image file="k_up.png" state="0" /> <image file="k_down.png" state="1" /> </element>
+    <element name="button_l"> <image file="l_up.png" state="0" /> <image file="l_down.png" state="1" /> </element>
+    <element name="button_m"> <image file="m_up.png" state="0" /> <image file="m_down.png" state="1" /> </element>
+    <element name="button_n"> <image file="n_up.png" state="0" /> <image file="n_down.png" state="1" /> </element>
+
+    <element name="touch_a"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_b"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_c"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_d"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_e"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_f"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_g"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_h"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_i"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_j"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_k"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_l"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_m"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_n"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+
+    <element name="hint_haidi_n"> <image file="hint_haidi_n.png" /> </element>
+    <element name="hint_duihua_n"> <image file="hint_duihua_n.png" /> </element>
+    <element name="hint_bibei_a"> <image file="hint_bibei_a.png" /> </element>
+    <element name="hint_bibei_c"> <image file="hint_bibei_c.png" /> </element>
+    <element name="hint_bibei_e"> <image file="hint_bibei_e.png" /> </element>
+    <element name="hint_bibei_g"> <image file="hint_bibei_g.png" /> </element>
+    <element name="hint_bibei_k"> <image file="hint_bibei_k.png" /> </element>
+    <element name="hint_bibei_m"> <image file="hint_bibei_m.png" /> </element>
+
+    <element name="overlay_letters"> <image file="overlay_letters.png" /> </element>
+
+    <view name="Portrait_2_Rows">
+        <screen index="0"> <bounds x="0" y="0" width="1000" height="970" /> </screen>
+        <element ref="bg_panel"> <bounds x="0" y="970" width="1000" height="670" /> </element>
+        
+        <element ref="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="3" y="980" width="142" height="130" /> </element>
+        <element ref="button_double" inputtag="KEY4" inputmask="4"> <bounds x="145" y="980" width="142" height="130" /> </element>
+        <element ref="button_big" inputtag="KEY4" inputmask="16"> <bounds x="287" y="980" width="142" height="130" /> </element>
+        <element ref="button_small" inputtag="KEY4" inputmask="32"> <bounds x="429" y="980" width="142" height="130" /> </element>
+        <element ref="button_take" inputtag="KEY4" inputmask="2"> <bounds x="571" y="980" width="142" height="130" /> </element>
+        <element ref="button_keyin" inputtag="COINS" inputmask="8"> <bounds x="713" y="980" width="142" height="130" /> </element>
+        <element ref="button_bet" inputtag="KEY1" inputmask="32"> <bounds x="855" y="980" width="142" height="130" /> </element>
+
+        <element ref="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="145" y="1110" width="142" height="130" /> </element>
+        <element ref="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="287" y="1110" width="142" height="130" /> </element>
+        <element ref="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="429" y="1110" width="142" height="130" /> </element>
+        <element ref="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="571" y="1110" width="142" height="130" /> </element>
+        <element ref="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="713" y="1110" width="142" height="130" /> </element>
+
+        <element ref="lamp_chi_glow" name="lamp_chi"> 
+            <bounds x="145" y="1110" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_pon_glow" name="lamp_pon"> 
+            <bounds x="287" y="1110" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_kan_glow" name="lamp_kan"> 
+            <bounds x="429" y="1110" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_reach_glow" name="lamp_reach"> 
+            <bounds x="571" y="1110" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_ron_glow" name="lamp_ron"> 
+            <bounds x="713" y="1110" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <element ref="button_a" inputtag="KEY0" inputmask="1"> <bounds x="3" y="1240" width="142" height="200" /> </element>
+        <element ref="button_b" inputtag="KEY1" inputmask="1"> <bounds x="145" y="1240" width="142" height="200" /> </element>
+        <element ref="button_c" inputtag="KEY2" inputmask="1"> <bounds x="287" y="1240" width="142" height="200" /> </element>
+        <element ref="button_d" inputtag="KEY3" inputmask="1"> <bounds x="429" y="1240" width="142" height="200" /> </element>
+        <element ref="button_e" inputtag="KEY0" inputmask="2"> <bounds x="571" y="1240" width="142" height="200" /> </element>
+        <element ref="button_f" inputtag="KEY1" inputmask="2"> <bounds x="713" y="1240" width="142" height="200" /> </element>
+        <element ref="button_g" inputtag="KEY2" inputmask="2"> <bounds x="855" y="1240" width="142" height="200" /> </element>
+
+        <element ref="button_h" inputtag="KEY3" inputmask="2"> <bounds x="3" y="1440" width="142" height="200" /> </element>
+        <element ref="button_i" inputtag="KEY0" inputmask="4"> <bounds x="145" y="1440" width="142" height="200" /> </element>
+        <element ref="button_j" inputtag="KEY1" inputmask="4"> <bounds x="287" y="1440" width="142" height="200" /> </element>
+        <element ref="button_k" inputtag="KEY2" inputmask="4"> <bounds x="429" y="1440" width="142" height="200" /> </element>
+        <element ref="button_l" inputtag="KEY3" inputmask="4"> <bounds x="571" y="1440" width="142" height="200" /> </element>
+        <element ref="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </element>
+        <element ref="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </element>
+
+        <element ref="hint_haidi_n" name="lamp_hint_haidi"> 
+            <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_duihua_n" name="lamp_hint_duihua"> 
+            <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_a" name="lamp_hint_bibei"> 
+            <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_c" name="lamp_hint_bibei"> 
+            <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_e" name="lamp_hint_bibei"> 
+            <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_g" name="lamp_hint_bibei"> 
+            <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_k" name="lamp_hint_bibei"> 
+            <bounds x="429" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_m" name="lamp_hint_bibei"> 
+            <bounds x="713" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+    </view>
+
+    <view name="Landscape_Touch_Screen">
+        <bounds x="0" y="0" width="1600" height="900" />
+        <screen index="0"> <bounds x="200" y="0" width="1200" height="900" /> </screen>
+
+        <element ref="overlay_letters"> <bounds x="200" y="0" width="1200" height="900" /> </element>
+
+        <element ref="button_keyin" inputtag="COINS" inputmask="8"> <bounds x="58" y="770" width="142" height="130" /> </element>
+        <element ref="button_bet" inputtag="KEY1" inputmask="32"> <bounds x="58" y="640" width="142" height="130" /> </element>
+        <element ref="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="58" y="510" width="142" height="130" /> </element>
+
+        <element ref="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="1400" y="770" width="142" height="130" /> </element>
+        <element ref="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="1400" y="640" width="142" height="130" /> </element>
+        <element ref="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="1400" y="510" width="142" height="130" /> </element>
+        <element ref="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="1400" y="380" width="142" height="130" /> </element>
+        <element ref="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="1400" y="250" width="142" height="130" /> </element>
+
+        <element ref="lamp_ron_glow" name="lamp_ron"> 
+            <bounds x="1400" y="770" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_reach_glow" name="lamp_reach"> 
+            <bounds x="1400" y="640" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_kan_glow" name="lamp_kan"> 
+            <bounds x="1400" y="510" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_pon_glow" name="lamp_pon"> 
+            <bounds x="1400" y="380" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lamp_chi_glow" name="lamp_chi"> 
+            <bounds x="1400" y="250" width="142" height="130" /> 
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="220" y="762" width="80" height="130" />
+            <bounds state="1" x="220" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="300" y="762" width="80" height="130" />
+            <bounds state="1" x="300" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="380" y="762" width="80" height="130" />
+            <bounds state="1" x="380" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="460" y="762" width="80" height="130" />
+            <bounds state="1" x="460" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_e" inputtag="KEY0" inputmask="2">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="540" y="762" width="80" height="130" />
+            <bounds state="1" x="540" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_f" inputtag="KEY1" inputmask="2">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="620" y="762" width="80" height="130" />
+            <bounds state="1" x="620" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_g" inputtag="KEY2" inputmask="2">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="700" y="762" width="80" height="130" />
+            <bounds state="1" x="700" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_h" inputtag="KEY3" inputmask="2">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="780" y="762" width="80" height="130" />
+            <bounds state="1" x="780" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_i" inputtag="KEY0" inputmask="4">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="860" y="762" width="80" height="130" />
+            <bounds state="1" x="860" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_j" inputtag="KEY1" inputmask="4">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="940" y="762" width="80" height="130" />
+            <bounds state="1" x="940" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_k" inputtag="KEY2" inputmask="4">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="1020" y="762" width="80" height="130" />
+            <bounds state="1" x="1020" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_l" inputtag="KEY3" inputmask="4">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="1100" y="762" width="80" height="130" />
+            <bounds state="1" x="1100" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_m" inputtag="KEY0" inputmask="8">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="1180" y="762" width="80" height="130" />
+            <bounds state="1" x="1180" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_n" inputtag="KEY1" inputmask="8">
+            <animate name="mgcs_touch_special" />
+            <bounds state="0" x="1280" y="762" width="80" height="130" />
+            <bounds state="1" x="1280" y="-200" width="80" height="130" />
+        </element>
+
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="220" y="770" width="80" height="130" />
+            <bounds state="1" x="220" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="300" y="770" width="80" height="130" />
+            <bounds state="1" x="300" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="380" y="770" width="80" height="130" />
+            <bounds state="1" x="380" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="460" y="770" width="80" height="130" />
+            <bounds state="1" x="460" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_e" inputtag="KEY0" inputmask="2">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="540" y="770" width="80" height="130" />
+            <bounds state="1" x="540" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_f" inputtag="KEY1" inputmask="2">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="620" y="770" width="80" height="130" />
+            <bounds state="1" x="620" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_g" inputtag="KEY2" inputmask="2">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="700" y="770" width="80" height="130" />
+            <bounds state="1" x="700" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_h" inputtag="KEY3" inputmask="2">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="780" y="770" width="80" height="130" />
+            <bounds state="1" x="780" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_i" inputtag="KEY0" inputmask="4">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="860" y="770" width="80" height="130" />
+            <bounds state="1" x="860" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_j" inputtag="KEY1" inputmask="4">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="940" y="770" width="80" height="130" />
+            <bounds state="1" x="940" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_k" inputtag="KEY2" inputmask="4">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="1020" y="770" width="80" height="130" />
+            <bounds state="1" x="1020" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_l" inputtag="KEY3" inputmask="4">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="1100" y="770" width="80" height="130" />
+            <bounds state="1" x="1100" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_m" inputtag="KEY0" inputmask="8">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="1180" y="770" width="80" height="130" />
+            <bounds state="1" x="1180" y="-200" width="80" height="130" />
+        </element>
+        <element ref="touch_n" inputtag="KEY1" inputmask="8">
+            <animate name="mgcs_touch_play" />
+            <bounds state="0" x="1280" y="770" width="80" height="130" />
+            <bounds state="1" x="1280" y="-200" width="80" height="130" />
+        </element>
+
+        <element ref="hint_haidi_n" name="lamp_hint_haidi"> 
+            <bounds x="1280" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_duihua_n" name="lamp_hint_duihua"> 
+            <bounds x="1280" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+
+        <element ref="hint_bibei_a" name="lamp_hint_bibei"> 
+            <bounds x="220" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_c" name="lamp_hint_bibei"> 
+            <bounds x="380" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_e" name="lamp_hint_bibei"> 
+            <bounds x="540" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_g" name="lamp_hint_bibei"> 
+            <bounds x="700" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_k" name="lamp_hint_bibei"> 
+            <bounds x="1020" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+        <element ref="hint_bibei_m" name="lamp_hint_bibei"> 
+            <bounds x="1180" y="762" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> 
+        </element>
+    </view>
+
+</mamelayout>

@@ -63,6 +63,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
+import com.seleuco.mame4droid.helpers.AssetPackInstaller;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.LocaleHelper;
 import com.seleuco.mame4droid.helpers.MainHelper;
@@ -284,6 +285,8 @@ public class MAME4droid extends Activity {
 
 		getMainHelper().copyFiles();
 		getMainHelper().removeFiles();
+		// After stock files.zip extract: VERSION-gated key packs (mahjong, …)
+		new AssetPackInstaller(this).installAllIfNeeded();
 
 		Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 	}

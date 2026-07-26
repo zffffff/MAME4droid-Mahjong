@@ -1,0 +1,2587 @@
+<?xml version="1.0"?>
+<mamelayout version="2">
+
+    <element name="bg_panel">
+        <image file="bg.png" />
+    </element>
+    <element name="bg_landscape">
+        <image file="bg_landscape.png" />
+    </element>
+
+    <element name="bg_landscape_209_inset104">
+        <image file="bg_landscape_209_inset104.png" />
+    </element>
+
+    <element name="bg_landscape_209">
+        <image file="bg_landscape_209.png" />
+    </element>
+
+    <element name="button_start_donden"> <image file="start_donden_up.png" state="0" /> <image file="start_donden_down.png" state="1" /> </element>
+    <element name="button_donden"> <image file="donden_up.png" state="0" /> <image file="donden_down.png" state="1" /> </element>
+    <element name="button_keyin"> <image file="keyin_up.png" state="0" /> <image file="keyin_down.png" state="1" /> </element>
+    <element name="button_bet"> <image file="bet_up.png" state="0" /> <image file="bet_down.png" state="1" /> </element>
+    <element name="button_chi"> <image file="chi_up.png" state="0" /> <image file="chi_down.png" state="1" /> </element>
+    <element name="button_pon"> <image file="pon_up.png" state="0" /> <image file="pon_down.png" state="1" /> </element>
+    <element name="button_kan"> <image file="kan_up.png" state="0" /> <image file="kan_down.png" state="1" /> </element>
+    <element name="button_reach"> <image file="reach_up.png" state="0" /> <image file="reach_down.png" state="1" /> </element>
+    <element name="button_ron"> <image file="ron_up.png" state="0" /> <image file="ron_down.png" state="1" /> </element>
+    
+    <element name="button_a"> <image file="a_up.png" state="0" /> <image file="a_down.png" state="1" /> </element>
+    <element name="button_b"> <image file="b_up.png" state="0" /> <image file="b_down.png" state="1" /> </element>
+    <element name="button_c"> <image file="c_up.png" state="0" /> <image file="c_down.png" state="1" /> </element>
+    <element name="button_d"> <image file="d_up.png" state="0" /> <image file="d_down.png" state="1" /> </element>
+    <element name="button_e"> <image file="e_up.png" state="0" /> <image file="e_down.png" state="1" /> </element>
+    <element name="button_f"> <image file="f_up.png" state="0" /> <image file="f_down.png" state="1" /> </element>
+    <element name="button_g"> <image file="g_up.png" state="0" /> <image file="g_down.png" state="1" /> </element>
+    <element name="button_h"> <image file="h_up.png" state="0" /> <image file="h_down.png" state="1" /> </element>
+    <element name="button_i"> <image file="i_up.png" state="0" /> <image file="i_down.png" state="1" /> </element>
+    <element name="button_j"> <image file="j_up.png" state="0" /> <image file="j_down.png" state="1" /> </element>
+    <element name="button_k"> <image file="k_up.png" state="0" /> <image file="k_down.png" state="1" /> </element>
+    <element name="button_l"> <image file="l_up.png" state="0" /> <image file="l_down.png" state="1" /> </element>
+    <element name="button_m"> <image file="m_up.png" state="0" /> <image file="m_down.png" state="1" /> </element>
+    <element name="button_n"> <image file="n_up.png" state="0" /> <image file="n_down.png" state="1" /> </element>
+
+    <element name="touch_a"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_b"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_c"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_d"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_e"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_f"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_g"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_h"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_i"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_j"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_k"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_l"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_m"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_n"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <!-- 横版字母键松开态：无 Lua=std；有 Lua=touch_up_l（mcnpshnt_letter_vis） -->
+    <element name="touch_up_std"> <image file="touch_up.png" state="0" /> </element>
+    <element name="touch_up_lua"> <image file="touch_up_l.png" state="0" /> </element>
+    <!-- 横版按下反馈：松开透明，松开态由 touch_up_l overlay 负责 -->
+    <element name="touch_press"> <image file="touch_nil.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <!-- 横版字母区静态提示（兜底，参考 lhb） -->
+    <element name="overlay_letters"> <image file="overlay_letters.png" /> </element>
+
+    <!-- 横版狩猎选项 A-D 专用触摸图（537×60，勿用 touch_up 拉伸） -->
+    <element name="hunt_touch"> <image file="hunt_touch_up.png" state="0" /> <image file="hunt_touch_up.png" state="1" /> </element>
+
+    <!-- 横版配牌选择 A-C 触摸（松开透明，松开态由 touch_up_l overlay；down 保留按下反馈） -->
+    <element name="ws_touch"> <image file="touch_nil.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="hint_ws_a_glow"> <image file="ws_a.png" /> </element>
+    <element name="hint_ws_b_glow"> <image file="ws_b.png" /> </element>
+    <element name="hint_ws_c_glow"> <image file="ws_c.png" /> </element>
+
+    <!-- Last Chance A-J：lc_highlight 34×32 原尺寸闪灯；lc_touch 透明 hitbox -->
+    <element name="lc_highlight_glow"> <image file="lc_highlight.png" /> </element>
+    <element name="lc_touch"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+
+    <element name="lamp_chi_glow"> <image file="chi_glow.png" /> </element>
+    <element name="lamp_pon_glow"> <image file="pon_glow.png" /> </element>
+    <element name="lamp_kan_glow"> <image file="kan_glow.png" /> </element>
+    <element name="lamp_ron_glow"> <image file="ron_glow.png" /> </element>
+    
+    <!-- 竖版字母键闪灯（common_assets *_glow.png） -->
+    <element name="lamp_a_glow"> <image file="a_glow.png" /> </element>
+    <element name="lamp_b_glow"> <image file="b_glow.png" /> </element>
+    <element name="lamp_c_glow"> <image file="c_glow.png" /> </element>
+    <element name="lamp_d_glow"> <image file="d_glow.png" /> </element>
+    <element name="lamp_e_glow"> <image file="e_glow.png" /> </element>
+    <element name="lamp_f_glow"> <image file="f_glow.png" /> </element>
+    <element name="lamp_g_glow"> <image file="g_glow.png" /> </element>
+
+    <!-- 横版狩猎/手帐闪灯（单图 + alpha） -->
+    <element name="hint_hunt_a_glow"> <image file="hint_hunt_a.png" /> </element>
+    <element name="hint_hunt_b_glow"> <image file="hint_hunt_b.png" /> </element>
+    <element name="hint_hunt_c_glow"> <image file="hint_hunt_c.png" /> </element>
+    <element name="hint_hunt_d_glow"> <image file="hint_hunt_d.png" /> </element>
+    <element name="hint_notebook_a_glow"> <image file="hint_notebook_a.png" /> </element>
+    <element name="hint_notebook_b_glow"> <image file="hint_notebook_b.png" /> </element>
+    <element name="hint_notebook_c_glow"> <image file="hint_notebook_c.png" /> </element>
+    <element name="hint_notebook_d_glow"> <image file="hint_notebook_d.png" /> </element>
+    <element name="hint_notebook_e_glow"> <image file="hint_notebook_e.png" /> </element>
+    <element name="hint_notebook_f_glow"> <image file="hint_notebook_f.png" /> </element>
+    <element name="hint_notebook_g_glow"> <image file="hint_notebook_g.png" /> </element>
+
+    <!-- 横版选人闪灯（508×240 比例 overlay）；竖版选人 A-D 用上方 lamp_a~d_glow -->
+    <element name="character_select_a_glow"> <image file="character_slect_a.png" /> </element>
+    <element name="character_select_b_glow"> <image file="character_slect_b.png" /> </element>
+    <element name="character_select_c_glow"> <image file="character_slect_c.png" /> </element>
+    <element name="character_select_d_glow"> <image file="character_slect_d.png" /> </element>
+    <element name="start_donden_glow"> <image file="start_donden_down.png" /> </element>
+
+    <view name="Portrait_2_Rows">
+        <bounds x="0" y="0" width="1000" height="1640" />
+        <screen index="0"> <bounds x="0" y="0" width="1000" height="970" /> </screen>
+        <bezel element="bg_panel"> <bounds x="0" y="970" width="1000" height="670" /> </bezel>
+        
+        <bezel element="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="3" y="980" width="142" height="130" /> </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64"> <bounds x="855" y="980" width="142" height="130" /> </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="145" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="287" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="429" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="571" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="713" y="1110" width="142" height="130" /> </bezel>
+        
+        <bezel element="button_a" inputtag="KEY0" inputmask="1"> <bounds x="3" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_b" inputtag="KEY1" inputmask="1"> <bounds x="145" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_c" inputtag="KEY2" inputmask="1"> <bounds x="287" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_d" inputtag="KEY3" inputmask="1"> <bounds x="429" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_e" inputtag="KEY0" inputmask="2"> <bounds x="571" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_f" inputtag="KEY1" inputmask="2"> <bounds x="713" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_g" inputtag="KEY2" inputmask="2"> <bounds x="855" y="1240" width="142" height="200" /> </bezel>
+        <bezel element="button_h" inputtag="KEY3" inputmask="2"> <bounds x="3" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_i" inputtag="KEY0" inputmask="4"> <bounds x="145" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_j" inputtag="KEY1" inputmask="4"> <bounds x="287" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_k" inputtag="KEY2" inputmask="4"> <bounds x="429" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_l" inputtag="KEY3" inputmask="4"> <bounds x="571" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </bezel>
+        <bezel element="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </bezel>
+
+        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="145" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="287" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="429" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="713" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <bezel name="lamp_hint_hunt_a" element="lamp_a_glow"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_hunt_b" element="lamp_b_glow"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_hunt_c" element="lamp_c_glow"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_hunt_d" element="lamp_d_glow"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_a" element="lamp_a_glow"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_b" element="lamp_b_glow"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_c" element="lamp_c_glow"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_d" element="lamp_d_glow"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_e" element="lamp_e_glow"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_f" element="lamp_f_glow"> <bounds x="713" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_notebook_g" element="lamp_g_glow"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <!-- 选人 A-D 闪灯：与狩猎/手帐相同，用 common_assets *_glow.png -->
+        <bezel name="lamp_hint_character_a" element="lamp_a_glow"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_character_b" element="lamp_b_glow"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_character_c" element="lamp_c_glow"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_character_d" element="lamp_d_glow"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <!-- 配牌选择 A-C 闪灯（竖版 glow） -->
+        <bezel name="lamp_hint_ws_a" element="lamp_a_glow"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_ws_b" element="lamp_b_glow"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_ws_c" element="lamp_c_glow"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <!-- Last Chance A-J 闪灯（竖版 lc_highlight 叠在按键区） -->
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow"> <bounds x="713" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow"> <bounds x="3" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow"> <bounds x="145" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow"> <bounds x="287" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_start_donden" element="start_donden_glow"> <bounds x="3" y="980" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <!-- 竖版 mode=3/5 时 char/lc 层在上拦截触摸 -->
+        <!-- Last Chance A-J 触摸 (mode=5) -->
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="3" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="145" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="287" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="429" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="571" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="713" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="855" y="1240" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="3" y="1440" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="145" y="1440" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="-200" y="-200" width="142" height="200" />
+            <bounds state="2" x="-200" y="-200" width="142" height="200" />
+            <bounds state="3" x="-200" y="-200" width="142" height="200" />
+            <bounds state="4" x="-200" y="-200" width="142" height="200" />
+            <bounds state="5" x="287" y="1440" width="142" height="200" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <!-- 选人 A-D：仅未击败对手可点（mcnpshnt_char_* output） -->
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_char_a" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="3" y="1240" width="142" height="200" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_char_b" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="145" y="1240" width="142" height="200" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_char_c" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="287" y="1240" width="142" height="200" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_char_d" />
+            <bounds state="0" x="-200" y="-200" width="142" height="200" />
+            <bounds state="1" x="429" y="1240" width="142" height="200" />
+        </element>
+    </view>
+
+    <view name="Landscape_Touch_Screen">
+        <bounds x="0" y="0" width="1600" height="900" />
+
+        <bezel element="bg_landscape">
+            <bounds x="0" y="0" width="1600" height="900" />
+        </bezel>
+
+        <screen index="0"> <bounds x="200" y="0" width="1200" height="900" /> </screen>
+
+        <!-- 横版字母按键提示（overlay_letters 叠游戏区，侧栏触摸在其上） -->
+        <element ref="overlay_letters"> <bounds x="200" y="0" width="1200" height="900" /> </element>
+
+        <!-- 侧栏功能键：横版常驻（各 UI 模式均可见） -->
+        <bezel element="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="58" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64"> <bounds x="58" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="1400" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="1400" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="1400" y="510" width="142" height="130" /> </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="1400" y="380" width="142" height="130" /> </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="1400" y="250" width="142" height="130" /> </bezel>
+
+        <!-- 横版字母键松开态 overlay（mcnpshnt_letter_vis：0=std，1~6=lua+ui_mode） -->
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="219" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="219" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="233" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="219" y="207" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="299" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="299" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="418" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="219" y="372" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="381" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="381" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="602" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="219" y="537" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="461" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="461" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="233" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="541" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="541" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="418" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="621" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="621" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="602" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="701" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="701" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="233" y="723" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="781" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="781" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="861" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="861" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="941" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="941" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1021" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1021" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1101" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1101" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1182" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1182" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1286" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1286" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <!-- 字母键 touch_a~n：state 0~5 对应打牌/狩猎/手帐/选人隐藏/配牌隐藏/LC隐藏（选人、配牌、LC 由独立层） -->
+        <element ref="touch_press" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="219" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="233" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="299" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="418" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="381" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="602" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="461" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="233" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="541" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="418" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="621" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="602" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="701" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="233" y="723" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="781" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="861" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="941" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1021" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1101" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1182" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1286" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+
+        <!-- 狩猎选项 A-D (mode=1)，PS 1200x900 测量 +200 边距 -->
+        <element ref="hunt_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="233" y="453" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="233" y="520" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="233" y="588" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="233" y="656" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+
+        <!-- 配牌选择 A-C (mode=4)，508×240→1200×900 +200 边距，441×47 原尺寸 -->
+        <element ref="ws_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="219" y="191" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="219" y="356" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="219" y="521" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- Last Chance A-J (mode=5)，508×240→1200×900 +200；34×32 原尺寸 lc_highlight -->
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="350" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="430" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="511" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="591" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="671" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="752" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="832" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="912" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="993" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1073" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- 选人 A-D 触摸：仅未击败对手可点（勿与 mcnpshnt_ui_mode 同 element） -->
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_char_a" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="247" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_char_b" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="812" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_char_c" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="264" y="450" width="534" height="383" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_char_d" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="812" y="450" width="534" height="383" />
+        </element>
+
+        <bezel name="lamp_start_donden" element="start_donden_glow">
+            <bounds x="58" y="640" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 选人 A-D 闪灯 -->
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="247" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="812" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="264" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="812" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="1400" y="770" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="1400" y="510" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="1400" y="380" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="1400" y="250" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <!-- 狩猎 A-D 闪灯：固定坐标 + alpha，勿与 mcnpshnt_ui_mode animate 同项 -->
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="233" y="453" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="233" y="520" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="233" y="588" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="233" y="656" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 配牌选择 A-C 闪灯 -->
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="219" y="191" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="219" y="356" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="219" y="521" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- Last Chance A-J 闪灯 -->
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="350" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="430" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="511" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="591" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="671" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="752" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="832" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="912" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="993" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="1073" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 秘技手帐 A-G 闪灯 -->
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="233" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="418" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="602" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="233" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="418" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="602" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="233" y="723" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+    </view>
+
+    <view name="Landscape_Touch_Screen_20_9">
+        <bounds x="0" y="0" width="2000" height="900" />
+
+        <bezel element="bg_landscape_209">
+            <bounds x="0" y="0" width="2000" height="900" />
+        </bezel>
+
+        <screen index="0"> <bounds x="400" y="0" width="1200" height="900" /> </screen>
+
+        <!-- 横版字母按键提示（overlay_letters 叠游戏区，侧栏触摸在其上） -->
+        <element ref="overlay_letters"> <bounds x="400" y="0" width="1200" height="900" /> </element>
+
+        <!-- 侧栏功能键：横版常驻（各 UI 模式均可见） -->
+        <bezel element="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="258" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64"> <bounds x="258" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="1600" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="1600" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="1600" y="510" width="142" height="130" /> </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="1600" y="380" width="142" height="130" /> </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="1600" y="250" width="142" height="130" /> </bezel>
+
+        <!-- 横版字母键松开态 overlay（mcnpshnt_letter_vis：0=std，1~6=lua+ui_mode） -->
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="419" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="419" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="433" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="419" y="207" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="499" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="499" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="618" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="419" y="372" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="581" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="581" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="802" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="419" y="537" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="661" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="661" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="433" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="741" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="741" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="618" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="821" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="821" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="802" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="901" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="901" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="433" y="723" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="981" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="981" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1061" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1061" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1141" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1141" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1221" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1221" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1301" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1301" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1382" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1382" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1486" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1486" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <!-- 字母键 touch_a~n：state 0~5 对应打牌/狩猎/手帐/选人隐藏/配牌隐藏/LC隐藏（选人、配牌、LC 由独立层） -->
+        <element ref="touch_press" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="419" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="433" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="499" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="618" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="581" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="802" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="661" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="433" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="741" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="618" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="821" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="802" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="901" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="433" y="723" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="981" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1061" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1141" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1221" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1301" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1382" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1486" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+
+        <!-- 狩猎选项 A-D (mode=1)，PS 1200x900 测量 +200 边距 -->
+        <element ref="hunt_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="433" y="453" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="433" y="520" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="433" y="588" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="433" y="656" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+
+        <!-- 配牌选择 A-C (mode=4)，508×240→1200×900 +200 边距，441×47 原尺寸 -->
+        <element ref="ws_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="419" y="191" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="419" y="356" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="419" y="521" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- Last Chance A-J (mode=5)，508×240→1200×900 +200；34×32 原尺寸 lc_highlight -->
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="550" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="630" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="711" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="791" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="871" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="952" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1032" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1112" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1193" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1273" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- 选人 A-D 触摸：仅未击败对手可点（勿与 mcnpshnt_ui_mode 同 element） -->
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_char_a" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="447" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_char_b" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="1012" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_char_c" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="464" y="450" width="534" height="383" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_char_d" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="1012" y="450" width="534" height="383" />
+        </element>
+
+        <bezel name="lamp_start_donden" element="start_donden_glow">
+            <bounds x="258" y="640" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 选人 A-D 闪灯 -->
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="447" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="1012" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="464" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="1012" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="1600" y="770" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="1600" y="510" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="1600" y="380" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="1600" y="250" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <!-- 狩猎 A-D 闪灯：固定坐标 + alpha，勿与 mcnpshnt_ui_mode animate 同项 -->
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="433" y="453" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="433" y="520" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="433" y="588" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="433" y="656" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 配牌选择 A-C 闪灯 -->
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="419" y="191" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="419" y="356" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="419" y="521" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- Last Chance A-J 闪灯 -->
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="550" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="630" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="711" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="791" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="871" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="952" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="1032" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="1112" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="1193" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="1273" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 秘技手帐 A-G 闪灯 -->
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="433" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="618" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="802" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="433" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="618" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="802" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="433" y="723" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+    </view>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <view name="Landscape_Touch_Screen_20_9_inset104">
+        <bounds x="0" y="0" width="1926" height="900" />
+
+        <bezel element="bg_landscape_209_inset104">
+            <bounds x="0" y="0" width="1926" height="900" />
+        </bezel>
+
+        <screen index="0"> <bounds x="326" y="0" width="1200" height="900" /> </screen>
+
+        <!-- 横版字母按键提示（overlay_letters 叠游戏区，侧栏触摸在其上） -->
+        <element ref="overlay_letters"> <bounds x="326" y="0" width="1200" height="900" /> </element>
+
+        <!-- 侧栏功能键：横版常驻（各 UI 模式均可见） -->
+        <bezel element="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="184" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64"> <bounds x="184" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="1526" y="770" width="142" height="130" /> </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="1526" y="640" width="142" height="130" /> </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="1526" y="510" width="142" height="130" /> </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="1526" y="380" width="142" height="130" /> </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="1526" y="250" width="142" height="130" /> </bezel>
+
+        <!-- 横版字母键松开态 overlay（mcnpshnt_letter_vis：0=std，1~6=lua+ui_mode） -->
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="345" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="345" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="359" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="345" y="207" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="425" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="425" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="544" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="345" y="372" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="507" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="507" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="728" y="453" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="345" y="537" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="587" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="587" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="359" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="667" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="667" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="544" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="747" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="747" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="728" y="588" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="827" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="827" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="359" y="723" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="907" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="907" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="987" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="987" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1067" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1067" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1147" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1147" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1227" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1227" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1308" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1308" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="1412" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="mcnpshnt_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="80" height="145" />
+            <bounds state="1" x="1412" y="703" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <!-- 字母键 touch_a~n：state 0~5 对应打牌/狩猎/手帐/选人隐藏/配牌隐藏/LC隐藏（选人、配牌、LC 由独立层） -->
+        <element ref="touch_press" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="345" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="359" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="425" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="544" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="507" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="728" y="453" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="587" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="359" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="667" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="544" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="747" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="728" y="588" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="827" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="359" y="723" width="166" height="124" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="907" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="987" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1067" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1147" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1227" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1308" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="8">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="1412" y="703" width="80" height="145" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="80" height="145" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+        </element>
+
+        <!-- 狩猎选项 A-D (mode=1)，PS 1200x900 测量 +200 边距 -->
+        <element ref="hunt_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="359" y="453" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="359" y="520" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="359" y="588" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="537" height="60" />
+            <bounds state="1" x="359" y="656" width="537" height="60" />
+            <bounds state="2" x="3000" y="3000" width="537" height="60" />
+            <bounds state="3" x="3000" y="3000" width="537" height="60" />
+            <bounds state="4" x="3000" y="3000" width="537" height="60" />
+            <bounds state="5" x="3000" y="3000" width="537" height="60" />
+        </element>
+
+        <!-- 配牌选择 A-C (mode=4)，508×240→1200×900 +200 边距，441×47 原尺寸 -->
+        <element ref="ws_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="345" y="191" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="345" y="356" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="1" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="2" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="3" x="3000" y="3000" width="1042" height="176" />
+            <bounds state="4" x="345" y="521" width="1042" height="176" />
+            <bounds state="5" x="3000" y="3000" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- Last Chance A-J (mode=5)，508×240→1200×900 +200；34×32 原尺寸 lc_highlight -->
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="476" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="556" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="637" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="717" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="797" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="878" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="958" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1038" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1119" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="mcnpshnt_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="80" height="120" />
+            <bounds state="1" x="3000" y="3000" width="80" height="120" />
+            <bounds state="2" x="3000" y="3000" width="80" height="120" />
+            <bounds state="3" x="3000" y="3000" width="80" height="120" />
+            <bounds state="4" x="3000" y="3000" width="80" height="120" />
+            <bounds state="5" x="1199" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+
+        <!-- 选人 A-D 触摸：仅未击败对手可点（勿与 mcnpshnt_ui_mode 同 element） -->
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="mcnpshnt_char_a" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="373" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_b" inputtag="KEY1" inputmask="1">
+            <animate name="mcnpshnt_char_b" />
+            <bounds state="0" x="3000" y="3000" width="553" height="383" />
+            <bounds state="1" x="938" y="0" width="553" height="383" />
+        </element>
+        <element ref="touch_c" inputtag="KEY2" inputmask="1">
+            <animate name="mcnpshnt_char_c" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="390" y="450" width="534" height="383" />
+        </element>
+        <element ref="touch_d" inputtag="KEY3" inputmask="1">
+            <animate name="mcnpshnt_char_d" />
+            <bounds state="0" x="3000" y="3000" width="534" height="383" />
+            <bounds state="1" x="938" y="450" width="534" height="383" />
+        </element>
+
+        <bezel name="lamp_start_donden" element="start_donden_glow">
+            <bounds x="184" y="640" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 选人 A-D 闪灯 -->
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="373" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="938" y="0" width="553" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="390" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="938" y="450" width="534" height="383" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="1526" y="770" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="1526" y="510" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="1526" y="380" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="1526" y="250" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+
+        <!-- 狩猎 A-D 闪灯：固定坐标 + alpha，勿与 mcnpshnt_ui_mode animate 同项 -->
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="359" y="453" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="359" y="520" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="359" y="588" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="359" y="656" width="537" height="60" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 配牌选择 A-C 闪灯 -->
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="345" y="191" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="345" y="356" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="345" y="521" width="1042" height="176" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- Last Chance A-J 闪灯 -->
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="476" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="556" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="637" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="717" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="797" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="878" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="958" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="1038" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="1119" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="1199" y="539" width="80" height="120" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 秘技手帐 A-G 闪灯 -->
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="359" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="544" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="728" y="453" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="359" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="544" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="728" y="588" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="359" y="723" width="166" height="124" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+    </view>
+
+</mamelayout>

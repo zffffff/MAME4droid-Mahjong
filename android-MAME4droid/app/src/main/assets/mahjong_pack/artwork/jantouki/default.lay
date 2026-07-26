@@ -1,0 +1,1771 @@
+<?xml version="1.0"?>
+<!-- 雀斗记 jantouki GRID_v10 + Portrait_Touch_Dual_1024x2030 -->
+<mamelayout version="2">
+
+    <element name="bg_panel"><image file="bg.png" /></element>
+    <element name="overlay_letters"> <image file="overlay_letters.png" /> </element>
+
+    <element name="button_start_donden"> <image file="start_donden_up.png" state="0" /> <image file="start_donden_down.png" state="1" /> </element>
+    <element name="button_keyin"> <image file="keyin_up.png" state="0" /> <image file="keyin_down.png" state="1" /> </element>
+    <element name="button_chi"> <image file="chi_up.png" state="0" /> <image file="chi_down.png" state="1" /> </element>
+    <element name="button_pon"> <image file="pon_up.png" state="0" /> <image file="pon_down.png" state="1" /> </element>
+    <element name="button_kan"> <image file="kan_up.png" state="0" /> <image file="kan_down.png" state="1" /> </element>
+    <element name="button_reach"> <image file="reach_up.png" state="0" /> <image file="reach_down.png" state="1" /> </element>
+    <element name="button_ron"> <image file="ron_up.png" state="0" /> <image file="ron_down.png" state="1" /> </element>
+
+    <element name="touch_up_std"> <image file="touch_up.png" state="0" /> </element>
+    <element name="touch_up_lua"> <image file="touch_up_l.png" state="0" /> </element>
+    <element name="touch_press"> <image file="touch_nil.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="touch_a"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="hunt_touch"> <image file="hunt_touch_up.png" state="0" /> <image file="hunt_touch_up.png" state="1" /> </element>
+    <element name="ws_touch"> <image file="touch_nil.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="lc_touch"> <image file="touch_up.png" state="0" /> <image file="touch_down.png" state="1" /> </element>
+    <element name="start_donden_glow"> <image file="start_donden_down.png" /> </element>
+
+    <element name="lamp_chi_glow"> <image file="chi_glow.png" /> </element>
+    <element name="lamp_pon_glow"> <image file="pon_glow.png" /> </element>
+    <element name="lamp_kan_glow"> <image file="kan_glow.png" /> </element>
+    <element name="lamp_ron_glow"> <image file="ron_glow.png" /> </element>
+    <element name="hint_hunt_a_glow"> <image file="hint_hunt_a.png" /> </element>
+    <element name="hint_hunt_b_glow"> <image file="hint_hunt_b.png" /> </element>
+    <element name="hint_hunt_c_glow"> <image file="hint_hunt_c.png" /> </element>
+    <element name="hint_hunt_d_glow"> <image file="hint_hunt_d.png" /> </element>
+    <element name="hint_notebook_a_glow"> <image file="hint_notebook_a.png" /> </element>
+    <element name="hint_notebook_b_glow"> <image file="hint_notebook_b.png" /> </element>
+    <element name="hint_notebook_c_glow"> <image file="hint_notebook_c.png" /> </element>
+    <element name="hint_notebook_d_glow"> <image file="hint_notebook_d.png" /> </element>
+    <element name="hint_notebook_e_glow"> <image file="hint_notebook_e.png" /> </element>
+    <element name="hint_notebook_f_glow"> <image file="hint_notebook_f.png" /> </element>
+    <element name="hint_notebook_g_glow"> <image file="hint_notebook_g.png" /> </element>
+    <element name="hint_ws_a_glow"> <image file="ws_a.png" /> </element>
+    <element name="hint_ws_b_glow"> <image file="ws_b.png" /> </element>
+    <element name="hint_ws_c_glow"> <image file="ws_c.png" /> </element>
+    <element name="lc_highlight_glow"> <image file="lc_highlight.png" /> </element>
+    <element name="character_select_a_glow"> <image file="character_slect_a.png" /> </element>
+    <element name="character_select_b_glow"> <image file="character_slect_b.png" /> </element>
+    <element name="character_select_c_glow"> <image file="character_slect_c.png" /> </element>
+    <element name="character_select_d_glow"> <image file="character_slect_d.png" /> </element>
+
+    <!-- 竖版留白区字母键（皮肤来自 mjelctrn / common_assets） -->
+    <element name="button_a"> <image file="a_up.png" state="0" /> <image file="a_down.png" state="1" /> </element>
+    <element name="button_b"> <image file="b_up.png" state="0" /> <image file="b_down.png" state="1" /> </element>
+    <element name="button_c"> <image file="c_up.png" state="0" /> <image file="c_down.png" state="1" /> </element>
+    <element name="button_d"> <image file="d_up.png" state="0" /> <image file="d_down.png" state="1" /> </element>
+    <element name="button_e"> <image file="e_up.png" state="0" /> <image file="e_down.png" state="1" /> </element>
+    <element name="button_f"> <image file="f_up.png" state="0" /> <image file="f_down.png" state="1" /> </element>
+    <element name="button_g"> <image file="g_up.png" state="0" /> <image file="g_down.png" state="1" /> </element>
+    <element name="button_h"> <image file="h_up.png" state="0" /> <image file="h_down.png" state="1" /> </element>
+    <element name="button_i"> <image file="i_up.png" state="0" /> <image file="i_down.png" state="1" /> </element>
+    <element name="button_j"> <image file="j_up.png" state="0" /> <image file="j_down.png" state="1" /> </element>
+    <element name="button_k"> <image file="k_up.png" state="0" /> <image file="k_down.png" state="1" /> </element>
+    <element name="button_l"> <image file="l_up.png" state="0" /> <image file="l_down.png" state="1" /> </element>
+    <element name="button_m"> <image file="m_up.png" state="0" /> <image file="m_down.png" state="1" /> </element>
+    <element name="button_n"> <image file="n_up.png" state="0" /> <image file="n_down.png" state="1" /> </element>
+
+    <view name="Portrait_Touch_Dual">
+        <!-- canvas 1000x1640 -->
+        <bounds x="0" y="0" width="1000" height="1640" />
+
+        <screen index="0"> <bounds x="0" y="0" width="1000" height="750" /> </screen>
+        <screen index="1"> <bounds x="0" y="750" width="1000" height="750" /> </screen>
+
+        <element ref="overlay_letters"> <bounds x="0" y="750" width="1000" height="750" /> </element>
+
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="16" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="16" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="27" y="1128" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="922" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="16" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="27" y="1128" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="82" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="82" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="180" y="1128" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="1060" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="82" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="180" y="1128" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="151" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="151" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="332" y="1128" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="1198" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="151" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="332" y="1128" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="218" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="218" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="27" y="1241" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="218" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="27" y="1241" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="284" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="284" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="180" y="1241" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="284" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="180" y="1241" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="351" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="351" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="332" y="1241" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="351" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="332" y="1241" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="418" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="418" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="27" y="1353" width="141" height="106" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="418" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="27" y="1353" width="141" height="106" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="484" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="484" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="484" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="551" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="551" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="551" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="618" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="618" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="618" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="684" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="684" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="684" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="751" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="751" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="751" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="818" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="818" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="8">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="818" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="905" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="67" height="121" />
+            <bounds state="3" x="3000" y="3000" width="67" height="121" />
+            <bounds state="4" x="3000" y="3000" width="67" height="121" />
+            <bounds state="5" x="3000" y="3000" width="67" height="121" />
+            <bounds state="6" x="3000" y="3000" width="67" height="121" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="67" height="121" />
+            <bounds state="1" x="905" y="1336" width="67" height="121" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="8">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="905" y="1336" width="67" height="121" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="448" height="50" />
+            <bounds state="1" x="28" y="1128" width="448" height="50" />
+            <bounds state="2" x="3000" y="3000" width="448" height="50" />
+            <bounds state="3" x="3000" y="3000" width="448" height="50" />
+            <bounds state="4" x="3000" y="3000" width="448" height="50" />
+            <bounds state="5" x="3000" y="3000" width="448" height="50" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="448" height="50" />
+            <bounds state="1" x="28" y="1183" width="448" height="50" />
+            <bounds state="2" x="3000" y="3000" width="448" height="50" />
+            <bounds state="3" x="3000" y="3000" width="448" height="50" />
+            <bounds state="4" x="3000" y="3000" width="448" height="50" />
+            <bounds state="5" x="3000" y="3000" width="448" height="50" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="448" height="50" />
+            <bounds state="1" x="28" y="1240" width="448" height="50" />
+            <bounds state="2" x="3000" y="3000" width="448" height="50" />
+            <bounds state="3" x="3000" y="3000" width="448" height="50" />
+            <bounds state="4" x="3000" y="3000" width="448" height="50" />
+            <bounds state="5" x="3000" y="3000" width="448" height="50" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="448" height="50" />
+            <bounds state="1" x="28" y="1297" width="448" height="50" />
+            <bounds state="2" x="3000" y="3000" width="448" height="50" />
+            <bounds state="3" x="3000" y="3000" width="448" height="50" />
+            <bounds state="4" x="3000" y="3000" width="448" height="50" />
+            <bounds state="5" x="3000" y="3000" width="448" height="50" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="868" height="147" />
+            <bounds state="1" x="3000" y="3000" width="868" height="147" />
+            <bounds state="2" x="3000" y="3000" width="868" height="147" />
+            <bounds state="3" x="3000" y="3000" width="868" height="147" />
+            <bounds state="4" x="16" y="909" width="868" height="147" />
+            <bounds state="5" x="3000" y="3000" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="868" height="147" />
+            <bounds state="1" x="3000" y="3000" width="868" height="147" />
+            <bounds state="2" x="3000" y="3000" width="868" height="147" />
+            <bounds state="3" x="3000" y="3000" width="868" height="147" />
+            <bounds state="4" x="16" y="1047" width="868" height="147" />
+            <bounds state="5" x="3000" y="3000" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="868" height="147" />
+            <bounds state="1" x="3000" y="3000" width="868" height="147" />
+            <bounds state="2" x="3000" y="3000" width="868" height="147" />
+            <bounds state="3" x="3000" y="3000" width="868" height="147" />
+            <bounds state="4" x="16" y="1184" width="868" height="147" />
+            <bounds state="5" x="3000" y="3000" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="123" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="189" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="256" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="322" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="389" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="455" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="521" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="588" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="654" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="66" height="100" />
+            <bounds state="1" x="3000" y="3000" width="66" height="100" />
+            <bounds state="2" x="3000" y="3000" width="66" height="100" />
+            <bounds state="3" x="3000" y="3000" width="66" height="100" />
+            <bounds state="4" x="3000" y="3000" width="66" height="100" />
+            <bounds state="5" x="721" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_char_a" />
+            <bounds state="0" x="3000" y="3000" width="453" height="450" />
+            <bounds state="1" x="31" y="175" width="453" height="450" />
+        </element>
+        <element ref="touch_a" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_char_b" />
+            <bounds state="0" x="3000" y="3000" width="453" height="450" />
+            <bounds state="1" x="516" y="175" width="453" height="450" />
+        </element>
+        <element ref="touch_a" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_char_c" />
+            <bounds state="0" x="3000" y="3000" width="453" height="450" />
+            <bounds state="1" x="31" y="825" width="453" height="450" />
+        </element>
+        <element ref="touch_a" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_char_d" />
+            <bounds state="0" x="3000" y="3000" width="453" height="450" />
+            <bounds state="1" x="516" y="825" width="453" height="450" />
+        </element>
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="16" y="909" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="16" y="1047" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="16" y="1184" width="868" height="147" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="123" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="189" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="256" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="322" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="389" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="455" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="521" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="588" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="654" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="721" y="1197" width="66" height="100" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="31" y="175" width="453" height="450" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="516" y="175" width="453" height="450" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="31" y="825" width="453" height="450" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="516" y="825" width="453" height="450" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="28" y="1128" width="448" height="50" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="28" y="1183" width="448" height="50" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="28" y="1240" width="448" height="50" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="28" y="1297" width="448" height="50" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="27" y="1128" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="180" y="1128" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="332" y="1128" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="27" y="1241" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="180" y="1241" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="332" y="1241" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="27" y="1353" width="141" height="106" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_start_donden" element="start_donden_glow">
+            <bounds x="3" y="1510" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel element="bg_panel"> <bounds x="0" y="1500" width="1000" height="140" /> </bezel>
+
+        <bezel element="button_start_donden" inputtag="KEY4" inputmask="8">
+            <bounds x="3" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64">
+            <bounds x="145" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8">
+            <bounds x="287" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8">
+            <bounds x="429" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16">
+            <bounds x="571" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16">
+            <bounds x="713" y="1510" width="142" height="130" />
+        </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16">
+            <bounds x="855" y="1510" width="142" height="130" />
+        </bezel>
+
+        <bezel name="lamp_chi" element="lamp_chi_glow">
+            <bounds x="287" y="1510" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow">
+            <bounds x="429" y="1510" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow">
+            <bounds x="571" y="1510" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow">
+            <bounds x="855" y="1510" width="142" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+    </view>
+
+    <view name="Portrait_Touch_Dual_1024x2030">
+        <!-- canvas 1024x2030 下方留白 364px -->
+        <bounds x="0" y="0" width="1024" height="2030" />
+
+        <screen index="0"> <bounds x="0" y="0" width="1024" height="768" /> </screen>
+        <screen index="1"> <bounds x="0" y="768" width="1024" height="768" /> </screen>
+
+        <element ref="overlay_letters"> <bounds x="0" y="768" width="1024" height="768" /> </element>
+
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="16" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="16" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="28" y="1155" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="945" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="16" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="28" y="1155" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="84" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="84" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="184" y="1155" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="1085" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="84" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="184" y="1155" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="553" height="383" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="154" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="154" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="340" y="1155" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="16" y="1226" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="154" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="340" y="1155" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="223" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="223" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="28" y="1270" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="223" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="28" y="1270" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="534" height="383" />
+            <bounds state="4" x="3000" y="3000" width="534" height="383" />
+            <bounds state="5" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="291" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="291" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="184" y="1270" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="291" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="184" y="1270" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="359" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="359" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="340" y="1270" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="359" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="340" y="1270" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="428" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="428" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="28" y="1386" width="144" height="109" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="428" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="28" y="1386" width="144" height="109" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="496" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="496" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="496" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="564" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="564" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="564" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="632" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="632" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="632" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="701" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="701" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY2" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="701" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="769" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="769" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY3" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="769" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="838" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="838" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY0" inputmask="8">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="838" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="touch_up_std">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="927" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="68" height="124" />
+            <bounds state="3" x="3000" y="3000" width="68" height="124" />
+            <bounds state="4" x="3000" y="3000" width="68" height="124" />
+            <bounds state="5" x="3000" y="3000" width="68" height="124" />
+            <bounds state="6" x="3000" y="3000" width="68" height="124" />
+        </element>
+        <element ref="touch_up_lua">
+            <animate name="jantouki_letter_vis" />
+            <bounds state="0" x="3000" y="3000" width="68" height="124" />
+            <bounds state="1" x="927" y="1368" width="68" height="124" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="166" height="124" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="80" height="145" />
+            <bounds state="6" x="3000" y="3000" width="534" height="383" />
+        </element>
+        <element ref="touch_press" inputtag="KEY1" inputmask="8">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="927" y="1368" width="68" height="124" />
+            <bounds state="1" x="3000" y="3000" width="80" height="145" />
+            <bounds state="2" x="3000" y="3000" width="80" height="145" />
+            <bounds state="3" x="3000" y="3000" width="80" height="145" />
+            <bounds state="4" x="3000" y="3000" width="553" height="383" />
+            <bounds state="5" x="3000" y="3000" width="553" height="383" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="458" height="51" />
+            <bounds state="1" x="28" y="1155" width="458" height="51" />
+            <bounds state="2" x="3000" y="3000" width="458" height="51" />
+            <bounds state="3" x="3000" y="3000" width="458" height="51" />
+            <bounds state="4" x="3000" y="3000" width="458" height="51" />
+            <bounds state="5" x="3000" y="3000" width="458" height="51" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="458" height="51" />
+            <bounds state="1" x="28" y="1212" width="458" height="51" />
+            <bounds state="2" x="3000" y="3000" width="458" height="51" />
+            <bounds state="3" x="3000" y="3000" width="458" height="51" />
+            <bounds state="4" x="3000" y="3000" width="458" height="51" />
+            <bounds state="5" x="3000" y="3000" width="458" height="51" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="458" height="51" />
+            <bounds state="1" x="28" y="1270" width="458" height="51" />
+            <bounds state="2" x="3000" y="3000" width="458" height="51" />
+            <bounds state="3" x="3000" y="3000" width="458" height="51" />
+            <bounds state="4" x="3000" y="3000" width="458" height="51" />
+            <bounds state="5" x="3000" y="3000" width="458" height="51" />
+        </element>
+        <element ref="hunt_touch" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="458" height="51" />
+            <bounds state="1" x="28" y="1328" width="458" height="51" />
+            <bounds state="2" x="3000" y="3000" width="458" height="51" />
+            <bounds state="3" x="3000" y="3000" width="458" height="51" />
+            <bounds state="4" x="3000" y="3000" width="458" height="51" />
+            <bounds state="5" x="3000" y="3000" width="458" height="51" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="889" height="150" />
+            <bounds state="1" x="3000" y="3000" width="889" height="150" />
+            <bounds state="2" x="3000" y="3000" width="889" height="150" />
+            <bounds state="3" x="3000" y="3000" width="889" height="150" />
+            <bounds state="4" x="16" y="931" width="889" height="150" />
+            <bounds state="5" x="3000" y="3000" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="889" height="150" />
+            <bounds state="1" x="3000" y="3000" width="889" height="150" />
+            <bounds state="2" x="3000" y="3000" width="889" height="150" />
+            <bounds state="3" x="3000" y="3000" width="889" height="150" />
+            <bounds state="4" x="16" y="1072" width="889" height="150" />
+            <bounds state="5" x="3000" y="3000" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="ws_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="889" height="150" />
+            <bounds state="1" x="3000" y="3000" width="889" height="150" />
+            <bounds state="2" x="3000" y="3000" width="889" height="150" />
+            <bounds state="3" x="3000" y="3000" width="889" height="150" />
+            <bounds state="4" x="16" y="1213" width="889" height="150" />
+            <bounds state="5" x="3000" y="3000" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="126" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="194" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="262" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="330" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="398" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="466" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY2" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="534" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY3" inputmask="2">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="602" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY0" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="670" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="lc_touch" inputtag="KEY1" inputmask="4">
+            <animate name="jantouki_ui_mode" />
+            <bounds state="0" x="3000" y="3000" width="68" height="102" />
+            <bounds state="1" x="3000" y="3000" width="68" height="102" />
+            <bounds state="2" x="3000" y="3000" width="68" height="102" />
+            <bounds state="3" x="3000" y="3000" width="68" height="102" />
+            <bounds state="4" x="3000" y="3000" width="68" height="102" />
+            <bounds state="5" x="738" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </element>
+        <element ref="touch_a" inputtag="KEY0" inputmask="1">
+            <animate name="jantouki_char_a" />
+            <bounds state="0" x="3000" y="3000" width="464" height="461" />
+            <bounds state="1" x="32" y="179" width="464" height="461" />
+        </element>
+        <element ref="touch_a" inputtag="KEY1" inputmask="1">
+            <animate name="jantouki_char_b" />
+            <bounds state="0" x="3000" y="3000" width="464" height="461" />
+            <bounds state="1" x="528" y="179" width="464" height="461" />
+        </element>
+        <element ref="touch_a" inputtag="KEY2" inputmask="1">
+            <animate name="jantouki_char_c" />
+            <bounds state="0" x="3000" y="3000" width="464" height="461" />
+            <bounds state="1" x="32" y="845" width="464" height="461" />
+        </element>
+        <element ref="touch_a" inputtag="KEY3" inputmask="1">
+            <animate name="jantouki_char_d" />
+            <bounds state="0" x="3000" y="3000" width="464" height="461" />
+            <bounds state="1" x="528" y="845" width="464" height="461" />
+        </element>
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="16" y="931" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="16" y="1072" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="16" y="1213" width="889" height="150" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="126" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="194" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="262" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="330" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="398" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="466" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="534" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="602" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="670" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="738" y="1226" width="68" height="102" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="32" y="179" width="464" height="461" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="528" y="179" width="464" height="461" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="32" y="845" width="464" height="461" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="528" y="845" width="464" height="461" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="28" y="1155" width="458" height="51" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="28" y="1212" width="458" height="51" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="28" y="1270" width="458" height="51" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="28" y="1328" width="458" height="51" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="28" y="1155" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="184" y="1155" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="340" y="1155" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="28" y="1270" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="184" y="1270" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="340" y="1270" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="28" y="1386" width="144" height="109" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_start_donden" element="start_donden_glow">
+            <bounds x="3" y="1546" width="145" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel element="bg_panel"> <bounds x="0" y="1536" width="1024" height="494" /> </bezel>
+
+        <bezel element="button_start_donden" inputtag="KEY4" inputmask="8">
+            <bounds x="3" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_keyin" inputtag="COINS" inputmask="64">
+            <bounds x="148" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_chi" inputtag="KEY2" inputmask="8">
+            <bounds x="294" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_pon" inputtag="KEY3" inputmask="8">
+            <bounds x="439" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_kan" inputtag="KEY0" inputmask="16">
+            <bounds x="585" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_reach" inputtag="KEY1" inputmask="16">
+            <bounds x="730" y="1546" width="145" height="130" />
+        </bezel>
+        <bezel element="button_ron" inputtag="KEY2" inputmask="16">
+            <bounds x="876" y="1546" width="145" height="130" />
+        </bezel>
+
+        <bezel name="lamp_chi" element="lamp_chi_glow">
+            <bounds x="294" y="1546" width="145" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_pon" element="lamp_pon_glow">
+            <bounds x="439" y="1546" width="145" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_kan" element="lamp_kan_glow">
+            <bounds x="585" y="1546" width="145" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_ron" element="lamp_ron_glow">
+            <bounds x="876" y="1546" width="145" height="130" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+
+        <!-- 留白区竖版字母键 A~N（alpha≈0.6，与下屏 touch 并行） -->
+        <bezel element="button_a" inputtag="KEY0" inputmask="1">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_b" inputtag="KEY1" inputmask="1">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_c" inputtag="KEY2" inputmask="1">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_d" inputtag="KEY3" inputmask="1">
+            <bounds x="439" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_e" inputtag="KEY0" inputmask="2">
+            <bounds x="585" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_f" inputtag="KEY1" inputmask="2">
+            <bounds x="730" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_g" inputtag="KEY2" inputmask="2">
+            <bounds x="876" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_h" inputtag="KEY3" inputmask="2">
+            <bounds x="3" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_i" inputtag="KEY0" inputmask="4">
+            <bounds x="148" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_j" inputtag="KEY1" inputmask="4">
+            <bounds x="294" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_k" inputtag="KEY2" inputmask="4">
+            <bounds x="439" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_l" inputtag="KEY3" inputmask="4">
+            <bounds x="585" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_m" inputtag="KEY0" inputmask="8">
+            <bounds x="730" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+        <bezel element="button_n" inputtag="KEY1" inputmask="8">
+            <bounds x="876" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.6" />
+            <color state="1" alpha="0.95" />
+        </bezel>
+
+        <!-- 留白区闪灯（与屏上 lamp_hint_* 同名，同步亮） -->
+        <bezel name="lamp_hint_hunt_a" element="hint_hunt_a_glow">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_a" element="hint_notebook_a_glow">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_a" element="hint_ws_a_glow">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_a" element="lc_highlight_glow">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_a" element="character_select_a_glow">
+            <bounds x="3" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_b" element="hint_hunt_b_glow">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_b" element="hint_notebook_b_glow">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_b" element="hint_ws_b_glow">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_b" element="lc_highlight_glow">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_b" element="character_select_b_glow">
+            <bounds x="148" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_c" element="hint_hunt_c_glow">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_c" element="hint_notebook_c_glow">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_ws_c" element="hint_ws_c_glow">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_c" element="lc_highlight_glow">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_c" element="character_select_c_glow">
+            <bounds x="294" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_hunt_d" element="hint_hunt_d_glow">
+            <bounds x="439" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_d" element="hint_notebook_d_glow">
+            <bounds x="439" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_d" element="lc_highlight_glow">
+            <bounds x="439" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_character_d" element="character_select_d_glow">
+            <bounds x="439" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_e" element="hint_notebook_e_glow">
+            <bounds x="585" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_e" element="lc_highlight_glow">
+            <bounds x="585" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_f" element="hint_notebook_f_glow">
+            <bounds x="730" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_f" element="lc_highlight_glow">
+            <bounds x="730" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_notebook_g" element="hint_notebook_g_glow">
+            <bounds x="876" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_g" element="lc_highlight_glow">
+            <bounds x="876" y="1686" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_h" element="lc_highlight_glow">
+            <bounds x="3" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_i" element="lc_highlight_glow">
+            <bounds x="148" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+        <bezel name="lamp_hint_lc_j" element="lc_highlight_glow">
+            <bounds x="294" y="1862" width="145" height="168" />
+            <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
+        </bezel>
+    </view>
+
+
+</mamelayout>

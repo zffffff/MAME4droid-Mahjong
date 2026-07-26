@@ -1,0 +1,9 @@
+# mcnpshnt column scan (placeholder)
+#
+# 进入选人界面且 P0=66,148,255 且 (40,60)=66,0,0 时，Lua 会自动覆盖本文件。
+# 文件路径：MAME 目录下 fei_mj_lamps/mcnpshnt_col_scan.txt
+# 部署后也可在模组仓库同路径查看（若从 MAME 目录拷回）。
+#
+# 列格式：
+#   sy -> vx,vy (+bias) R,G,B
+# 另含：下半屏绿色雷达(0,99,0)、P1 直读/翻转对照（见文件末尾）
