@@ -1,0 +1,31 @@
+---
+description: 飞剧场怀旧麻将 fork 的常驻约定（包名、按键包、手柄、CI）
+alwaysApply: true
+---
+
+# 飞剧场怀旧麻将
+
+详细说明见 `docs/知识库.md`。改本仓库时优先遵守下列约定。
+
+## 身份
+
+- 产品名：飞剧场怀旧麻将；`applicationId`：`com.feijuchang.mahjong`
+- Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；保留 GPL 署名
+- 不内置 ROM；按键包在 `assets/mahjong_pack/`，经 `AssetPackInstaller` 装到 files
+
+## 勿混改
+
+- 本仓：`D:\Dev\MAME4droid-Mahjong`（特供 APK）
+- 按键包源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（不要在本仓大改按键逻辑源）
+
+## 体验相关入口
+
+- `MahjongExperienceHelper`：默认种子、方向桥接、强制竖屏、悬浮隐藏/菜单
+- 隐藏手柄必须用 `oscForceHidden`；隐藏后点屏走 Touch UI，勿弹 `DIALOG_FULLSCREEN`
+- 横屏 layout：`res/raw/controller_landscape*.txt` 与 `raw-large` 同步；四角布局、中间留给画面
+- 按钮 ID：`8=Coin`，`9=Start`（勿信上游注释写反）
+
+## CI / 核心
+
+- `libMAME4droid.so` 不在仓内；用 `scripts/fetch-mame-lib.sh` 或 GitHub Actions 拉取
+- 不要提交 `release/`、本地 so、密钥；发版靠 push `main` 触发 Build APK

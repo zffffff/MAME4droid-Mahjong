@@ -4,6 +4,8 @@
 
 包名：`com.feijuchang.mahjong`。不内置 ROM；首次启动会自动安装按键包资源。
 
+**开发 / 维护说明（知识库）：** [docs/知识库.md](docs/知识库.md)
+
 ---
 
 # Upstream: MAME4droid (Current)
