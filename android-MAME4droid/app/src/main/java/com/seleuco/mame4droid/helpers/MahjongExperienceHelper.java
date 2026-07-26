@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -171,8 +172,12 @@ public class MahjongExperienceHelper {
 		btn.setTypeface(Typeface.DEFAULT_BOLD);
 		btn.setTextColor(Color.WHITE);
 		btn.setPadding(padH, padV, padH, padV);
-		btn.setBackgroundColor(0x99000000);
-		btn.setElevation(4 * density);
+		// 60% opacity + rounded corners
+		GradientDrawable bg = new GradientDrawable();
+		bg.setColor(0x99000000);
+		bg.setCornerRadius(10f * density);
+		btn.setBackground(bg);
+		btn.setElevation(3 * density);
 		btn.setClickable(true);
 		btn.setFocusable(false);
 		return btn;
