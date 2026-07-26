@@ -1,4 +1,12 @@
-# MAME4droid (Current)
+# 飞剧场怀旧麻将
+
+基于 [MAME4droid (Current)](https://github.com/seleuco/MAME4droid-Current) 的麻将按键包特供版（GPL）。原作者 David Valdeita (Seleuco)。
+
+包名：`com.feijuchang.mahjong`。不内置 ROM；首次启动会自动安装按键包资源。
+
+---
+
+# Upstream: MAME4droid (Current)
 
 ![Release: v1.37.6](https://img.shields.io/badge/Release-v1.37.6-blue)
 ![MAME Core: 0.288](https://img.shields.io/badge/MAME_Core-0.288-orange)

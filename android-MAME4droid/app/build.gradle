@@ -17,11 +17,11 @@ android {
 	}
 
     defaultConfig {
-        applicationId "com.seleuco.mame4d2024"
+        applicationId "com.feijuchang.mahjong"
         minSdkVersion 29
         targetSdkVersion 36
-        versionCode 131
-        versionName '1.37.6'
+        versionCode 132
+        versionName '1.37.6-mj1'
 
         ndk {
             moduleName = "mame4droid-jni"
@@ -33,7 +33,7 @@ android {
     }
 
 	base {
-		archivesName = "MAME4droid 2026-" + defaultConfig.versionName
+		archivesName = "FeiJuchang-Mahjong-" + defaultConfig.versionName
 	}
 
     bundle {

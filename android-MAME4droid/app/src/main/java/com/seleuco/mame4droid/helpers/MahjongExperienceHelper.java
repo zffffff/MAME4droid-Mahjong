@@ -11,6 +11,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.seleuco.mame4droid.Emulator;
@@ -24,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Mahjong-edition UX helpers: defaults, orientation bridge, portrait-forced ROMs,
- * and an always-visible toggle to show/hide the on-screen controller.
+ * and floating controls to show/hide the on-screen pad and open the options menu.
  */
 public class MahjongExperienceHelper {
 
@@ -33,7 +34,7 @@ public class MahjongExperienceHelper {
 	private static final String PREF_SEEDED_V2 = "mahjong_defaults_v2";
 	private static final String PREF_SEEDED_V3 = "mahjong_defaults_v3";
 	private static final String ORIENT_FILE = ".device_orientation";
-	private static final int TOGGLE_BTN_ID = 0x6D6A7467; // 'mjtg'
+	private static final int FLOAT_BAR_ID = 0x6D6A6261; // 'mjba'
 
 	/** Dual-screen portrait-only ROMs (extend as more are added). */
 	private static final String[] PORTRAIT_FORCED_ROMS = {
@@ -44,6 +45,8 @@ public class MahjongExperienceHelper {
 	private String lastWrittenOrient = null;
 	private String lastForcedRom = null;
 	private TextView toggleBtn = null;
+	private TextView menuBtn = null;
+	private LinearLayout floatBar = null;
 	/** User tapped "hide pad"; blocks prefs from forcing the OSC back on. */
 	private boolean oscForceHidden = false;
 
@@ -51,14 +54,13 @@ public class MahjongExperienceHelper {
 		this.mm = mm;
 	}
 
-	/** Seed mahjong-friendly SharedPreferences (incremental, won't clobber later user edits of the same keys after seed). */
+	/** Seed mahjong-friendly SharedPreferences (incremental). */
 	public void seedDefaultsIfNeeded() {
 		SharedPreferences p = mm.getPrefsHelper().getSharedPreferences();
 		SharedPreferences.Editor e = null;
 
 		if (!p.getBoolean(PREF_SEEDED, false)) {
 			e = p.edit();
-			// Hide face buttons A–H in landscape / portrait-fullscreen; portrait dock still shows full pad.
 			e.putString(PrefsHelper.PREF_NUMBUTTONS, "0");
 			e.putBoolean(PrefsHelper.PREF_TOUCH_UI, true);
 			e.putBoolean(PREF_SEEDED, true);
@@ -66,7 +68,6 @@ public class MahjongExperienceHelper {
 
 		if (!p.getBoolean(PREF_SEEDED_V2, false)) {
 			if (e == null) e = p.edit();
-			// Digital D-Pad instead of analog stick; keep D-Pad visible when OSC is shown.
 			e.putString(PrefsHelper.PREF_CONTROLLER_TYPE, String.valueOf(PrefsHelper.PREF_DIGITAL_DPAD));
 			e.putBoolean(PrefsHelper.PREF_HIDE_STICK, false);
 			e.putBoolean(PREF_SEEDED_V2, true);
@@ -74,7 +75,6 @@ public class MahjongExperienceHelper {
 
 		if (!p.getBoolean(PREF_SEEDED_V3, false)) {
 			if (e == null) e = p.edit();
-			// Show A+B on landscape / portrait-fullscreen OSC (was 0 = none).
 			e.putString(PrefsHelper.PREF_NUMBUTTONS, "2");
 			e.putBoolean(PREF_SEEDED_V3, true);
 		}
@@ -94,16 +94,14 @@ public class MahjongExperienceHelper {
 	}
 
 	/**
-	 * Attach (or refresh) a floating button on EmulatorFrame that toggles the
-	 * on-screen controller. Works in portrait and landscape, including when the
-	 * controller strip is hidden (fullscreen game area).
+	 * Floating bar: toggle pad + options menu (so Option stays reachable when pad is hidden).
 	 */
 	public void attachControllerToggle(FrameLayout emulatorFrame) {
 		if (emulatorFrame == null) {
 			return;
 		}
 
-		View existing = emulatorFrame.findViewById(TOGGLE_BTN_ID);
+		View existing = emulatorFrame.findViewById(FLOAT_BAR_ID);
 		if (existing != null) {
 			emulatorFrame.removeView(existing);
 		}
@@ -112,9 +110,63 @@ public class MahjongExperienceHelper {
 		int padH = (int) (10 * density);
 		int padV = (int) (6 * density);
 		int margin = (int) (8 * density);
+		int gap = (int) (6 * density);
 
+		LinearLayout bar = new LinearLayout(mm);
+		bar.setId(FLOAT_BAR_ID);
+		bar.setOrientation(LinearLayout.VERTICAL);
+		bar.setGravity(Gravity.END);
+		FrameLayout.LayoutParams barLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				Gravity.TOP | Gravity.END);
+		barLp.setMargins(margin, margin, margin, margin);
+		bar.setLayoutParams(barLp);
+
+		toggleBtn = makeFloatButton(padH, padV, density);
+		toggleBtn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
+		toggleBtn.setOnClickListener(v -> {
+			if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
+				return;
+			}
+			TouchController tc = mm.getInputHandler().getTouchController();
+			boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER && !oscForceHidden;
+			setOscForceHidden(showing);
+			mm.getMainHelper().updateMAME4droid();
+			refreshToggleLabel();
+			bringFloatBarFront();
+		});
+
+		menuBtn = makeFloatButton(padH, padV, density);
+		menuBtn.setText(mm.getString(R.string.mj_menu_button));
+		menuBtn.setContentDescription(mm.getString(R.string.mj_menu_button));
+		menuBtn.setOnClickListener(v -> {
+			if (Emulator.isInOptions()) {
+				return;
+			}
+			Emulator.setInOptions(true);
+			mm.showDialog(DialogHelper.DIALOG_OPTIONS);
+		});
+
+		LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		btnLp.bottomMargin = gap;
+		toggleBtn.setLayoutParams(btnLp);
+		menuBtn.setLayoutParams(new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT));
+
+		bar.addView(toggleBtn);
+		bar.addView(menuBtn);
+		emulatorFrame.addView(bar);
+		floatBar = bar;
+		bringFloatBarFront();
+		refreshToggleLabel();
+	}
+
+	private TextView makeFloatButton(int padH, int padV, float density) {
 		TextView btn = new TextView(mm);
-		btn.setId(TOGGLE_BTN_ID);
 		btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
 		btn.setTypeface(Typeface.DEFAULT_BOLD);
 		btn.setTextColor(Color.WHITE);
@@ -123,34 +175,13 @@ public class MahjongExperienceHelper {
 		btn.setElevation(4 * density);
 		btn.setClickable(true);
 		btn.setFocusable(false);
-		btn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
+		return btn;
+	}
 
-		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.END);
-		lp.setMargins(margin, margin, margin, margin);
-		btn.setLayoutParams(lp);
-
-		btn.setOnClickListener(v -> {
-			if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
-				return;
-			}
-			TouchController tc = mm.getInputHandler().getTouchController();
-			boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER;
-			// Prefer a force-hidden flag: updateMAME4droid() otherwise re-enables OSC from prefs.
-			setOscForceHidden(showing);
-			mm.getMainHelper().updateMAME4droid();
-			refreshToggleLabel();
-			if (toggleBtn != null) {
-				toggleBtn.bringToFront();
-			}
-		});
-
-		emulatorFrame.addView(btn);
-		btn.bringToFront();
-		toggleBtn = btn;
-		refreshToggleLabel();
+	private void bringFloatBarFront() {
+		if (floatBar != null) {
+			floatBar.bringToFront();
+		}
 	}
 
 	public void refreshToggleLabel() {
@@ -164,13 +195,9 @@ public class MahjongExperienceHelper {
 		toggleBtn.setText(showing
 				? mm.getString(R.string.mj_hide_controller)
 				: mm.getString(R.string.mj_show_controller));
-		toggleBtn.bringToFront();
+		bringFloatBarFront();
 	}
 
-	/**
-	 * Write current device orientation for master_lamps.lua to pick Portrait_* /
-	 * Landscape_* artwork views. Safe to call often.
-	 */
 	public void syncOrientationBridge() {
 		String dir = mm.getMainHelper().getInstallationDIR();
 		if (dir == null || dir.isEmpty()) {
@@ -197,10 +224,6 @@ public class MahjongExperienceHelper {
 		}
 	}
 
-	/**
-	 * Force portrait while a dual-screen mahjong ROM is running; otherwise honour
-	 * the user's orientation preference (usually Auto).
-	 */
 	public void applyRomOrientationPolicy() {
 		String rom = null;
 		try {

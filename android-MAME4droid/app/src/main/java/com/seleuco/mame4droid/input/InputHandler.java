@@ -243,35 +243,27 @@ public class InputHandler implements OnTouchListener, OnKeyListener {
 
 		} else {
 			// --- OFF-SCREEN OR EMU VIEW (Without touch controller) ---
-			// Very useful for lightgun off-screen reloads
-
-			if ((mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_PORTRAIT &&
-				touchController.getState() != TouchController.STATE_SHOWING_NONE) ||
-				(mm.getMainHelper().getscrOrientation() == Configuration.ORIENTATION_LANDSCAPE &&
-					touchController.getState() != TouchController.STATE_SHOWING_NONE)) {
-
-				if (mm.getPrefsHelper().isTouchLightgun() && !Emulator.isInMenu()) {
-					touchLightgun.handleTouchLightgun(v, event, digital_data);
-					return true;
-				}
-
-				if(mm.getPrefsHelper().isTouchMouseEnabled()) {
-					if((mm.getPrefsHelper().isTouchGameMouse() && !Emulator.isInMenu()) ||
-						(!mm.getPrefsHelper().isTouchUI()  && (!Emulator.isInGame() || Emulator.isInMenu()))) {
-						touchMouse.handleTouchMouse(v, event);
-						return true;
-					}
-				}
-
-				if(mm.getPrefsHelper().isTouchUI()) {
-					touchPointer.handleTouchPointer(v, event);
-					return true;
-				}
-
-				return false;
+			if (mm.getPrefsHelper().isTouchLightgun() && !Emulator.isInMenu()) {
+				touchLightgun.handleTouchLightgun(v, event, digital_data);
+				return true;
 			}
 
-			// Failsafe dialog for unhandled edge cases
+			if (mm.getPrefsHelper().isTouchMouseEnabled()) {
+				if ((mm.getPrefsHelper().isTouchGameMouse() && !Emulator.isInMenu()) ||
+					(!mm.getPrefsHelper().isTouchUI() && (!Emulator.isInGame() || Emulator.isInMenu()))) {
+					touchMouse.handleTouchMouse(v, event);
+					return true;
+				}
+			}
+
+			// Mahjong / artwork touch: when the OSC strip is hidden, still forward
+			// pointer events instead of popping the options dialog.
+			if (mm.getPrefsHelper().isTouchUI()) {
+				touchPointer.handleTouchPointer(v, event);
+				return true;
+			}
+
+			// Failsafe dialog only when Touch UI is off (legacy edge cases)
 			mm.showDialog(DialogHelper.DIALOG_FULLSCREEN);
 			return true;
 		}
