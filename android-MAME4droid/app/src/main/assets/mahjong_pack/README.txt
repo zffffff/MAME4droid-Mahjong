@@ -3,7 +3,10 @@
 来源：仓库 A 一键发布产物
   D:\Dev\MAMEmjKey\release\飞剧场-手机版怀旧街机麻将按键包-20260726
 
-版本：20260726
+版本：20260726.1
+  - 随手机横竖自动切换 Portrait_* / Landscape_* artwork View（读 .device_orientation）
+  - 横屏虚拟手柄改为底部窄条（仅 Exit/Option/Coin/Start）
+  - 雀斗记 jantouki 强制竖屏
 
 结构会安装到 App files 根目录：
   artwork/{rom}/...

@@ -66,6 +66,7 @@ import com.seleuco.mame4droid.helpers.AdpfHelper;
 import com.seleuco.mame4droid.helpers.AssetPackInstaller;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.LocaleHelper;
+import com.seleuco.mame4droid.helpers.MahjongExperienceHelper;
 import com.seleuco.mame4droid.helpers.MainHelper;
 import com.seleuco.mame4droid.helpers.NetPlayHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
@@ -92,6 +93,7 @@ public class MAME4droid extends Activity {
 	protected ScraperHelper scraperHelper = null;
 	protected NetPlayHelper NetPlayHelper = null;
 	protected AdpfHelper adpfHelper = null;
+	protected MahjongExperienceHelper mahjongHelper = null;
 
 	protected InputHandler inputHandler = null;
 
@@ -121,6 +123,10 @@ public class MAME4droid extends Activity {
 
 	public AdpfHelper getAdpfHelper() {
 		return adpfHelper;
+	}
+
+	public MahjongExperienceHelper getMahjongHelper() {
+		return mahjongHelper;
 	}
 
 	public View getEmuView() {
@@ -168,6 +174,8 @@ public class MAME4droid extends Activity {
 		scraperHelper = new ScraperHelper(this);
 		NetPlayHelper = new NetPlayHelper(this);
 		adpfHelper = new AdpfHelper(this);
+		mahjongHelper = new MahjongExperienceHelper(this);
+		mahjongHelper.seedDefaultsIfNeeded();
 
 		inputHandler = new InputHandler(this);
 
@@ -178,6 +186,8 @@ public class MAME4droid extends Activity {
 		Emulator.setMAME4droid(this);
 
 		mainHelper.updateMAME4droid();
+		mahjongHelper.syncOrientationBridge();
+		mahjongHelper.applyRomOrientationPolicy();
 
 		String uri = getPrefsHelper().getSAF_Uri();
 		if (uri != null) {
@@ -303,6 +313,10 @@ public class MAME4droid extends Activity {
 		inflateViews();
 
 		getMainHelper().updateMAME4droid();
+		if (mahjongHelper != null) {
+			mahjongHelper.syncOrientationBridge();
+			mahjongHelper.applyRomOrientationPolicy();
+		}
 
 		overridePendingTransition(0, 0);
 	}
@@ -341,6 +355,11 @@ public class MAME4droid extends Activity {
 
 		if (adpfHelper != null && prefsHelper != null && prefsHelper.isFramePacingEnabled())
 			adpfHelper.startThermal();
+
+		if (mahjongHelper != null) {
+			mahjongHelper.syncOrientationBridge();
+			mahjongHelper.applyRomOrientationPolicy();
+		}
 
 		//System.out.println("OnResume");
 	}

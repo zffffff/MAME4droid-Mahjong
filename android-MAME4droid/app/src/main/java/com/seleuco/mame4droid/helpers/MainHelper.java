@@ -782,6 +782,11 @@ galaxy sde	   --> 2560x1600 16:10
 		inputView.invalidate();
         emuView.invalidate();
 
+		if (mm.getMahjongHelper() != null) {
+			mm.getMahjongHelper().syncOrientationBridge();
+			mm.getMahjongHelper().applyRomOrientationPolicy();
+		}
+
 		//Log.d("isMouse"," value:"+mm.getPrefsHelper().isTouchMouse());
     }
 

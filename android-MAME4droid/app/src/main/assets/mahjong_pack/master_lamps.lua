@@ -4,12 +4,93 @@
 local frame_counter = 0
 local game_module = nil
 local module_loaded = false
+local last_orient = nil
+local orient_check_counter = 0
+
+-- Android writes .device_orientation ("portrait"/"landscape") into the install dir.
+-- Switch artwork view to matching Portrait_* / Landscape_* when the phone rotates.
+local function apply_device_orientation_view(machine)
+    orient_check_counter = orient_check_counter + 1
+    if orient_check_counter % 15 ~= 1 then
+        return
+    end
+
+    local f = io.open(".device_orientation", "r")
+    if not f then
+        return
+    end
+    local orient = (f:read("*l") or ""):gsub("%s+", "")
+    f:close()
+    if orient == "" or orient == last_orient then
+        return
+    end
+
+    if not machine.render or not machine.render.targets then
+        return
+    end
+    local target = machine.render.targets[1]
+    if not target or not target.view_names then
+        return
+    end
+
+    local want_land = (orient == "landscape")
+    local best_i, best_score = nil, -1
+    local i = 1
+    while true do
+        local name = target.view_names[i]
+        if not name then
+            break
+        end
+        local score = -1
+        local lower = string.lower(name)
+        if want_land then
+            if name == "Landscape_Touch_Screen" then
+                score = 100
+            elseif string.find(lower, "landscape_touch", 1, true) then
+                score = 80
+            elseif string.find(lower, "landscape", 1, true) then
+                score = 60
+            end
+        else
+            -- Prefer Android-tuned dual view when present
+            if name == "Portrait_Touch_Dual_1024x2030" then
+                score = 100
+            elseif name == "Portrait_Touch_Dual" then
+                score = 90
+            elseif name == "Portrait_2_Rows" then
+                score = 80
+            elseif string.find(lower, "portrait", 1, true) then
+                score = 60
+            end
+        end
+        if score > best_score then
+            best_score = score
+            best_i = i
+        end
+        i = i + 1
+    end
+
+    if best_i and best_score >= 0 then
+        local ok, err = pcall(function()
+            target.view_index = best_i
+        end)
+        if ok then
+            last_orient = orient
+        end
+    else
+        -- No matching view (e.g. Pure_Joystick_View only) — stop retrying this orient
+        last_orient = orient
+    end
+end
 
 emu.register_frame_done(function()
     if not manager or not manager.machine then return end
     local machine = manager.machine
     local rom_name = machine.system.name
     if not rom_name or rom_name == "___empty" then return end
+
+    apply_device_orientation_view(machine)
+
     local screen = machine.screens[":screen"]
     local is_jantouki = (rom_name == "jantouki")
     if not screen and not is_jantouki then return end
