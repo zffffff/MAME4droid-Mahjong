@@ -289,6 +289,10 @@ public class MAME4droid extends Activity {
 		}
 
 		inputHandler.setInputListeners();
+
+		if (mahjongHelper != null && frame instanceof FrameLayout) {
+			mahjongHelper.attachControllerToggle((FrameLayout) frame);
+		}
 	}
 
 	public void runMAME4droid() {

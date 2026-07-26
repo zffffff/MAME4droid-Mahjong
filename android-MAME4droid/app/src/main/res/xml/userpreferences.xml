@@ -109,7 +109,7 @@
 			android:title="@string/pref_controller_type_title"
 			android:key="PREF_CONTROLLER_TYPE_2"
 			android:entryValues="@array/pref_controller_type_values"
-			android:defaultValue="3" />
+			android:defaultValue="1" />
 
         <PreferenceScreen android:key="customControlLayout"
 			android:title="@string/pref_custom_layout_title" android:summary="@string/pref_custom_layout_summary" />

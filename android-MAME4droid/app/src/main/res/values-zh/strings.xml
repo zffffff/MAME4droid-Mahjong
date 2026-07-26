@@ -123,6 +123,9 @@
     <string name="asset_pack_installing_wait">请稍候（%1$s）……</string>
     <string name="asset_pack_installing_file">正在安装：%1$s</string>
     <string name="asset_pack_install_failed">按键包「%1$s」安装失败：\n%2$s</string>
+    <string name="mj_toggle_controller">显示/隐藏虚拟手柄</string>
+    <string name="mj_hide_controller">隐藏手柄</string>
+    <string name="mj_show_controller">显示手柄</string>
     <string name="created_updated_msg">已创建或更新：\'%1$s\'，用于存放存档状态、cfg 文件和 MAME 资源。\n\n注意，请将您的压缩 ROM 复制或移动到 \'%2$s\' 目录！\n\n重要：MAME4droid (Current) 仅使用 MAME %3$s 的 ROM 集，而非 0.139。</string>
     <string name="welcome_quest">欢迎使用 META Quest 版 MAME4droid！\n\n您应在 META Quest 上配对一个 XBOX One 手柄才能玩游戏，但您可以用触摸手柄玩光枪游戏。\n\n</string>
     <string name="layout_custom_fullscreen_only">控制布局自定义仅在全屏模式下可用</string>
