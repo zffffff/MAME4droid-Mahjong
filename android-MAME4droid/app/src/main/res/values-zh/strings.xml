@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="source_code_label">源码（GitHub）</string>
     <string name="label_settings">MAME4droid 设置</string>
     <string name="label_help">MAME4droid 帮助</string>
     <string name="label_define_buttons">MAME4droid 定义按键</string>

@@ -94,6 +94,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.seleuco.mame4droid.Emulator;
+import com.seleuco.mame4droid.BuildConfig;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.WebHelpActivity;
@@ -621,7 +622,9 @@ public class MainHelper {
             inputHandler.getTiltSensor().disable();
 
 		int state = mm.getInputHandler().getTouchController().getState();
-		boolean forceHidden = mm.getMahjongHelper() != null && mm.getMahjongHelper().isOscForceHidden();
+		boolean forceHidden = BuildConfig.FEIJUCHANG_FULL_UX
+				&& mm.getMahjongHelper() != null
+				&& mm.getMahjongHelper().isOscForceHidden();
 
 		Emulator.setEmuFiltering(prefsHelper.isBitmapFiltering());
 
@@ -784,7 +787,9 @@ galaxy sde	   --> 2560x1600 16:10
 		if (mm.getMahjongHelper() != null) {
 			mm.getMahjongHelper().syncOrientationBridge();
 			mm.getMahjongHelper().applyRomOrientationPolicy();
-			mm.getMahjongHelper().refreshToggleLabel();
+			if (BuildConfig.FEIJUCHANG_FULL_UX) {
+				mm.getMahjongHelper().refreshToggleLabel();
+			}
 		}
 
 		//Log.d("isMouse"," value:"+mm.getPrefsHelper().isTouchMouse());

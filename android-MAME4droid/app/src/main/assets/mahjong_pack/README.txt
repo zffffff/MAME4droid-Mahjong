@@ -1,12 +1,7 @@
 # 麻将按键包资源目录（assets/mahjong_pack）
 
-来源：仓库 A 一键发布产物
-  D:\Dev\MAMEmjKey\release\飞剧场-手机版怀旧街机麻将按键包-20260726
-
-版本：20260726.1
-  - 随手机横竖自动切换 Portrait_* / Landscape_* artwork View（读 .device_orientation）
-  - 横屏虚拟手柄改为底部窄条（仅 Exit/Option/Coin/Start）
-  - 雀斗记 jantouki 强制竖屏
+许可证：见同目录 `LICENSE.txt`（与本仓库相同，GPL-2.0-or-later）。  
+源码仓库：https://github.com/zffffff/MAME4droid-Mahjong
 
 结构会安装到 App files 根目录：
   artwork/{rom}/...

@@ -17,11 +17,10 @@ android {
 	}
 
     defaultConfig {
-        applicationId "com.feijuchang.mahjong"
         minSdkVersion 29
         targetSdkVersion 36
-        versionCode 132
-        versionName '1.37.6-mj1'
+        versionCode 133
+        versionName '1.37.6-mj2'
 
         ndk {
             moduleName = "mame4droid-jni"
@@ -32,8 +31,24 @@ android {
         }
     }
 
+	flavorDimensions += "edition"
+	productFlavors {
+		full {
+			dimension "edition"
+			applicationId "com.feijuchang.mahjong"
+			buildConfigField "boolean", "FEIJUCHANG_FULL_UX", "true"
+			resValue "string", "app_name", "飞剧场怀旧麻将"
+		}
+		basic {
+			dimension "edition"
+			applicationId "com.feijuchang.mahjong.basic"
+			buildConfigField "boolean", "FEIJUCHANG_FULL_UX", "false"
+			resValue "string", "app_name", "基础飞剧场"
+		}
+	}
+
 	base {
-		archivesName = "FeiJuchang-Mahjong-" + defaultConfig.versionName
+		archivesName = "FeiJuchang-" + defaultConfig.versionName
 	}
 
     bundle {

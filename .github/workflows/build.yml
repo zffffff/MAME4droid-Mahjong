@@ -9,7 +9,7 @@ env:
 
 jobs:
   build:
-    name: Assemble debug + release
+    name: Assemble full + basic
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -44,35 +44,40 @@ jobs:
         working-directory: android-MAME4droid
         run: bash scripts/fetch-mame-lib.sh
 
-      - name: Build debug and release APKs
+      - name: Build full and basic APKs
         working-directory: android-MAME4droid
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
         run: |
           gradle --no-daemon --no-configuration-cache \
             -Pandroid.builder.sdkDownload=true \
-            assembleDebug assembleRelease
+            assembleFullDebug assembleFullRelease \
+            assembleBasicDebug assembleBasicRelease
 
-      - name: Locate APKs
-        id: apks
-        run: |
-          set -e
-          DEBUG_APK=$(find android-MAME4droid/app/build/outputs/apk/debug -name '*.apk' | head -n1)
-          RELEASE_APK=$(find android-MAME4droid/app/build/outputs/apk/release -name '*.apk' | head -n1)
-          echo "debug=$DEBUG_APK" >> "$GITHUB_OUTPUT"
-          echo "release=$RELEASE_APK" >> "$GITHUB_OUTPUT"
-          ls -lh "$DEBUG_APK" "$RELEASE_APK"
-
-      - name: Upload debug APK
+      - name: Upload full debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: MAME4droid-Mahjong-debug
-          path: ${{ steps.apks.outputs.debug }}
+          name: FeiJuchang-full-debug
+          path: android-MAME4droid/app/build/outputs/apk/full/debug/*.apk
           if-no-files-found: error
 
-      - name: Upload release APK
+      - name: Upload full release APK
         uses: actions/upload-artifact@v4
         with:
-          name: MAME4droid-Mahjong-release
-          path: ${{ steps.apks.outputs.release }}
+          name: FeiJuchang-full-release
+          path: android-MAME4droid/app/build/outputs/apk/full/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload basic debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiJuchang-basic-debug
+          path: android-MAME4droid/app/build/outputs/apk/basic/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload basic release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiJuchang-basic-release
+          path: android-MAME4droid/app/build/outputs/apk/basic/release/*.apk
           if-no-files-found: error

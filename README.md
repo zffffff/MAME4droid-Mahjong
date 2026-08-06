@@ -1,10 +1,18 @@
 # 飞剧场怀旧麻将
 
-基于 [MAME4droid (Current)](https://github.com/seleuco/MAME4droid-Current) 的麻将按键包特供版（GPL）。原作者 David Valdeita (Seleuco)。
+基于 [MAME4droid (Current)](https://github.com/seleuco/MAME4droid-Current) 的麻将特供版（GPL）。原作者 David Valdeita (Seleuco)。
 
-包名：`com.feijuchang.mahjong`。不内置 ROM；首次启动会自动安装按键包资源。
+| 产品 | 包名 |
+|------|------|
+| 飞剧场怀旧麻将（完整版） | `com.feijuchang.mahjong` |
+| 基础飞剧场（主要自动装按键包） | `com.feijuchang.mahjong.basic` |
 
-**开发 / 维护说明（知识库）：** [docs/知识库.md](docs/知识库.md)
+不内置 ROM；首次启动会自动安装按键包资源。按键包亦随本仓开源。
+
+**开发说明：** [docs/知识库.md](docs/知识库.md)  
+**开源与分发：** [docs/开源与合规.md](docs/开源与合规.md)（卖或送 APK 时，下载页请同时附上本仓库链接）
+
+源码：https://github.com/zffffff/MAME4droid-Mahjong
 
 ---
 

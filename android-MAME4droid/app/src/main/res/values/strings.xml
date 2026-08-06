@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App -->
-    <string name="app_name" translatable="false">飞剧场怀旧麻将</string>
+    <!-- app_name comes from productFlavors (full / basic) via resValue -->
+    <string name="source_code_url" translatable="false">https://github.com/zffffff/MAME4droid-Mahjong</string>
+    <string name="source_code_label">Source code (GitHub)</string>
     <string name="mame_version" translatable="false">0.288</string>
     <string name="label_settings">MAME4droid Settings</string>
     <string name="label_help">MAME4droid Help</string>

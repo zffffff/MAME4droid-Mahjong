@@ -1,0 +1,17 @@
+Mahjong key pack (assets/mahjong_pack)
+======================================
+
+Copyright (C) FeiJuchang / contributors of this fork.
+
+This key pack (artwork, Lua helpers, ini snippets, and related data) is
+free software: you can redistribute it and/or modify it under the terms of
+the GNU General Public License as published by the Free Software Foundation;
+either version 2 of the License, or (at your option) any later version.
+
+The full GPL text is in the repository root files LICENSE and COPYING, and
+in the app Help → Licenses page.
+
+Source / project home:
+  https://github.com/zffffff/MAME4droid-Mahjong
+
+This pack does not include game ROM files.

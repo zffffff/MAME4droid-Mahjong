@@ -175,7 +175,11 @@ public class MAME4droid extends Activity {
 		NetPlayHelper = new NetPlayHelper(this);
 		adpfHelper = new AdpfHelper(this);
 		mahjongHelper = new MahjongExperienceHelper(this);
-		mahjongHelper.seedDefaultsIfNeeded();
+		// Full edition: seed mahjong-friendly defaults + floating controls.
+		// Basic edition: only auto-install the key pack (+ orientation bridge for Lua).
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			mahjongHelper.seedDefaultsIfNeeded();
+		}
 
 		inputHandler = new InputHandler(this);
 
@@ -290,7 +294,7 @@ public class MAME4droid extends Activity {
 
 		inputHandler.setInputListeners();
 
-		if (mahjongHelper != null && frame instanceof FrameLayout) {
+		if (BuildConfig.FEIJUCHANG_FULL_UX && mahjongHelper != null && frame instanceof FrameLayout) {
 			mahjongHelper.attachControllerToggle((FrameLayout) frame);
 		}
 	}

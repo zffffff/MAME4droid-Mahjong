@@ -1,0 +1,23 @@
+NOTICE
+======
+
+This project is a fork of MAME4droid (Current) by David Valdeita (Seleuco),
+licensed under the GNU General Public License version 2 or later.
+
+Upstream: https://github.com/seleuco/MAME4droid-Current
+This fork: https://github.com/zffffff/MAME4droid-Mahjong
+
+Product editions built from this repository:
+  - 飞剧场怀旧麻将 (full) — applicationId com.feijuchang.mahjong
+  - 基础飞剧场 (basic) — applicationId com.feijuchang.mahjong.basic
+
+The mahjong key pack under
+  android-MAME4droid/app/src/main/assets/mahjong_pack/
+is included in this repository and distributed under the same GPL-2.0-or-later
+terms as this project (see that directory's LICENSE.txt).
+
+This software does NOT include game ROMs. Users must supply their own
+legally obtained ROM files.
+
+MAME is Copyright (C) 1997-2026 MAMEDev and contributors.
+See COPYING / LICENSE and in-app Help → Licenses for full texts.
