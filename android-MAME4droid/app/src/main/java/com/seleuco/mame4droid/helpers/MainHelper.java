@@ -790,6 +790,7 @@ galaxy sde	   --> 2560x1600 16:10
 			if (BuildConfig.FEIJUCHANG_FULL_UX) {
 				mm.getMahjongHelper().refreshToggleLabel();
 			}
+			mm.getMahjongHelper().refreshMjKbLabel();
 		}
 
 		//Log.d("isMouse"," value:"+mm.getPrefsHelper().isTouchMouse());

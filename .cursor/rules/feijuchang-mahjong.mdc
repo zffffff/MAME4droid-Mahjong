@@ -21,7 +21,8 @@ alwaysApply: true
 
 ## 体验
 
-- 完整版才启用种子默认、悬浮隐藏/菜单、`oscForceHidden`
+- 两版都有原生麻将键盘面板（`MahjongKeyboardPanel` → setKeyData）
+- 完整版才启用种子默认、悬浮隐藏手柄、`oscForceHidden`
 - 两版都跑 `AssetPackInstaller`；方向桥接可保留给 Lua
 - 横屏 layout：`raw` 与 `raw-large` 同步；按钮 ID `8=Coin` `9=Start`
 

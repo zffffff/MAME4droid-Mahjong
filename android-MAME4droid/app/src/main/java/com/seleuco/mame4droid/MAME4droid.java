@@ -294,8 +294,8 @@ public class MAME4droid extends Activity {
 
 		inputHandler.setInputListeners();
 
-		if (BuildConfig.FEIJUCHANG_FULL_UX && mahjongHelper != null && frame instanceof FrameLayout) {
-			mahjongHelper.attachControllerToggle((FrameLayout) frame);
+		if (mahjongHelper != null && frame instanceof FrameLayout) {
+			mahjongHelper.attachFloatingControls((FrameLayout) frame);
 		}
 	}
 

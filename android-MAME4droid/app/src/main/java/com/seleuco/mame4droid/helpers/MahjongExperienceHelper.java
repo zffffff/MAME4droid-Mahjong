@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.seleuco.mame4droid.BuildConfig;
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
@@ -25,8 +26,8 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Mahjong-edition UX helpers: defaults, orientation bridge, portrait-forced ROMs,
- * and floating controls to show/hide the on-screen pad and open the options menu.
+ * Mahjong-edition UX: defaults, orientation bridge, portrait-forced ROMs,
+ * floating chrome, and the native mahjong keyboard panel (both flavors).
  */
 public class MahjongExperienceHelper {
 
@@ -37,25 +38,29 @@ public class MahjongExperienceHelper {
 	private static final String ORIENT_FILE = ".device_orientation";
 	private static final int FLOAT_BAR_ID = 0x6D6A6261; // 'mjba'
 
-	/** Dual-screen portrait-only ROMs (extend as more are added). */
 	private static final String[] PORTRAIT_FORCED_ROMS = {
 			"jantouki",
 	};
 
 	private final MAME4droid mm;
+	private final MahjongKeyboardPanel keyboardPanel;
 	private String lastWrittenOrient = null;
 	private String lastForcedRom = null;
 	private TextView toggleBtn = null;
+	private TextView mjKbBtn = null;
 	private TextView menuBtn = null;
 	private LinearLayout floatBar = null;
-	/** User tapped "hide pad"; blocks prefs from forcing the OSC back on. */
 	private boolean oscForceHidden = false;
 
 	public MahjongExperienceHelper(MAME4droid mm) {
 		this.mm = mm;
+		this.keyboardPanel = new MahjongKeyboardPanel(mm);
 	}
 
-	/** Seed mahjong-friendly SharedPreferences (incremental). */
+	public MahjongKeyboardPanel getKeyboardPanel() {
+		return keyboardPanel;
+	}
+
 	public void seedDefaultsIfNeeded() {
 		SharedPreferences p = mm.getPrefsHelper().getSharedPreferences();
 		SharedPreferences.Editor e = null;
@@ -95,9 +100,10 @@ public class MahjongExperienceHelper {
 	}
 
 	/**
-	 * Floating bar: toggle pad + options menu (so Option stays reachable when pad is hidden).
+	 * Floating chrome + mahjong keyboard for both full and basic editions.
+	 * Full edition also gets the virtual-pad show/hide toggle.
 	 */
-	public void attachControllerToggle(FrameLayout emulatorFrame) {
+	public void attachFloatingControls(FrameLayout emulatorFrame) {
 		if (emulatorFrame == null) {
 			return;
 		}
@@ -124,19 +130,42 @@ public class MahjongExperienceHelper {
 		barLp.setMargins(margin, margin, margin, margin);
 		bar.setLayoutParams(barLp);
 
-		toggleBtn = makeFloatButton(padH, padV, density);
-		toggleBtn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
-		toggleBtn.setOnClickListener(v -> {
-			if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
-				return;
-			}
-			TouchController tc = mm.getInputHandler().getTouchController();
-			boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER && !oscForceHidden;
-			setOscForceHidden(showing);
-			mm.getMainHelper().updateMAME4droid();
-			refreshToggleLabel();
-			bringFloatBarFront();
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			toggleBtn = makeFloatButton(padH, padV, density);
+			toggleBtn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
+			toggleBtn.setOnClickListener(v -> {
+				if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
+					return;
+				}
+				TouchController tc = mm.getInputHandler().getTouchController();
+				boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER && !oscForceHidden;
+				setOscForceHidden(showing);
+				mm.getMainHelper().updateMAME4droid();
+				refreshToggleLabel();
+				bringChromeFront();
+			});
+			LinearLayout.LayoutParams padLp = new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			padLp.bottomMargin = gap;
+			toggleBtn.setLayoutParams(padLp);
+			bar.addView(toggleBtn);
+		} else {
+			toggleBtn = null;
+		}
+
+		mjKbBtn = makeFloatButton(padH, padV, density);
+		mjKbBtn.setOnClickListener(v -> {
+			keyboardPanel.toggleVisible();
+			refreshMjKbLabel();
+			bringChromeFront();
 		});
+		LinearLayout.LayoutParams kbLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		kbLp.bottomMargin = gap;
+		mjKbBtn.setLayoutParams(kbLp);
+		bar.addView(mjKbBtn);
 
 		menuBtn = makeFloatButton(padH, padV, density);
 		menuBtn.setText(mm.getString(R.string.mj_menu_button));
@@ -148,22 +177,23 @@ public class MahjongExperienceHelper {
 			Emulator.setInOptions(true);
 			mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 		});
-
-		LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		btnLp.bottomMargin = gap;
-		toggleBtn.setLayoutParams(btnLp);
 		menuBtn.setLayoutParams(new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT));
-
-		bar.addView(toggleBtn);
 		bar.addView(menuBtn);
+
 		emulatorFrame.addView(bar);
 		floatBar = bar;
-		bringFloatBarFront();
+
+		keyboardPanel.attach(emulatorFrame);
 		refreshToggleLabel();
+		refreshMjKbLabel();
+		bringChromeFront();
+	}
+
+	/** @deprecated use {@link #attachFloatingControls} */
+	public void attachControllerToggle(FrameLayout emulatorFrame) {
+		attachFloatingControls(emulatorFrame);
 	}
 
 	private TextView makeFloatButton(int padH, int padV, float density) {
@@ -172,7 +202,6 @@ public class MahjongExperienceHelper {
 		btn.setTypeface(Typeface.DEFAULT_BOLD);
 		btn.setTextColor(Color.WHITE);
 		btn.setPadding(padH, padV, padH, padV);
-		// 60% opacity + rounded corners
 		GradientDrawable bg = new GradientDrawable();
 		bg.setColor(0x99000000);
 		bg.setCornerRadius(10f * density);
@@ -183,7 +212,10 @@ public class MahjongExperienceHelper {
 		return btn;
 	}
 
-	private void bringFloatBarFront() {
+	private void bringChromeFront() {
+		if (keyboardPanel != null) {
+			keyboardPanel.bringToFront();
+		}
 		if (floatBar != null) {
 			floatBar.bringToFront();
 		}
@@ -200,7 +232,19 @@ public class MahjongExperienceHelper {
 		toggleBtn.setText(showing
 				? mm.getString(R.string.mj_hide_controller)
 				: mm.getString(R.string.mj_show_controller));
-		bringFloatBarFront();
+		bringChromeFront();
+	}
+
+	public void refreshMjKbLabel() {
+		if (mjKbBtn == null) {
+			return;
+		}
+		boolean showing = keyboardPanel != null && keyboardPanel.isVisible();
+		mjKbBtn.setText(showing
+				? mm.getString(R.string.mj_hide_keyboard)
+				: mm.getString(R.string.mj_show_keyboard));
+		mjKbBtn.setContentDescription(mjKbBtn.getText());
+		bringChromeFront();
 	}
 
 	public void syncOrientationBridge() {
