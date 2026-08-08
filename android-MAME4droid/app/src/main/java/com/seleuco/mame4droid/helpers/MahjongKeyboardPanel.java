@@ -21,8 +21,8 @@ import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 
 /**
- * 通用麻将软键盘：两页「打牌 / 更多」，游戏中可随时切换。
- * 打牌页：中文常用名（含选牌 A–N）；更多页：其余字母数字（不重复键码）。
+ * 通用麻将软键盘：两页「打牌 / 更多」，侧边标签切换，游戏中可随时切换。
+ * 打牌页：吃碰杠听和等中文键 + 选牌 A–N；更多页：其余字母数字，以及海底/大小等少用键。
  */
 public class MahjongKeyboardPanel {
 
@@ -87,13 +87,8 @@ public class MahjongKeyboardPanel {
 					key("J", KeyEvent.KEYCODE_J, 'J'),
 					key("K", KeyEvent.KEYCODE_K, 'K'),
 					key("L", KeyEvent.KEYCODE_L, 'L'),
-					key("比倍", KeyEvent.KEYCODE_M, 'M'),
-					key("得分", KeyEvent.KEYCODE_N, 'N'),
-			},
-			{
-					key("海底", KeyEvent.KEYCODE_O, 'O'),
-					key("大", KeyEvent.KEYCODE_R, 'R'),
-					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
+					key("M", KeyEvent.KEYCODE_M, 'M'),
+					key("N", KeyEvent.KEYCODE_N, 'N'),
 			},
 	};
 
@@ -123,19 +118,14 @@ public class MahjongKeyboardPanel {
 					key("J", KeyEvent.KEYCODE_J, 'J'),
 					key("K", KeyEvent.KEYCODE_K, 'K'),
 					key("L", KeyEvent.KEYCODE_L, 'L'),
-					key("比倍", KeyEvent.KEYCODE_M, 'M'),
-					key("得分", KeyEvent.KEYCODE_N, 'N'),
-			},
-			{
-					key("海底", KeyEvent.KEYCODE_O, 'O'),
-					key("大", KeyEvent.KEYCODE_R, 'R'),
-					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
+					key("M", KeyEvent.KEYCODE_M, 'M'),
+					key("N", KeyEvent.KEYCODE_N, 'N'),
 			},
 	};
 
 	/**
-	 * 更多页：补全未出现在打牌页的数字/字母。
-	 * 打牌已占：1 3 5、A–O、R、Y、Z；洗分先标 W，测后再调。
+	 * 更多页：其余数字/字母 + 通用键盘较少用的海底/大小。
+	 * 打牌已占：1 3 5、A–N、Y、Z；洗分先标 W。
 	 */
 	private static final KeySpec[][] MORE_PORTRAIT = {
 			{
@@ -148,14 +138,17 @@ public class MahjongKeyboardPanel {
 					key("9", KeyEvent.KEYCODE_9, '9'),
 			},
 			{
+					key("海底", KeyEvent.KEYCODE_O, 'O'),
+					key("大", KeyEvent.KEYCODE_R, 'R'),
+					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
 					key("P", KeyEvent.KEYCODE_P, 'P'),
 					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
 					key("S", KeyEvent.KEYCODE_S, 'S'),
+			},
+			{
 					key("T", KeyEvent.KEYCODE_T, 'T'),
 					key("U", KeyEvent.KEYCODE_U, 'U'),
 					key("V", KeyEvent.KEYCODE_V, 'V'),
-			},
-			{
 					key("W", KeyEvent.KEYCODE_W, 'W'),
 					key("X", KeyEvent.KEYCODE_X, 'X'),
 			},
@@ -170,6 +163,9 @@ public class MahjongKeyboardPanel {
 					key("7", KeyEvent.KEYCODE_7, '7'),
 					key("8", KeyEvent.KEYCODE_8, '8'),
 					key("9", KeyEvent.KEYCODE_9, '9'),
+					key("海底", KeyEvent.KEYCODE_O, 'O'),
+					key("大", KeyEvent.KEYCODE_R, 'R'),
+					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
 					key("P", KeyEvent.KEYCODE_P, 'P'),
 					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
 					key("S", KeyEvent.KEYCODE_S, 'S'),
@@ -226,7 +222,8 @@ public class MahjongKeyboardPanel {
 
 		LinearLayout root = new LinearLayout(mm);
 		root.setId(PANEL_ID);
-		root.setOrientation(LinearLayout.VERTICAL);
+		root.setOrientation(LinearLayout.HORIZONTAL);
+		root.setGravity(Gravity.CENTER_VERTICAL);
 		root.setPadding(pad, pad, pad, pad);
 		GradientDrawable bg = new GradientDrawable();
 		bg.setColor(0x99000000);
@@ -234,12 +231,17 @@ public class MahjongKeyboardPanel {
 		root.setBackground(bg);
 		root.setElevation(6 * density);
 
-		root.addView(buildTabBar(density, gap));
+		root.addView(buildSideTabs(density, gap));
 
+		LinearLayout pages = new LinearLayout(mm);
+		pages.setOrientation(LinearLayout.VERTICAL);
+		pages.setLayoutParams(new LinearLayout.LayoutParams(
+				0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 		playPage = buildKeyPage(landscape ? PLAY_LANDSCAPE : PLAY_PORTRAIT, keyH, keyMinW, density, gap);
 		morePage = buildKeyPage(landscape ? MORE_LANDSCAPE : MORE_PORTRAIT, keyH, keyMinW, density, gap);
-		root.addView(playPage);
-		root.addView(morePage);
+		pages.addView(playPage);
+		pages.addView(morePage);
+		root.addView(pages);
 		applyTab();
 
 		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
@@ -255,18 +257,19 @@ public class MahjongKeyboardPanel {
 		root.bringToFront();
 	}
 
-	private LinearLayout buildTabBar(float density, int gap) {
+	/** 左侧竖排标签，避免再占一整行高度。 */
+	private LinearLayout buildSideTabs(float density, int gap) {
 		LinearLayout tabs = new LinearLayout(mm);
-		tabs.setOrientation(LinearLayout.HORIZONTAL);
-		tabs.setGravity(Gravity.CENTER);
+		tabs.setOrientation(LinearLayout.VERTICAL);
+		tabs.setGravity(Gravity.CENTER_HORIZONTAL);
 		LinearLayout.LayoutParams tabsLp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		tabsLp.bottomMargin = gap;
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.MATCH_PARENT);
+		tabsLp.rightMargin = gap;
 		tabs.setLayoutParams(tabsLp);
 
-		tabPlay = makeTab("打牌", density);
-		tabMore = makeTab("更多", density);
+		tabPlay = makeTab("打\n牌", density);
+		tabMore = makeTab("更\n多", density);
 		tabPlay.setOnClickListener(v -> {
 			currentTab = TAB_PLAY;
 			applyTab();
@@ -277,8 +280,8 @@ public class MahjongKeyboardPanel {
 		});
 
 		LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(
-				0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-		tLp.setMargins(gap / 2, 0, gap / 2, 0);
+				ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1f);
+		tLp.setMargins(0, gap / 2, 0, gap / 2);
 		tabPlay.setLayoutParams(tLp);
 		tabMore.setLayoutParams(new LinearLayout.LayoutParams(tLp));
 
@@ -292,8 +295,9 @@ public class MahjongKeyboardPanel {
 		tab.setText(label);
 		tab.setGravity(Gravity.CENTER);
 		tab.setTypeface(Typeface.DEFAULT_BOLD);
-		tab.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-		tab.setPadding((int) (10 * density), (int) (6 * density), (int) (10 * density), (int) (6 * density));
+		tab.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+		tab.setPadding((int) (6 * density), (int) (8 * density), (int) (6 * density), (int) (8 * density));
+		tab.setMinWidth((int) (28 * density));
 		tab.setClickable(true);
 		tab.setFocusable(false);
 		return tab;
