@@ -138,6 +138,7 @@ public class MainHelper {
 	protected int oldState = -1;
 
     final public static int REQUEST_CODE_OPEN_DIRECTORY = 33;
+	final public static int REQUEST_CODE_OPEN_SNAP_DIRECTORY = 34;
 
     public int getDeviceDetected() {
         return deviceDetected;
@@ -792,8 +793,8 @@ galaxy sde	   --> 2560x1600 16:10
 			mm.getMahjongHelper().refreshMjKbLabel();
 		}
 
-		if (mm.getRomPathShortcutHelper() != null) {
-			mm.getRomPathShortcutHelper().refreshVisibility();
+		if (mm.getFolderShortcutsHelper() != null) {
+			mm.getFolderShortcutsHelper().refreshVisibility();
 		}
 
 		//Log.d("isMouse"," value:"+mm.getPrefsHelper().isTouchMouse());
@@ -877,13 +878,39 @@ galaxy sde	   --> 2560x1600 16:10
 
 			reloadAfterRomsPathChange();
         }
+
+		if (requestCode == REQUEST_CODE_OPEN_SNAP_DIRECTORY &&
+				resultCode == Activity.RESULT_OK && intent != null) {
+			final Uri uri = intent.getData();
+			if (uri == null) {
+				return;
+			}
+			final ContentResolver resolver = mm.getContentResolver();
+			final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+					| Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+			try {
+				resolver.takePersistableUriPermission(uri, takeFlags);
+			} catch (SecurityException e) {
+				Log.w("MainHelper", "Could not persist snap folder permission", e);
+			}
+			importSnapFolderFromSaf(uri);
+		}
     }
 
 	/** Opens the system folder picker used for external ROM storage (SAF). */
 	public void startRomsDirectoryPicker() {
+		startDocumentTreePicker(REQUEST_CODE_OPEN_DIRECTORY);
+	}
+
+	/** Opens the system folder picker to import snaps into the app snap/ directory. */
+	public void startSnapDirectoryPicker() {
+		startDocumentTreePicker(REQUEST_CODE_OPEN_SNAP_DIRECTORY);
+	}
+
+	private void startDocumentTreePicker(int requestCode) {
 		try {
 			Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-			mm.startActivityForResult(intent, REQUEST_CODE_OPEN_DIRECTORY);
+			mm.startActivityForResult(intent, requestCode);
 		} catch (ActivityNotFoundException e) {
 			String msg = mm.getString(R.string.dlg_no_doc_picker);
 			if (isAndroidTV()) {
@@ -906,6 +933,114 @@ galaxy sde	   --> 2560x1600 16:10
 		mm.getSAFHelper().setURI(null);
 		mm.getSAFHelper().deleteCacheFile();
 		reloadAfterRomsPathChange();
+	}
+
+	public String getSnapDirectoryPath() {
+		String dir = getInstallationDIR();
+		if (dir == null) {
+			dir = "";
+		}
+		if (!dir.isEmpty() && !dir.endsWith("/")) {
+			dir += "/";
+		}
+		return dir + "snap";
+	}
+
+	/**
+	 * Stock MAME4droid always keeps snaps under the install tree (no SAF remap).
+	 * Import the picked folder into that snap/ directory so previews still work.
+	 */
+	private void importSnapFolderFromSaf(final Uri treeUri) {
+		final String destPath = getSnapDirectoryPath();
+		Toast.makeText(mm, R.string.fj_snap_import_started, Toast.LENGTH_SHORT).show();
+		Thread t = new Thread(() -> {
+			WarnWidget progress = null;
+			try {
+				progress = new WarnWidget(
+						mm,
+						mm.getString(R.string.fj_snap_import_title),
+						mm.getString(R.string.fj_snap_import_wait),
+						Color.WHITE,
+						false,
+						true);
+				progress.init();
+
+				File destRoot = new File(destPath);
+				if (!destRoot.exists() && !destRoot.mkdirs()) {
+					throw new IOException("Cannot create " + destPath);
+				}
+
+				Uri dirUri = DocumentsContract.buildDocumentUriUsingTree(
+						treeUri, DocumentsContract.getTreeDocumentId(treeUri));
+				int copied = copySafTree(treeUri, dirUri, destRoot, progress);
+				final int count = copied;
+				mm.runOnUiThread(() -> Toast.makeText(mm,
+						mm.getString(R.string.fj_snap_import_done, count),
+						Toast.LENGTH_LONG).show());
+			} catch (Exception e) {
+				Log.e("MainHelper", "Snap import failed", e);
+				mm.runOnUiThread(() -> Toast.makeText(mm,
+						R.string.fj_snap_import_failed, Toast.LENGTH_LONG).show());
+			} finally {
+				if (progress != null) {
+					progress.end();
+				}
+				mm.runOnUiThread(this::reloadAfterRomsPathChange);
+			}
+		});
+		t.start();
+	}
+
+	private int copySafTree(Uri treeUri, Uri docUri, File destDir, WarnWidget progress)
+			throws IOException {
+		int count = 0;
+		final ContentResolver cr = mm.getContentResolver();
+		Uri children = DocumentsContract.buildChildDocumentsUriUsingTree(
+				treeUri, DocumentsContract.getDocumentId(docUri));
+		String[] projection = new String[]{
+				DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+				DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+				DocumentsContract.Document.COLUMN_MIME_TYPE
+		};
+		try (Cursor c = cr.query(children, projection, null, null, null)) {
+			if (c == null) {
+				return 0;
+			}
+			while (c.moveToNext()) {
+				String id = c.getString(0);
+				String name = c.getString(1);
+				String mime = c.getString(2);
+				if (name == null || name.isEmpty() || name.startsWith(".")) {
+					continue;
+				}
+				Uri child = DocumentsContract.buildDocumentUriUsingTree(treeUri, id);
+				if (DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) {
+					File sub = new File(destDir, name);
+					if (!sub.exists() && !sub.mkdirs()) {
+						throw new IOException("Cannot create " + sub.getAbsolutePath());
+					}
+					count += copySafTree(treeUri, child, sub, progress);
+				} else {
+					File out = new File(destDir, name);
+					try (InputStream in = cr.openInputStream(child);
+						 OutputStream os = new FileOutputStream(out)) {
+						if (in == null) {
+							continue;
+						}
+						byte[] buf = new byte[BUFFER_SIZE];
+						int n;
+						while ((n = in.read(buf)) >= 0) {
+							os.write(buf, 0, n);
+						}
+					}
+					count++;
+					if (progress != null && count % 25 == 0) {
+						progress.notifyText(mm.getString(R.string.fj_snap_import_progress, count));
+					}
+				}
+			}
+		}
+		return count;
 	}
 
 	private void reloadAfterRomsPathChange() {

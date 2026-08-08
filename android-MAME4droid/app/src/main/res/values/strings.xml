@@ -541,10 +541,25 @@
     <string name="pref_frame_pacing_summary">Match the display to the game\'s refresh on 90/120 Hz screens and use ADPF CPU/thermal hints for smoother, cooler performance. Turn off if a device misbehaves.</string>
 
     <string name="fj_rom_path_button">ROM folder</string>
+    <string name="fj_rom_path_button_short">📁</string>
     <string name="fj_rom_path_dialog_title">Set ROM folder</string>
     <string name="fj_rom_path_dialog_message">Choose the folder where your game ROM files are stored. After you confirm, the app will reload.\n\nTip: pick the folder that contains the .zip ROM files (not a single file).</string>
     <string name="fj_rom_path_pick_folder">Choose folder</string>
     <string name="fj_rom_path_use_default">Use app default</string>
+
+    <string name="fj_snap_path_button">Snap folder</string>
+    <string name="fj_snap_path_button_short">🖼</string>
+    <string name="fj_snap_path_dialog_title">Snap / preview images</string>
+    <string name="fj_snap_path_dialog_message">MAME4droid has no separate “change snap path” setting. Previews always use the app snap folder:\n\n%1$s\n\nYou can copy that path and place files with a file manager, or import an external folder into it (large packs may take a while).</string>
+    <string name="fj_snap_path_import">Import folder</string>
+    <string name="fj_snap_path_copy">Copy path</string>
+    <string name="fj_snap_path_copied">Snap path copied</string>
+    <string name="fj_snap_import_started">Importing snaps…</string>
+    <string name="fj_snap_import_title">Importing snaps</string>
+    <string name="fj_snap_import_wait">Copying into the app snap folder…</string>
+    <string name="fj_snap_import_progress">Copied %1$d files…</string>
+    <string name="fj_snap_import_done">Imported %1$d files into snap</string>
+    <string name="fj_snap_import_failed">Snap import failed</string>
 
     <string name="fj_zsxq_wechat_or_file_helper">Link copied. If WeChat did not open the page, paste it to WeChat File Transfer and open it there.</string>
     <string name="fj_zsxq_copy_hint">Link copied. Send it to WeChat File Transfer, then open it in WeChat for the Knowledge Planet coupon.</string>

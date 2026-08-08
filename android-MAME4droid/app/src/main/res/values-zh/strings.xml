@@ -520,10 +520,25 @@
     <string name="pref_frame_pacing_summary">在 90/120Hz 屏幕上让显示刷新率匹配游戏速度，并使用 ADPF 的 CPU/温度提示以获得更流畅、更低发热的性能。如设备异常请关闭。</string>
 
     <string name="fj_rom_path_button">选择游戏文件夹</string>
+    <string name="fj_rom_path_button_short">📁</string>
     <string name="fj_rom_path_dialog_title">设置 ROM 路径</string>
     <string name="fj_rom_path_dialog_message">请选择存放游戏 ROM 的文件夹。确认后应用会重新加载。\n\n提示：请选择装有 .zip 游戏文件的文件夹（不是单个文件）。</string>
     <string name="fj_rom_path_pick_folder">选择文件夹</string>
     <string name="fj_rom_path_use_default">使用应用默认位置</string>
+
+    <string name="fj_snap_path_button">设置 snap 文件夹</string>
+    <string name="fj_snap_path_button_short">🖼</string>
+    <string name="fj_snap_path_dialog_title">Snap / 预览图</string>
+    <string name="fj_snap_path_dialog_message">官方没有单独的「更改 snap 路径」。列表预览图始终使用应用内的 snap 文件夹：\n\n%1$s\n\n可复制路径后用文件管理器自行放入，或把外部文件夹导入到此处（图包很大时可能较慢）。</string>
+    <string name="fj_snap_path_import">导入文件夹</string>
+    <string name="fj_snap_path_copy">复制路径</string>
+    <string name="fj_snap_path_copied">已复制 snap 路径</string>
+    <string name="fj_snap_import_started">正在导入 snap…</string>
+    <string name="fj_snap_import_title">正在导入 snap</string>
+    <string name="fj_snap_import_wait">正在复制到应用 snap 文件夹…</string>
+    <string name="fj_snap_import_progress">已复制 %1$d 个文件…</string>
+    <string name="fj_snap_import_done">已导入 %1$d 个文件到 snap</string>
+    <string name="fj_snap_import_failed">snap 导入失败</string>
 
     <string name="fj_zsxq_wechat_or_file_helper">链接已复制。若未直接在微信中打开，请粘贴发送给微信「文件传输助手」后再点开。</string>
     <string name="fj_zsxq_copy_hint">链接已复制。请发送给微信「文件传输助手」，再在微信中打开以使用知识星球优惠券。</string>

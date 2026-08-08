@@ -67,7 +67,7 @@ import com.seleuco.mame4droid.helpers.AssetPackInstaller;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.LocaleHelper;
 import com.seleuco.mame4droid.helpers.MahjongExperienceHelper;
-import com.seleuco.mame4droid.helpers.RomPathShortcutHelper;
+import com.seleuco.mame4droid.helpers.FrontendFolderShortcutsHelper;
 import com.seleuco.mame4droid.helpers.MainHelper;
 import com.seleuco.mame4droid.helpers.NetPlayHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
@@ -95,7 +95,7 @@ public class MAME4droid extends Activity {
 	protected NetPlayHelper NetPlayHelper = null;
 	protected AdpfHelper adpfHelper = null;
 	protected MahjongExperienceHelper mahjongHelper = null;
-	protected RomPathShortcutHelper romPathShortcutHelper = null;
+	protected FrontendFolderShortcutsHelper folderShortcutsHelper = null;
 
 	protected InputHandler inputHandler = null;
 
@@ -131,8 +131,8 @@ public class MAME4droid extends Activity {
 		return mahjongHelper;
 	}
 
-	public RomPathShortcutHelper getRomPathShortcutHelper() {
-		return romPathShortcutHelper;
+	public FrontendFolderShortcutsHelper getFolderShortcutsHelper() {
+		return folderShortcutsHelper;
 	}
 
 	public View getEmuView() {
@@ -181,7 +181,7 @@ public class MAME4droid extends Activity {
 		NetPlayHelper = new NetPlayHelper(this);
 		adpfHelper = new AdpfHelper(this);
 		mahjongHelper = new MahjongExperienceHelper(this);
-		romPathShortcutHelper = new RomPathShortcutHelper(this);
+		folderShortcutsHelper = new FrontendFolderShortcutsHelper(this);
 		// Full edition: mahjong UX. Basic edition: key pack only (AssetPackInstaller).
 		mahjongHelper.seedDefaultsIfNeeded();
 
@@ -303,8 +303,8 @@ public class MAME4droid extends Activity {
 			if (mahjongHelper != null) {
 				mahjongHelper.attachFloatingControls(flFrame);
 			}
-			if (romPathShortcutHelper != null) {
-				romPathShortcutHelper.attach(flFrame);
+			if (folderShortcutsHelper != null) {
+				folderShortcutsHelper.attach(flFrame);
 			}
 		}
 	}
