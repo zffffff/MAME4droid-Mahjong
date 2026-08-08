@@ -1,6 +1,6 @@
 package com.seleuco.mame4droid.helpers;
 
-import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +19,27 @@ import android.widget.TextView;
 
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
-import com.seleuco.mame4droid.R;
-
-import android.view.KeyEvent;
 
 /**
- * On-screen mahjong "keyboard" that injects the same Android key codes MAME
- * expects for its default mahjong PC-keyboard mapping (see MAME defaultkeys /
- * inpttype.ipp). Analogous to the virtual gamepad, but for mahjong keys.
+ * 通用麻将软键盘：两页「打牌 / 更多」，游戏中可随时切换。
+ * 打牌页：中文常用名（含选牌 A–N）；更多页：其余字母数字（不重复键码）。
  */
 public class MahjongKeyboardPanel {
 
-	private static final String PREF_VISIBLE = "mahjong_kb_panel_visible";
-	private static final int PANEL_ID = 0x6D6A6B62; // 'mjkb'
-	private static final int MIN_HOLD_MS = 45;
+	private static final int PANEL_ID = View.generateViewId();
+	private static final long MIN_HOLD_MS = 40L;
+	private static final int TAB_PLAY = 0;
+	private static final int TAB_MORE = 1;
+
+	private final MAME4droid mm;
+	private final Handler handler = new Handler(Looper.getMainLooper());
+	private View panelRoot;
+	private LinearLayout playPage;
+	private LinearLayout morePage;
+	private TextView tabPlay;
+	private TextView tabMore;
+	private boolean visible = false;
+	private int currentTab = TAB_PLAY;
 
 	private static final class KeySpec {
 		final String label;
@@ -45,76 +53,158 @@ public class MahjongKeyboardPanel {
 		}
 	}
 
-	/** Defaults match MAME Player1 mahjong keyboard bindings. */
-	private static final KeySpec[][] ROWS = {
+	private static KeySpec key(String label, int keyCode, char unicode) {
+		return new KeySpec(label, keyCode, unicode);
+	}
+
+	/** 打牌页 · 竖屏 */
+	private static final KeySpec[][] PLAY_PORTRAIT = {
 			{
-					new KeySpec("吃", KeyEvent.KEYCODE_SPACE, ' '),
-					new KeySpec("碰", KeyEvent.KEYCODE_ALT_LEFT, '\0'),
-					new KeySpec("杠", KeyEvent.KEYCODE_CTRL_LEFT, '\0'),
-					new KeySpec("听", KeyEvent.KEYCODE_SHIFT_LEFT, '\0'),
-					new KeySpec("和", KeyEvent.KEYCODE_Z, 'z'),
-					new KeySpec("开始", KeyEvent.KEYCODE_1, '1'),
-					new KeySpec("投币", KeyEvent.KEYCODE_5, '5'),
-					new KeySpec("押注", KeyEvent.KEYCODE_3, '3'),
-					new KeySpec("翻转", KeyEvent.KEYCODE_Y, 'y'),
+					key("吃", KeyEvent.KEYCODE_SPACE, ' '),
+					key("碰", KeyEvent.KEYCODE_ALT_LEFT, (char) 0),
+					key("杠", KeyEvent.KEYCODE_CTRL_LEFT, (char) 0),
+					key("听", KeyEvent.KEYCODE_SHIFT_LEFT, (char) 0),
+					key("和", KeyEvent.KEYCODE_Z, 'Z'),
 			},
 			{
-					new KeySpec("A", KeyEvent.KEYCODE_A, 'a'),
-					new KeySpec("B", KeyEvent.KEYCODE_B, 'b'),
-					new KeySpec("C", KeyEvent.KEYCODE_C, 'c'),
-					new KeySpec("D", KeyEvent.KEYCODE_D, 'd'),
-					new KeySpec("E", KeyEvent.KEYCODE_E, 'e'),
-					new KeySpec("F", KeyEvent.KEYCODE_F, 'f'),
-					new KeySpec("G", KeyEvent.KEYCODE_G, 'g'),
+					key("开始", KeyEvent.KEYCODE_1, '1'),
+					key("投币", KeyEvent.KEYCODE_5, '5'),
+					key("押注", KeyEvent.KEYCODE_3, '3'),
+					key("翻转", KeyEvent.KEYCODE_Y, 'Y'),
 			},
 			{
-					new KeySpec("H", KeyEvent.KEYCODE_H, 'h'),
-					new KeySpec("I", KeyEvent.KEYCODE_I, 'i'),
-					new KeySpec("J", KeyEvent.KEYCODE_J, 'j'),
-					new KeySpec("K", KeyEvent.KEYCODE_K, 'k'),
-					new KeySpec("L", KeyEvent.KEYCODE_L, 'l'),
-					new KeySpec("M", KeyEvent.KEYCODE_M, 'm'),
-					new KeySpec("N", KeyEvent.KEYCODE_N, 'n'),
+					key("A", KeyEvent.KEYCODE_A, 'A'),
+					key("B", KeyEvent.KEYCODE_B, 'B'),
+					key("C", KeyEvent.KEYCODE_C, 'C'),
+					key("D", KeyEvent.KEYCODE_D, 'D'),
+					key("E", KeyEvent.KEYCODE_E, 'E'),
+					key("F", KeyEvent.KEYCODE_F, 'F'),
+					key("G", KeyEvent.KEYCODE_G, 'G'),
 			},
 			{
-					new KeySpec("O", KeyEvent.KEYCODE_O, 'o'),
-					new KeySpec("P", KeyEvent.KEYCODE_SEMICOLON, ';'),
-					new KeySpec("Q", KeyEvent.KEYCODE_Q, 'q'),
-					new KeySpec("得分", KeyEvent.KEYCODE_CTRL_RIGHT, '\0'),
-					new KeySpec("比倍", KeyEvent.KEYCODE_SHIFT_RIGHT, '\0'),
-					new KeySpec("大", KeyEvent.KEYCODE_ENTER, '\n'),
-					new KeySpec("小", KeyEvent.KEYCODE_DEL, '\0'),
-					new KeySpec("海底", KeyEvent.KEYCODE_ALT_RIGHT, '\0'),
+					key("H", KeyEvent.KEYCODE_H, 'H'),
+					key("I", KeyEvent.KEYCODE_I, 'I'),
+					key("J", KeyEvent.KEYCODE_J, 'J'),
+					key("K", KeyEvent.KEYCODE_K, 'K'),
+					key("L", KeyEvent.KEYCODE_L, 'L'),
+					key("比倍", KeyEvent.KEYCODE_M, 'M'),
+					key("得分", KeyEvent.KEYCODE_N, 'N'),
+			},
+			{
+					key("海底", KeyEvent.KEYCODE_O, 'O'),
+					key("大", KeyEvent.KEYCODE_R, 'R'),
+					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
 			},
 	};
 
-	private final MAME4droid mm;
-	private final Handler handler = new Handler(Looper.getMainLooper());
-	private View panelRoot = null;
-	private boolean visible;
+	/** 打牌页 · 横屏（更扁、每行更满） */
+	private static final KeySpec[][] PLAY_LANDSCAPE = {
+			{
+					key("吃", KeyEvent.KEYCODE_SPACE, ' '),
+					key("碰", KeyEvent.KEYCODE_ALT_LEFT, (char) 0),
+					key("杠", KeyEvent.KEYCODE_CTRL_LEFT, (char) 0),
+					key("听", KeyEvent.KEYCODE_SHIFT_LEFT, (char) 0),
+					key("和", KeyEvent.KEYCODE_Z, 'Z'),
+					key("开始", KeyEvent.KEYCODE_1, '1'),
+					key("投币", KeyEvent.KEYCODE_5, '5'),
+					key("押注", KeyEvent.KEYCODE_3, '3'),
+					key("翻转", KeyEvent.KEYCODE_Y, 'Y'),
+			},
+			{
+					key("A", KeyEvent.KEYCODE_A, 'A'),
+					key("B", KeyEvent.KEYCODE_B, 'B'),
+					key("C", KeyEvent.KEYCODE_C, 'C'),
+					key("D", KeyEvent.KEYCODE_D, 'D'),
+					key("E", KeyEvent.KEYCODE_E, 'E'),
+					key("F", KeyEvent.KEYCODE_F, 'F'),
+					key("G", KeyEvent.KEYCODE_G, 'G'),
+					key("H", KeyEvent.KEYCODE_H, 'H'),
+					key("I", KeyEvent.KEYCODE_I, 'I'),
+					key("J", KeyEvent.KEYCODE_J, 'J'),
+					key("K", KeyEvent.KEYCODE_K, 'K'),
+					key("L", KeyEvent.KEYCODE_L, 'L'),
+					key("比倍", KeyEvent.KEYCODE_M, 'M'),
+					key("得分", KeyEvent.KEYCODE_N, 'N'),
+			},
+			{
+					key("海底", KeyEvent.KEYCODE_O, 'O'),
+					key("大", KeyEvent.KEYCODE_R, 'R'),
+					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
+			},
+	};
+
+	/**
+	 * 更多页：补全未出现在打牌页的数字/字母。
+	 * 打牌已占：1 3 5、A–O、R、Y、Z；洗分先标 W，测后再调。
+	 */
+	private static final KeySpec[][] MORE_PORTRAIT = {
+			{
+					key("0", KeyEvent.KEYCODE_0, '0'),
+					key("2", KeyEvent.KEYCODE_2, '2'),
+					key("4", KeyEvent.KEYCODE_4, '4'),
+					key("6", KeyEvent.KEYCODE_6, '6'),
+					key("7", KeyEvent.KEYCODE_7, '7'),
+					key("8", KeyEvent.KEYCODE_8, '8'),
+					key("9", KeyEvent.KEYCODE_9, '9'),
+			},
+			{
+					key("P", KeyEvent.KEYCODE_P, 'P'),
+					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
+					key("S", KeyEvent.KEYCODE_S, 'S'),
+					key("T", KeyEvent.KEYCODE_T, 'T'),
+					key("U", KeyEvent.KEYCODE_U, 'U'),
+					key("V", KeyEvent.KEYCODE_V, 'V'),
+			},
+			{
+					key("W", KeyEvent.KEYCODE_W, 'W'),
+					key("X", KeyEvent.KEYCODE_X, 'X'),
+			},
+	};
+
+	private static final KeySpec[][] MORE_LANDSCAPE = {
+			{
+					key("0", KeyEvent.KEYCODE_0, '0'),
+					key("2", KeyEvent.KEYCODE_2, '2'),
+					key("4", KeyEvent.KEYCODE_4, '4'),
+					key("6", KeyEvent.KEYCODE_6, '6'),
+					key("7", KeyEvent.KEYCODE_7, '7'),
+					key("8", KeyEvent.KEYCODE_8, '8'),
+					key("9", KeyEvent.KEYCODE_9, '9'),
+					key("P", KeyEvent.KEYCODE_P, 'P'),
+					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
+					key("S", KeyEvent.KEYCODE_S, 'S'),
+					key("T", KeyEvent.KEYCODE_T, 'T'),
+					key("U", KeyEvent.KEYCODE_U, 'U'),
+					key("V", KeyEvent.KEYCODE_V, 'V'),
+					key("W", KeyEvent.KEYCODE_W, 'W'),
+					key("X", KeyEvent.KEYCODE_X, 'X'),
+			},
+	};
 
 	public MahjongKeyboardPanel(MAME4droid mm) {
 		this.mm = mm;
-		this.visible = mm.getPrefsHelper().getSharedPreferences()
-				.getBoolean(PREF_VISIBLE, true);
+	}
+
+	public void setVisible(boolean show) {
+		visible = show;
+		if (panelRoot != null) {
+			panelRoot.setVisibility(show ? View.VISIBLE : View.GONE);
+			if (show) {
+				panelRoot.bringToFront();
+			}
+		}
 	}
 
 	public boolean isVisible() {
 		return visible;
 	}
 
-	public void setVisible(boolean show) {
-		visible = show;
-		SharedPreferences.Editor e = mm.getPrefsHelper().getSharedPreferences().edit();
-		e.putBoolean(PREF_VISIBLE, show);
-		e.apply();
-		if (panelRoot != null) {
-			panelRoot.setVisibility(show ? View.VISIBLE : View.GONE);
-		}
+	public void toggle() {
+		setVisible(!visible);
 	}
 
 	public void toggleVisible() {
-		setVisible(!visible);
+		toggle();
 	}
 
 	public void attach(FrameLayout emulatorFrame) {
@@ -131,52 +221,142 @@ public class MahjongKeyboardPanel {
 		int keyH = (int) (36 * density);
 		int keyMinW = (int) (40 * density);
 		int gap = (int) (3 * density);
+		boolean landscape = mm.getResources().getConfiguration().orientation
+				== Configuration.ORIENTATION_LANDSCAPE;
 
-		LinearLayout column = new LinearLayout(mm);
-		column.setOrientation(LinearLayout.VERTICAL);
-		column.setPadding(pad, pad, pad, pad);
+		LinearLayout root = new LinearLayout(mm);
+		root.setId(PANEL_ID);
+		root.setOrientation(LinearLayout.VERTICAL);
+		root.setPadding(pad, pad, pad, pad);
 		GradientDrawable bg = new GradientDrawable();
 		bg.setColor(0x99000000);
 		bg.setCornerRadius(10f * density);
-		column.setBackground(bg);
-		column.setElevation(6 * density);
+		root.setBackground(bg);
+		root.setElevation(6 * density);
 
-		for (KeySpec[] row : ROWS) {
-			LinearLayout rowLayout = new LinearLayout(mm);
-			rowLayout.setOrientation(LinearLayout.HORIZONTAL);
-			rowLayout.setGravity(Gravity.CENTER);
-			LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
-					ViewGroup.LayoutParams.WRAP_CONTENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT);
-			rowLp.bottomMargin = gap;
-			rowLayout.setLayoutParams(rowLp);
+		root.addView(buildTabBar(density, gap));
 
-			for (KeySpec spec : row) {
-				TextView key = makeKeyView(spec, keyH, keyMinW, density, gap);
-				rowLayout.addView(key);
-			}
-			column.addView(rowLayout);
-		}
-
-		HorizontalScrollView scroll = new HorizontalScrollView(mm);
-		scroll.setId(PANEL_ID);
-		scroll.setHorizontalScrollBarEnabled(false);
-		scroll.setFillViewport(true);
-		scroll.addView(column, new ViewGroup.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT));
+		playPage = buildKeyPage(landscape ? PLAY_LANDSCAPE : PLAY_PORTRAIT, keyH, keyMinW, density, gap);
+		morePage = buildKeyPage(landscape ? MORE_LANDSCAPE : MORE_PORTRAIT, keyH, keyMinW, density, gap);
+		root.addView(playPage);
+		root.addView(morePage);
+		applyTab();
 
 		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
 		lp.setMargins((int) (6 * density), 0, (int) (6 * density), (int) (6 * density));
-		scroll.setLayoutParams(lp);
-		scroll.setVisibility(visible ? View.VISIBLE : View.GONE);
+		root.setLayoutParams(lp);
+		root.setVisibility(visible ? View.VISIBLE : View.GONE);
 
-		emulatorFrame.addView(scroll);
-		panelRoot = scroll;
-		scroll.bringToFront();
+		emulatorFrame.addView(root);
+		panelRoot = root;
+		root.bringToFront();
+	}
+
+	private LinearLayout buildTabBar(float density, int gap) {
+		LinearLayout tabs = new LinearLayout(mm);
+		tabs.setOrientation(LinearLayout.HORIZONTAL);
+		tabs.setGravity(Gravity.CENTER);
+		LinearLayout.LayoutParams tabsLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		tabsLp.bottomMargin = gap;
+		tabs.setLayoutParams(tabsLp);
+
+		tabPlay = makeTab("打牌", density);
+		tabMore = makeTab("更多", density);
+		tabPlay.setOnClickListener(v -> {
+			currentTab = TAB_PLAY;
+			applyTab();
+		});
+		tabMore.setOnClickListener(v -> {
+			currentTab = TAB_MORE;
+			applyTab();
+		});
+
+		LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(
+				0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+		tLp.setMargins(gap / 2, 0, gap / 2, 0);
+		tabPlay.setLayoutParams(tLp);
+		tabMore.setLayoutParams(new LinearLayout.LayoutParams(tLp));
+
+		tabs.addView(tabPlay);
+		tabs.addView(tabMore);
+		return tabs;
+	}
+
+	private TextView makeTab(String label, float density) {
+		TextView tab = new TextView(mm);
+		tab.setText(label);
+		tab.setGravity(Gravity.CENTER);
+		tab.setTypeface(Typeface.DEFAULT_BOLD);
+		tab.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+		tab.setPadding((int) (10 * density), (int) (6 * density), (int) (10 * density), (int) (6 * density));
+		tab.setClickable(true);
+		tab.setFocusable(false);
+		return tab;
+	}
+
+	private void applyTab() {
+		if (playPage != null) {
+			playPage.setVisibility(currentTab == TAB_PLAY ? View.VISIBLE : View.GONE);
+		}
+		if (morePage != null) {
+			morePage.setVisibility(currentTab == TAB_MORE ? View.VISIBLE : View.GONE);
+		}
+		styleTab(tabPlay, currentTab == TAB_PLAY);
+		styleTab(tabMore, currentTab == TAB_MORE);
+	}
+
+	private void styleTab(TextView tab, boolean selected) {
+		if (tab == null) {
+			return;
+		}
+		float density = mm.getResources().getDisplayMetrics().density;
+		GradientDrawable bg = new GradientDrawable();
+		bg.setCornerRadius(8f * density);
+		if (selected) {
+			bg.setColor(0xCC555555);
+			tab.setTextColor(Color.WHITE);
+		} else {
+			bg.setColor(0x66222222);
+			tab.setTextColor(0xFFCCCCCC);
+		}
+		tab.setBackground(bg);
+	}
+
+	private LinearLayout buildKeyPage(KeySpec[][] rows, int keyH, int keyMinW, float density, int gap) {
+		LinearLayout column = new LinearLayout(mm);
+		column.setOrientation(LinearLayout.VERTICAL);
+		column.setLayoutParams(new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT));
+
+		for (KeySpec[] row : rows) {
+			HorizontalScrollView scroll = new HorizontalScrollView(mm);
+			scroll.setHorizontalScrollBarEnabled(false);
+			scroll.setFillViewport(true);
+
+			LinearLayout rowLayout = new LinearLayout(mm);
+			rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+			rowLayout.setGravity(Gravity.CENTER);
+			for (KeySpec spec : row) {
+				rowLayout.addView(makeKeyView(spec, keyH, keyMinW, density, gap));
+			}
+			scroll.addView(rowLayout, new ViewGroup.LayoutParams(
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT));
+
+			LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			rowLp.bottomMargin = gap;
+			scroll.setLayoutParams(rowLp);
+			column.addView(scroll);
+		}
+		return column;
 	}
 
 	private TextView makeKeyView(KeySpec spec, int keyH, int keyMinW, float density, int gap) {
