@@ -64,10 +64,11 @@ public class RomPathShortcutHelper {
 		btn.setFocusable(false);
 		btn.setOnClickListener(v -> showChooser());
 
+		// Top-center: landscape OSC puts Exit at top-left and Option at top-right.
 		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.START);
+				Gravity.TOP | Gravity.CENTER_HORIZONTAL);
 		lp.setMargins(margin, margin, margin, margin);
 		btn.setLayoutParams(lp);
 
