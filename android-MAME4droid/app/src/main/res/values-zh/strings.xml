@@ -518,4 +518,8 @@
     <string name="shaders_load_error">无法加载特效着色器：缺少 shaders.cfg 文件。请重新安装应用，或确认安装文件夹不是只读的。</string>
     <string name="pref_frame_pacing_title">帧率同步与性能提示</string>
     <string name="pref_frame_pacing_summary">在 90/120Hz 屏幕上让显示刷新率匹配游戏速度，并使用 ADPF 的 CPU/温度提示以获得更流畅、更低发热的性能。如设备异常请关闭。</string>
+
+    <string name="fj_open_zsxq_wechat">正在用微信打开…</string>
+    <string name="fj_zsxq_copy_hint">链接已复制。请在微信中打开，以使用知识星球优惠券。</string>
+    <string name="fj_zsxq_no_browser">无法打开链接。请粘贴到微信中打开。</string>
 </resources>

@@ -7,10 +7,10 @@ alwaysApply: true
 
 详见 `docs/知识库.md`、`docs/开源与合规.md`。
 
-## 身份（两套 APK）
+## 身份（两套 APK，同一 Git 分支 + flavors）
 
-- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `BuildConfig.FEIJUCHANG_FULL_UX=true`
-- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · 主要只装按键包
+- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true`
+- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **相对官方仅多 artwork 按键包**
 - Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；GPL + `NOTICE`
 - 不内置 ROM；按键包在 `assets/mahjong_pack/`（已开源，见该目录 LICENSE.txt）
 
@@ -19,14 +19,18 @@ alwaysApply: true
 - 本仓：`D:\Dev\MAME4droid-Mahjong`
 - 按键包开发源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（对外以本仓 mahjong_pack 为准）
 
-## 体验
+## 体验门控
 
-- 两版都有原生麻将键盘面板（`MahjongKeyboardPanel` → setKeyData）
-- 完整版才启用种子默认、悬浮隐藏手柄、`oscForceHidden`
-- 两版都跑 `AssetPackInstaller`；方向桥接可保留给 Lua
-- 横屏 layout：`raw` 与 `raw-large` 同步；按钮 ID `8=Coin` `9=Start`
+- 两版都跑 `AssetPackInstaller`
+- **仅 full**：种子默认、方向桥接、强制竖屏、悬浮栏、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）
+- 四角横屏 OSC 只在 `app/src/full/res/raw*`；`main` 保持上游布局，避免污染 basic
+- 按钮 ID `8=Coin` `9=Start`
+
+## 导流
+
+- 帮助「飞剧场」：官网 `roxyweal.work` 应用内打开；星球 `https://t.zsxq.com/35B0X` 优先微信
 
 ## CI / 分发
 
-- 手动 Run **Build APK** → 产出 full + basic
+- 手动 Run **Build APK**，选 flavor；**只打 release**
 - 凡放 APK 下载链接处，同时附 GitHub：https://github.com/zffffff/MAME4droid-Mahjong

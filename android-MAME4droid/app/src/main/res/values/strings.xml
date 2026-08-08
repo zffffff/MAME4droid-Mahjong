@@ -539,4 +539,8 @@
     <string name="shaders_load_error">Could not load the graphic effect shaders: shaders.cfg is missing. Please reinstall the app, or make sure the installation folder is not read-only.</string>
     <string name="pref_frame_pacing_title">Frame pacing &amp; performance hints</string>
     <string name="pref_frame_pacing_summary">Match the display to the game\'s refresh on 90/120 Hz screens and use ADPF CPU/thermal hints for smoother, cooler performance. Turn off if a device misbehaves.</string>
+
+    <string name="fj_open_zsxq_wechat">Opening in WeChat…</string>
+    <string name="fj_zsxq_copy_hint">Link copied. Please open it in WeChat for the Knowledge Planet coupon.</string>
+    <string name="fj_zsxq_no_browser">No app can open this link. Please paste it in WeChat.</string>
 </resources>

@@ -3,13 +3,23 @@ name: Build APK
 # Manual only — push/PR no longer builds APKs (saves Actions minutes).
 on:
   workflow_dispatch:
+    inputs:
+      flavor:
+        description: "Which release APK to build"
+        required: true
+        default: basic
+        type: choice
+        options:
+          - basic
+          - full
+          - both
 
 env:
   MAME4DROID_UPSTREAM_VERSION: "1.37.6"
 
 jobs:
   build:
-    name: Assemble full + basic
+    name: Assemble release
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -44,40 +54,35 @@ jobs:
         working-directory: android-MAME4droid
         run: bash scripts/fetch-mame-lib.sh
 
-      - name: Build full and basic APKs
+      - name: Build release APK(s)
         working-directory: android-MAME4droid
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
+          FLAVOR: ${{ github.event.inputs.flavor }}
         run: |
+          TASKS=""
+          case "$FLAVOR" in
+            basic) TASKS="assembleBasicRelease" ;;
+            full)  TASKS="assembleFullRelease" ;;
+            both)  TASKS="assembleBasicRelease assembleFullRelease" ;;
+            *) echo "Unknown flavor: $FLAVOR"; exit 1 ;;
+          esac
           gradle --no-daemon --no-configuration-cache \
             -Pandroid.builder.sdkDownload=true \
-            assembleFullDebug assembleFullRelease \
-            assembleBasicDebug assembleBasicRelease
-
-      - name: Upload full debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FeiJuchang-full-debug
-          path: android-MAME4droid/app/build/outputs/apk/full/debug/*.apk
-          if-no-files-found: error
-
-      - name: Upload full release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FeiJuchang-full-release
-          path: android-MAME4droid/app/build/outputs/apk/full/release/*.apk
-          if-no-files-found: error
-
-      - name: Upload basic debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FeiJuchang-basic-debug
-          path: android-MAME4droid/app/build/outputs/apk/basic/debug/*.apk
-          if-no-files-found: error
+            $TASKS
 
       - name: Upload basic release APK
+        if: ${{ github.event.inputs.flavor == 'basic' || github.event.inputs.flavor == 'both' }}
         uses: actions/upload-artifact@v4
         with:
           name: FeiJuchang-basic-release
           path: android-MAME4droid/app/build/outputs/apk/basic/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload full release APK
+        if: ${{ github.event.inputs.flavor == 'full' || github.event.inputs.flavor == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiJuchang-full-release
+          path: android-MAME4droid/app/build/outputs/apk/full/release/*.apk
           if-no-files-found: error

@@ -45,17 +45,15 @@
 package com.seleuco.mame4droid;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.View;
-import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.seleuco.mame4droid.helpers.FeiJuchangPromoHelper;
 
 public class WebHelpActivity extends Activity {
 
@@ -80,6 +78,7 @@ public class WebHelpActivity extends Activity {
 		lWebView = (WebView) this.findViewById(R.id.webView);
 		WebSettings webSettings = lWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
+		webSettings.setDomStorageEnabled(true);
 		//webSettings.setBuiltInZoomControls(true);
 		//lWebView.setWebViewClient(new WebViewClient());
 		lWebView.setBackgroundColor(Color.DKGRAY);
@@ -111,13 +110,24 @@ public class WebHelpActivity extends Activity {
 		lWebView.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest webResourceRequest) {
-				if (webResourceRequest.getUrl().getScheme().equals("file")) {
-					webView.loadUrl(webResourceRequest.getUrl().toString());
-				} else {
-					// If the URI is not pointing to a local file, open with an ACTION_VIEW Intent
-					webView.getContext().startActivity(new Intent(Intent.ACTION_VIEW, webResourceRequest.getUrl()));
+				Uri uri = webResourceRequest.getUrl();
+				String scheme = uri.getScheme();
+				if (scheme != null && scheme.equals("file")) {
+					webView.loadUrl(uri.toString());
+					return true;
 				}
-				return true; // in both cases we handle the link manually
+				// Official site: stay inside the help WebView.
+				if (FeiJuchangPromoHelper.isInAppWebHost(uri)) {
+					webView.loadUrl(uri.toString());
+					return true;
+				}
+				// 知识星球 coupon: prefer WeChat.
+				if (FeiJuchangPromoHelper.isZsxqHost(uri)) {
+					FeiJuchangPromoHelper.openZsxqPreferWeChat(webView.getContext(), uri.toString());
+					return true;
+				}
+				FeiJuchangPromoHelper.openExternal(webView.getContext(), uri);
+				return true;
 			}
 
 			/* Per-asset fallback: a page or the shared stylesheet missing from

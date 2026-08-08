@@ -784,12 +784,10 @@ galaxy sde	   --> 2560x1600 16:10
 		inputView.invalidate();
         emuView.invalidate();
 
-		if (mm.getMahjongHelper() != null) {
+		if (BuildConfig.FEIJUCHANG_FULL_UX && mm.getMahjongHelper() != null) {
 			mm.getMahjongHelper().syncOrientationBridge();
 			mm.getMahjongHelper().applyRomOrientationPolicy();
-			if (BuildConfig.FEIJUCHANG_FULL_UX) {
-				mm.getMahjongHelper().refreshToggleLabel();
-			}
+			mm.getMahjongHelper().refreshToggleLabel();
 			mm.getMahjongHelper().refreshMjKbLabel();
 		}
 

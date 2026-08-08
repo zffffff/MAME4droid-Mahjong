@@ -22,6 +22,11 @@
 
 	<uses-feature android:name="android.hardware.gamepad" android:required="false" />
 
+	<!-- Package visibility: detect / launch WeChat for 知识星球 coupon links -->
+	<queries>
+		<package android:name="com.tencent.mm" />
+	</queries>
+
     <application android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
         android:allowClearUserData="true" android:hardwareAccelerated="true"
 		android:isGame="true"

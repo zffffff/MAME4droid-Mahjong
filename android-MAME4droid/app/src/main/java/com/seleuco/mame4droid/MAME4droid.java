@@ -175,11 +175,8 @@ public class MAME4droid extends Activity {
 		NetPlayHelper = new NetPlayHelper(this);
 		adpfHelper = new AdpfHelper(this);
 		mahjongHelper = new MahjongExperienceHelper(this);
-		// Full edition: seed mahjong-friendly defaults + floating controls.
-		// Basic edition: only auto-install the key pack (+ orientation bridge for Lua).
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			mahjongHelper.seedDefaultsIfNeeded();
-		}
+		// Full edition: mahjong UX. Basic edition: key pack only (AssetPackInstaller).
+		mahjongHelper.seedDefaultsIfNeeded();
 
 		inputHandler = new InputHandler(this);
 

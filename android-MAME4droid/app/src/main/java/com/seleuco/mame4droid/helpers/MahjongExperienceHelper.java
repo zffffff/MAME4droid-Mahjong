@@ -26,8 +26,10 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Mahjong-edition UX: defaults, orientation bridge, portrait-forced ROMs,
- * floating chrome, and the native mahjong keyboard panel (both flavors).
+ * Full-edition mahjong UX: defaults, orientation bridge, portrait-forced ROMs,
+ * floating chrome, and the native mahjong keyboard panel.
+ * Basic edition only installs the artwork key pack ({@link AssetPackInstaller});
+ * all methods here no-op when {@code FEIJUCHANG_FULL_UX} is false.
  */
 public class MahjongExperienceHelper {
 
@@ -62,6 +64,9 @@ public class MahjongExperienceHelper {
 	}
 
 	public void seedDefaultsIfNeeded() {
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
 		SharedPreferences p = mm.getPrefsHelper().getSharedPreferences();
 		SharedPreferences.Editor e = null;
 
@@ -100,11 +105,10 @@ public class MahjongExperienceHelper {
 	}
 
 	/**
-	 * Floating chrome + mahjong keyboard for both full and basic editions.
-	 * Full edition also gets the virtual-pad show/hide toggle.
+	 * Floating chrome + mahjong keyboard (full edition only).
 	 */
 	public void attachFloatingControls(FrameLayout emulatorFrame) {
-		if (emulatorFrame == null) {
+		if (!BuildConfig.FEIJUCHANG_FULL_UX || emulatorFrame == null) {
 			return;
 		}
 
@@ -248,6 +252,9 @@ public class MahjongExperienceHelper {
 	}
 
 	public void syncOrientationBridge() {
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
 		String dir = mm.getMainHelper().getInstallationDIR();
 		if (dir == null || dir.isEmpty()) {
 			return;
@@ -274,6 +281,9 @@ public class MahjongExperienceHelper {
 	}
 
 	public void applyRomOrientationPolicy() {
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
 		String rom = null;
 		try {
 			if (Emulator.isInGame()) {
