@@ -519,6 +519,12 @@
     <string name="pref_frame_pacing_title">帧率同步与性能提示</string>
     <string name="pref_frame_pacing_summary">在 90/120Hz 屏幕上让显示刷新率匹配游戏速度，并使用 ADPF 的 CPU/温度提示以获得更流畅、更低发热的性能。如设备异常请关闭。</string>
 
+    <string name="fj_rom_path_button">选择游戏文件夹</string>
+    <string name="fj_rom_path_dialog_title">设置 ROM 路径</string>
+    <string name="fj_rom_path_dialog_message">请选择存放游戏 ROM 的文件夹。确认后应用会重新加载。\n\n提示：请选择装有 .zip 游戏文件的文件夹（不是单个文件）。</string>
+    <string name="fj_rom_path_pick_folder">选择文件夹</string>
+    <string name="fj_rom_path_use_default">使用应用默认位置</string>
+
     <string name="fj_zsxq_wechat_or_file_helper">链接已复制。若未直接在微信中打开，请粘贴发送给微信「文件传输助手」后再点开。</string>
     <string name="fj_zsxq_copy_hint">链接已复制。请发送给微信「文件传输助手」，再在微信中打开以使用知识星球优惠券。</string>
     <string name="fj_zsxq_no_browser">无法打开链接。请粘贴发送给微信「文件传输助手」。</string>

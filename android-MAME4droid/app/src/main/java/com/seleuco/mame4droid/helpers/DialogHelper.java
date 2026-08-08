@@ -48,9 +48,7 @@ import static com.seleuco.mame4droid.input.InputHandler.PRESS_WAIT;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.view.View;
 
 import com.seleuco.mame4droid.Emulator;
@@ -137,44 +135,14 @@ public class DialogHelper {
 						public void onClick(DialogInterface dialog, int id) {
 							DialogHelper.savedDialog = DIALOG_NONE;
 							mm.removeDialog(DIALOG_ROMs);
-							if (mm.getMainHelper().isAndroidTV())
-								mm.getMainHelper().setInstallationDirType(MainHelper.INSTALLATION_DIR_MEDIA_FOLDER);
-							else
-								mm.getMainHelper().setInstallationDirType(MainHelper.INSTALLATION_DIR_FILES_DIR);
-							mm.getPrefsHelper().setROMsDIR("");
-							mm.getPrefsHelper().setSAF_Uri(null);
-
-							Thread t = new Thread(new Runnable() { public void run() {
-								mm.runMAME4droid();
-							}});
-							t.start();
-
-							//mm.runMAME4droid();
+							mm.getMainHelper().applyDefaultRomsPathAndReload();
 						}
 					})
 					.setNegativeButton(mm.getString(R.string.dlg_roms_external), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							DialogHelper.savedDialog = DIALOG_NONE;
 							mm.removeDialog(DIALOG_ROMs);
-
-							try {
-								Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-								mm.startActivityForResult(intent, MainHelper.REQUEST_CODE_OPEN_DIRECTORY);
-								//throw new ActivityNotFoundException("TEST");
-							} catch (ActivityNotFoundException e) {
-
-								String msg = mm.getString(R.string.dlg_no_doc_picker);
-								if (mm.getMainHelper().isAndroidTV())
-									msg += mm.getString(R.string.dlg_no_doc_picker_tv);
-
-								mm.getDialogHelper().showMessage(msg,
-									new DialogInterface.OnClickListener() {
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											android.os.Process.killProcess(android.os.Process.myPid());
-										}
-									});
-							}
+							mm.getMainHelper().startRomsDirectoryPicker();
 						}
 					});
 

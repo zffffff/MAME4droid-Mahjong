@@ -10,6 +10,7 @@
 不内置 ROM；首次启动会自动安装按键包资源。按键包亦随本仓开源。
 
 **开发说明：** [docs/知识库.md](docs/知识库.md)  
+**宣传要点（用户向）：** [docs/宣传要点.md](docs/宣传要点.md)  
 **开源与分发：** [docs/开源与合规.md](docs/开源与合规.md)（卖或送 APK 时，下载页请同时附上本仓库链接）
 
 源码：https://github.com/zffffff/MAME4droid-Mahjong

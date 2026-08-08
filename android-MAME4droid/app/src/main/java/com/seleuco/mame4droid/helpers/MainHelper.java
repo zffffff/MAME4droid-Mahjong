@@ -62,6 +62,7 @@ import java.util.zip.ZipInputStream;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -791,6 +792,10 @@ galaxy sde	   --> 2560x1600 16:10
 			mm.getMahjongHelper().refreshMjKbLabel();
 		}
 
+		if (mm.getRomPathShortcutHelper() != null) {
+			mm.getRomPathShortcutHelper().refreshVisibility();
+		}
+
 		//Log.d("isMouse"," value:"+mm.getPrefsHelper().isTouchMouse());
     }
 
@@ -870,19 +875,57 @@ galaxy sde	   --> 2560x1600 16:10
             mm.getPrefsHelper().setSAF_Uri(uri.toString());
             mm.getSAFHelper().deleteCacheFile();//the persisted cache belongs to the old tree
 
-			Thread t = new Thread(new Runnable() { public void run() {
+			reloadAfterRomsPathChange();
+        }
+    }
+
+	/** Opens the system folder picker used for external ROM storage (SAF). */
+	public void startRomsDirectoryPicker() {
+		try {
+			Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+			mm.startActivityForResult(intent, REQUEST_CODE_OPEN_DIRECTORY);
+		} catch (ActivityNotFoundException e) {
+			String msg = mm.getString(R.string.dlg_no_doc_picker);
+			if (isAndroidTV()) {
+				msg += mm.getString(R.string.dlg_no_doc_picker_tv);
+			}
+			mm.getDialogHelper().setInfoMsg(msg);
+			mm.showDialog(DialogHelper.DIALOG_INFO);
+		}
+	}
+
+	/** App-internal default roms folder; reloads so the change takes effect. */
+	public void applyDefaultRomsPathAndReload() {
+		if (isAndroidTV()) {
+			setInstallationDirType(INSTALLATION_DIR_MEDIA_FOLDER);
+		} else {
+			setInstallationDirType(INSTALLATION_DIR_FILES_DIR);
+		}
+		mm.getPrefsHelper().setROMsDIR("");
+		mm.getPrefsHelper().setSAF_Uri(null);
+		mm.getSAFHelper().setURI(null);
+		mm.getSAFHelper().deleteCacheFile();
+		reloadAfterRomsPathChange();
+	}
+
+	private void reloadAfterRomsPathChange() {
+		if (Emulator.isEmulating()) {
+			// Hot-swap is not supported; restart so MAME picks up the new tree.
+			restartApp();
+			return;
+		}
+		Thread t = new Thread(new Runnable() {
+			public void run() {
 				try {
 					Thread.sleep(250);
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 				mm.runMAME4droid();
-			}});
-			t.start();
-
-			//mm.runMAME4droid();
-        }
-    }
+			}
+		});
+		t.start();
+	}
 
     public ArrayList<Integer> measureWindow(int widthMeasureSpec,
                                             int heightMeasureSpec, int scaleType) {
