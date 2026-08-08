@@ -78,7 +78,6 @@ public class WebHelpActivity extends Activity {
 		lWebView = (WebView) this.findViewById(R.id.webView);
 		WebSettings webSettings = lWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
-		webSettings.setDomStorageEnabled(true);
 		//webSettings.setBuiltInZoomControls(true);
 		//lWebView.setWebViewClient(new WebViewClient());
 		lWebView.setBackgroundColor(Color.DKGRAY);
@@ -116,16 +115,12 @@ public class WebHelpActivity extends Activity {
 					webView.loadUrl(uri.toString());
 					return true;
 				}
-				// Official site: stay inside the help WebView.
-				if (FeiJuchangPromoHelper.isInAppWebHost(uri)) {
-					webView.loadUrl(uri.toString());
-					return true;
-				}
-				// 知识星球 coupon: prefer WeChat.
+				// 知识星球 coupon: copy link + try WeChat / browser + File Transfer hint.
 				if (FeiJuchangPromoHelper.isZsxqHost(uri)) {
 					FeiJuchangPromoHelper.openZsxqPreferWeChat(webView.getContext(), uri.toString());
 					return true;
 				}
+				// Site pages (and other http/https): system browser — help WebView is too limited.
 				FeiJuchangPromoHelper.openExternal(webView.getContext(), uri);
 				return true;
 			}

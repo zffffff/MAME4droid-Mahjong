@@ -16,25 +16,12 @@ import com.seleuco.mame4droid.R;
  */
 public final class FeiJuchangPromoHelper {
 
-	public static final String HOME_URL = "https://roxyweal.work";
-	public static final String SHARE_URL = "https://roxyweal.work/share.html";
+	public static final String HOME_URL = "https://roxyweal.work/majiang/";
 	public static final String ZSXQ_COUPON_URL = "https://t.zsxq.com/35B0X";
 
 	private static final String WECHAT_PACKAGE = "com.tencent.mm";
 
 	private FeiJuchangPromoHelper() {
-	}
-
-	public static boolean isInAppWebHost(Uri uri) {
-		if (uri == null) {
-			return false;
-		}
-		String host = uri.getHost();
-		if (host == null) {
-			return false;
-		}
-		host = host.toLowerCase();
-		return host.equals("roxyweal.work") || host.endsWith(".roxyweal.work");
 	}
 
 	public static boolean isZsxqHost(Uri uri) {
@@ -50,35 +37,31 @@ public final class FeiJuchangPromoHelper {
 	}
 
 	/**
-	 * Prefer WeChat for 知识星球 coupon links; fall back to clipboard + browser.
+	 * Open 知识星球 coupon: always copy the link, try WeChat, else system browser.
+	 * Toast reminds users they can paste to WeChat File Transfer.
 	 */
 	public static void openZsxqPreferWeChat(Context context, String url) {
 		if (context == null || url == null || url.isEmpty()) {
 			return;
 		}
 		Uri uri = Uri.parse(url);
+		copyToClipboard(context, url);
+
 		if (isWeChatInstalled(context)) {
 			Intent wechat = new Intent(Intent.ACTION_VIEW, uri);
 			wechat.setPackage(WECHAT_PACKAGE);
 			wechat.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			try {
 				context.startActivity(wechat);
-				Toast.makeText(context, R.string.fj_open_zsxq_wechat, Toast.LENGTH_SHORT).show();
+				Toast.makeText(context, R.string.fj_zsxq_wechat_or_file_helper, Toast.LENGTH_LONG).show();
 				return;
 			} catch (ActivityNotFoundException ignored) {
 				// fall through
 			}
 		}
 
-		copyToClipboard(context, url);
 		Toast.makeText(context, R.string.fj_zsxq_copy_hint, Toast.LENGTH_LONG).show();
-		try {
-			Intent browser = new Intent(Intent.ACTION_VIEW, uri);
-			browser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			context.startActivity(browser);
-		} catch (ActivityNotFoundException e) {
-			Toast.makeText(context, R.string.fj_zsxq_no_browser, Toast.LENGTH_LONG).show();
-		}
+		openExternal(context, uri);
 	}
 
 	public static void openExternal(Context context, Uri uri) {

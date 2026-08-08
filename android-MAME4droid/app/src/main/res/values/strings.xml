@@ -540,7 +540,7 @@
     <string name="pref_frame_pacing_title">Frame pacing &amp; performance hints</string>
     <string name="pref_frame_pacing_summary">Match the display to the game\'s refresh on 90/120 Hz screens and use ADPF CPU/thermal hints for smoother, cooler performance. Turn off if a device misbehaves.</string>
 
-    <string name="fj_open_zsxq_wechat">Opening in WeChat…</string>
-    <string name="fj_zsxq_copy_hint">Link copied. Please open it in WeChat for the Knowledge Planet coupon.</string>
-    <string name="fj_zsxq_no_browser">No app can open this link. Please paste it in WeChat.</string>
+    <string name="fj_zsxq_wechat_or_file_helper">Link copied. If WeChat did not open the page, paste it to WeChat File Transfer and open it there.</string>
+    <string name="fj_zsxq_copy_hint">Link copied. Send it to WeChat File Transfer, then open it in WeChat for the Knowledge Planet coupon.</string>
+    <string name="fj_zsxq_no_browser">No app can open this link. Paste it to WeChat File Transfer.</string>
 </resources>
