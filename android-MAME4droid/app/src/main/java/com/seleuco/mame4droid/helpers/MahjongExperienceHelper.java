@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -19,6 +21,7 @@ import com.seleuco.mame4droid.BuildConfig;
 import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
+import com.seleuco.mame4droid.input.InputHandler;
 import com.seleuco.mame4droid.input.TouchController;
 
 import java.io.File;
@@ -54,6 +57,7 @@ public class MahjongExperienceHelper {
 	private TextView menuBtn = null;
 	private TextView romBtn = null;
 	private TextView snapBtn = null;
+	private TextView exitBtn = null;
 	private LinearLayout panel = null;
 	private LinearLayout floatBar = null;
 	private boolean oscForceHidden = false;
@@ -185,6 +189,17 @@ public class MahjongExperienceHelper {
 		});
 		menuBtn.setText(mm.getString(R.string.mj_menu_button));
 		menuBtn.setContentDescription(mm.getString(R.string.mj_menu_button_desc));
+
+		exitBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
+			// 等价于屏幕 Exit：游戏中退出到列表，选游戏界面退出 App
+			Emulator.setValue(Emulator.EXIT_GAME, 1);
+			new Handler(Looper.getMainLooper()).postDelayed(
+					() -> Emulator.setValue(Emulator.EXIT_GAME, 0),
+					InputHandler.PRESS_WAIT);
+		});
+		exitBtn.setText(mm.getString(R.string.mj_exit_button));
+		exitBtn.setContentDescription(mm.getString(R.string.mj_exit_button_desc));
 
 		romBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
 			collapseMenu();

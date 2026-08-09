@@ -1,4 +1,4 @@
-1,0,0,0,1280,800       //landscape corners: DPAD TL, sys BL, A/B BR
+1,0,0,0,1280,800       //landscape: DPAD TL, A/B BR (sys via tools / mahjong keys)
 2,1,0,29,90,85          //upleft
 2,2,90,17,70,96         //up
 2,3,160,29,90,85        //upright
@@ -9,16 +9,8 @@
 2,8,160,181,90,85       //downright
 4,0,10,30,230,230       //DPAD img
 8,0,10,30,230,230       //analog stick area
-3,9,8,560,117,54        //start (top of left stack)
-3,8,8,622,117,54        //coin
-3,7,8,684,117,54        //option
-3,6,8,746,117,54        //exit (bottom-left)
 3,3,1155,540,120,120    //B (above A)
 3,2,1155,670,120,120    //A (bottom-right)
-5,9,8,560,117,54        //start img
-5,8,8,622,117,54        //coin img
-5,7,8,684,117,54        //option img
-5,6,8,746,117,54        //exit img
 5,3,1160,545,110,110    //B img
 5,2,1160,675,110,110    //A img
 7,150

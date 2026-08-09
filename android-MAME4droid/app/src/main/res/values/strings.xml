@@ -143,6 +143,8 @@
     <string name="mj_hide_keyboard">🀆</string>
     <string name="mj_chrome_open">🧰</string>
     <string name="mj_chrome_close">❌</string>
+    <string name="mj_exit_button">🚪</string>
+    <string name="mj_exit_button_desc">Exit game / quit app</string>
     <string name="mj_set_rom">📁</string>
     <string name="mj_set_snap">🖼️</string>
     <string name="mj_hide_controller_desc">Hide on-screen controller</string>

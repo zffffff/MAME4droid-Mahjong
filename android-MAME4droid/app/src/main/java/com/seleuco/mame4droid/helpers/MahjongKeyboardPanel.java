@@ -121,7 +121,7 @@ public class MahjongKeyboardPanel {
 			key("N", KeyEvent.KEYCODE_N, 'N'),
 	};
 
-	/** 竖屏更多页：按 7 列对齐 */
+	/** 竖屏更多页：按 7 列对齐；Tab 在海底前，用于开关 MAME 菜单 */
 	private static final KeySpec[][] LETTERS_MORE_PORTRAIT = {
 			{
 					key("0", KeyEvent.KEYCODE_0, '0'),
@@ -133,15 +133,16 @@ public class MahjongKeyboardPanel {
 					key("9", KeyEvent.KEYCODE_9, '9'),
 			},
 			{
+					key("Tab", KeyEvent.KEYCODE_TAB, '\t'),
 					key("海底", KeyEvent.KEYCODE_O, 'O'),
 					key("大", KeyEvent.KEYCODE_R, 'R'),
 					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
 					key("P", KeyEvent.KEYCODE_P, 'P'),
 					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
 					key("S", KeyEvent.KEYCODE_S, 'S'),
-					key("T", KeyEvent.KEYCODE_T, 'T'),
 			},
 			{
+					key("T", KeyEvent.KEYCODE_T, 'T'),
 					key("U", KeyEvent.KEYCODE_U, 'U'),
 					key("V", KeyEvent.KEYCODE_V, 'V'),
 					key("W", KeyEvent.KEYCODE_W, 'W'),
@@ -158,6 +159,7 @@ public class MahjongKeyboardPanel {
 					key("7", KeyEvent.KEYCODE_7, '7'),
 					key("8", KeyEvent.KEYCODE_8, '8'),
 					key("9", KeyEvent.KEYCODE_9, '9'),
+					key("Tab", KeyEvent.KEYCODE_TAB, '\t'),
 					key("海底", KeyEvent.KEYCODE_O, 'O'),
 					key("大", KeyEvent.KEYCODE_R, 'R'),
 					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
