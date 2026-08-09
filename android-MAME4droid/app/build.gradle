@@ -19,8 +19,8 @@ android {
     defaultConfig {
         minSdkVersion 29
         targetSdkVersion 36
-        versionCode 142
-        versionName '1.37.6-mj11'
+        versionCode 143
+        versionName '1.37.6-mj12'
 
         ndk {
             moduleName = "mame4droid-jni"

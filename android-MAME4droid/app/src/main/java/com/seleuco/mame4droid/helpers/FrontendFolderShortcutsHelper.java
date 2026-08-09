@@ -42,6 +42,16 @@ public class FrontendFolderShortcutsHelper {
 			return;
 		}
 
+		// Full edition: ROM/snap live inside the collapsible top-left chrome menu.
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			View existingFull = emulatorFrame.findViewById(BAR_ID);
+			if (existingFull != null) {
+				emulatorFrame.removeView(existingFull);
+			}
+			bar = null;
+			return;
+		}
+
 		View existing = emulatorFrame.findViewById(BAR_ID);
 		if (existing != null) {
 			emulatorFrame.removeView(existing);
@@ -87,6 +97,12 @@ public class FrontendFolderShortcutsHelper {
 	}
 
 	public void refreshVisibility() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			if (mm.getMahjongHelper() != null) {
+				mm.getMahjongHelper().refreshFolderActionsVisibility();
+			}
+			return;
+		}
 		if (bar == null) {
 			return;
 		}
@@ -98,11 +114,7 @@ public class FrontendFolderShortcutsHelper {
 	}
 
 	private int resolveGravity() {
-		// Full: bottom-center — clears top-right float chrome and top-left Exit on stock layouts.
-		// Basic: top-center — clears landscape Exit/Option; may sit near the search field.
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-		}
+		// Basic only (full uses chrome menu): top-center clears landscape Exit/Option.
 		return Gravity.TOP | Gravity.CENTER_HORIZONTAL;
 	}
 
@@ -124,7 +136,7 @@ public class FrontendFolderShortcutsHelper {
 		return btn;
 	}
 
-	private void showRomChooser() {
+	public void showRomChooser() {
 		new AlertDialog.Builder(mm)
 				.setTitle(R.string.fj_rom_path_dialog_title)
 				.setMessage(R.string.fj_rom_path_dialog_message)
@@ -136,7 +148,7 @@ public class FrontendFolderShortcutsHelper {
 				.show();
 	}
 
-	private void showSnapChooser() {
+	public void showSnapChooser() {
 		final String snapPath = mm.getMainHelper().getSnapDirectoryPath();
 		String msg = mm.getString(R.string.fj_snap_path_dialog_message, snapPath);
 		new AlertDialog.Builder(mm)

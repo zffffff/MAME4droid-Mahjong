@@ -31,6 +31,12 @@ public class MahjongKeyboardPanel {
 	private static final long MIN_HOLD_MS = 40L;
 	private static final int TAB_PLAY = 0;
 	private static final int TAB_MORE = 1;
+	/** 默认键底 alpha（约 70%） */
+	private static final int KEY_ALPHA = 0xB3;
+	/** 横屏打牌页：高度约 2/3、透明度再降约 1/3 */
+	private static final float PLAY_LAND_HEIGHT_FACTOR = 2f / 3f;
+	private static final int PLAY_LAND_ALPHA = (int) (KEY_ALPHA * 2f / 3f); // ≈ 0x77
+	private static final int PORTRAIT_COLS = 7;
 
 	private final MAME4droid mm;
 	private final Handler handler = new Handler(Looper.getMainLooper());
@@ -44,11 +50,14 @@ public class MahjongKeyboardPanel {
 	private View bottomStrip;
 	private ViewTreeObserver.OnGlobalLayoutListener gameFrameListener;
 	private boolean visible = false;
+	private boolean landscapeMode = false;
 	private int currentTab = TAB_PLAY;
 	private int sideKeyW;
 	private int sideGap;
 	private int edgePad;
 	private int bottomReserve;
+	private int lastStripLeft = Integer.MIN_VALUE;
+	private int lastStripWidth = Integer.MIN_VALUE;
 
 	private static final class KeySpec {
 		final String label;
@@ -103,25 +112,24 @@ public class MahjongKeyboardPanel {
 			},
 	};
 
-	private static final KeySpec[][] LETTERS_PLAY_LANDSCAPE = {
-			{
-					key("A", KeyEvent.KEYCODE_A, 'A'),
-					key("B", KeyEvent.KEYCODE_B, 'B'),
-					key("C", KeyEvent.KEYCODE_C, 'C'),
-					key("D", KeyEvent.KEYCODE_D, 'D'),
-					key("E", KeyEvent.KEYCODE_E, 'E'),
-					key("F", KeyEvent.KEYCODE_F, 'F'),
-					key("G", KeyEvent.KEYCODE_G, 'G'),
-					key("H", KeyEvent.KEYCODE_H, 'H'),
-					key("I", KeyEvent.KEYCODE_I, 'I'),
-					key("J", KeyEvent.KEYCODE_J, 'J'),
-					key("K", KeyEvent.KEYCODE_K, 'K'),
-					key("L", KeyEvent.KEYCODE_L, 'L'),
-					key("M", KeyEvent.KEYCODE_M, 'M'),
-					key("N", KeyEvent.KEYCODE_N, 'N'),
-			},
+	private static final KeySpec[] LETTERS_PLAY_LANDSCAPE = {
+			key("A", KeyEvent.KEYCODE_A, 'A'),
+			key("B", KeyEvent.KEYCODE_B, 'B'),
+			key("C", KeyEvent.KEYCODE_C, 'C'),
+			key("D", KeyEvent.KEYCODE_D, 'D'),
+			key("E", KeyEvent.KEYCODE_E, 'E'),
+			key("F", KeyEvent.KEYCODE_F, 'F'),
+			key("G", KeyEvent.KEYCODE_G, 'G'),
+			key("H", KeyEvent.KEYCODE_H, 'H'),
+			key("I", KeyEvent.KEYCODE_I, 'I'),
+			key("J", KeyEvent.KEYCODE_J, 'J'),
+			key("K", KeyEvent.KEYCODE_K, 'K'),
+			key("L", KeyEvent.KEYCODE_L, 'L'),
+			key("M", KeyEvent.KEYCODE_M, 'M'),
+			key("N", KeyEvent.KEYCODE_N, 'N'),
 	};
 
+	/** 竖屏更多页：按 7 列对齐 */
 	private static final KeySpec[][] LETTERS_MORE_PORTRAIT = {
 			{
 					key("0", KeyEvent.KEYCODE_0, '0'),
@@ -131,15 +139,17 @@ public class MahjongKeyboardPanel {
 					key("7", KeyEvent.KEYCODE_7, '7'),
 					key("8", KeyEvent.KEYCODE_8, '8'),
 					key("9", KeyEvent.KEYCODE_9, '9'),
+			},
+			{
 					key("海底", KeyEvent.KEYCODE_O, 'O'),
 					key("大", KeyEvent.KEYCODE_R, 'R'),
 					key("小", KeyEvent.KEYCODE_DEL, (char) 0),
-			},
-			{
 					key("P", KeyEvent.KEYCODE_P, 'P'),
 					key("Q", KeyEvent.KEYCODE_Q, 'Q'),
 					key("S", KeyEvent.KEYCODE_S, 'S'),
 					key("T", KeyEvent.KEYCODE_T, 'T'),
+			},
+			{
 					key("U", KeyEvent.KEYCODE_U, 'U'),
 					key("V", KeyEvent.KEYCODE_V, 'V'),
 					key("W", KeyEvent.KEYCODE_W, 'W'),
@@ -216,8 +226,10 @@ public class MahjongKeyboardPanel {
 		sideGap = gap;
 		edgePad = edge;
 		bottomReserve = keyH + edge * 2 + (int) (4 * density);
-		boolean landscape = mm.getResources().getConfiguration().orientation
+		landscapeMode = mm.getResources().getConfiguration().orientation
 				== Configuration.ORIENTATION_LANDSCAPE;
+		lastStripLeft = Integer.MIN_VALUE;
+		lastStripWidth = Integer.MIN_VALUE;
 
 		PassThroughFrameLayout root = new PassThroughFrameLayout(mm);
 		root.setId(PANEL_ID);
@@ -233,10 +245,10 @@ public class MahjongKeyboardPanel {
 		rightRail = null;
 		bottomStrip = null;
 
-		if (landscape) {
-			attachLandscape(root, keyH, keyMinW, density, gap, edge);
+		if (landscapeMode) {
+			attachLandscape(root, keyH, keyMinW, density, gap);
 		} else {
-			attachPortrait(root, keyH, keyMinW, density, gap, edge);
+			attachPortrait(root, keyH, density, gap, edge);
 		}
 		applyTab();
 
@@ -248,58 +260,45 @@ public class MahjongKeyboardPanel {
 	}
 
 	private void attachLandscape(FrameLayout root, int keyH, int keyMinW,
-			float density, int gap, int edge) {
+			float density, int gap) {
 		int sideKeyH = (int) (40 * density);
 
 		leftRail = buildVerticalKeys(ACTIONS_LEFT_LANDSCAPE, sideKeyH, sideKeyW, density, gap);
-		FrameLayout.LayoutParams leftLp = new FrameLayout.LayoutParams(
-				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT);
-		leftRail.setLayoutParams(leftLp);
+		leftRail.setLayoutParams(new FrameLayout.LayoutParams(
+				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT));
 		root.addView(leftRail);
 
 		rightRail = buildVerticalKeys(ACTIONS_MJ, sideKeyH, sideKeyW, density, gap);
-		FrameLayout.LayoutParams rightLp = new FrameLayout.LayoutParams(
-				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT);
-		rightRail.setLayoutParams(rightLp);
+		rightRail.setLayoutParams(new FrameLayout.LayoutParams(
+				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT));
 		root.addView(rightRail);
 
-		bottomStrip = buildBottomLetterStrip(
-				LETTERS_PLAY_LANDSCAPE, LETTERS_MORE_LANDSCAPE,
-				keyH, keyMinW, density, gap, true);
+		bottomStrip = buildLandscapeLetterStrip(keyH, keyMinW, density, gap);
 		root.addView(bottomStrip);
 	}
 
-	private void attachPortrait(FrameLayout root, int keyH, int keyMinW,
-			float density, int gap, int edge) {
+	private void attachPortrait(FrameLayout root, int keyH, float density, int gap, int edge) {
 		LinearLayout column = new LinearLayout(mm);
 		column.setOrientation(LinearLayout.VERTICAL);
 		column.setBackgroundColor(Color.TRANSPARENT);
+		// 整体上移约 2 格按键高度
 		FrameLayout.LayoutParams colLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				Gravity.BOTTOM);
-		colLp.setMargins(edge, 0, edge, edge);
+		colLp.setMargins(edge, 0, edge, edge + keyH * 2);
 		column.setLayoutParams(colLp);
 
-		// 第一行：开始 押注 …… 翻转 投币
-		LinearLayout row1 = new LinearLayout(mm);
-		row1.setOrientation(LinearLayout.HORIZONTAL);
-		row1.setGravity(Gravity.CENTER_VERTICAL);
-		row1.addView(makeKeyView(key("开始", KeyEvent.KEYCODE_1, '1'), keyH, keyMinW, density, gap));
-		row1.addView(makeKeyView(key("押注", KeyEvent.KEYCODE_3, '3'), keyH, keyMinW, density, gap));
-		View spacer = new View(mm);
-		spacer.setLayoutParams(new LinearLayout.LayoutParams(0, 1, 1f));
-		row1.addView(spacer);
-		row1.addView(makeKeyView(key("翻转", KeyEvent.KEYCODE_Y, 'Y'), keyH, keyMinW, density, gap));
-		row1.addView(makeKeyView(key("投币", KeyEvent.KEYCODE_5, '5'), keyH, keyMinW, density, gap));
-		LinearLayout.LayoutParams r1Lp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		r1Lp.bottomMargin = gap;
-		row1.setLayoutParams(r1Lp);
-		column.addView(row1);
+		// 第一行：7 格对齐 —— 开始 押注 … 翻转 投币
+		column.addView(buildPortraitSlotRow(new KeySpec[]{
+				key("开始", KeyEvent.KEYCODE_1, '1'),
+				key("押注", KeyEvent.KEYCODE_3, '3'),
+				null, null, null,
+				key("翻转", KeyEvent.KEYCODE_Y, 'Y'),
+				key("投币", KeyEvent.KEYCODE_5, '5'),
+		}, keyH, density, gap));
 
-		// 第二行：打牌 | 吃碰杠听和 | 更多（同高同宽）
+		// 第二行：打牌 | 吃碰杠听和 | 更多
 		LinearLayout row2 = new LinearLayout(mm);
 		row2.setOrientation(LinearLayout.HORIZONTAL);
 		row2.setGravity(Gravity.CENTER_VERTICAL);
@@ -315,7 +314,7 @@ public class MahjongKeyboardPanel {
 		});
 		row2.addView(tabPlay);
 		for (KeySpec spec : ACTIONS_MJ) {
-			row2.addView(makeEqualKey(spec, keyH, density, gap));
+			row2.addView(makeEqualKey(spec, keyH, density, gap, KEY_ALPHA));
 		}
 		row2.addView(tabMore);
 		LinearLayout.LayoutParams r2Lp = new LinearLayout.LayoutParams(
@@ -325,61 +324,107 @@ public class MahjongKeyboardPanel {
 		row2.setLayoutParams(r2Lp);
 		column.addView(row2);
 
-		bottomStrip = buildBottomLetterStrip(
-				LETTERS_PLAY_PORTRAIT, LETTERS_MORE_PORTRAIT,
-				keyH, keyMinW, density, gap, false);
-		column.addView(bottomStrip);
+		int playRows = LETTERS_PLAY_PORTRAIT.length;
+		int moreRows = LETTERS_MORE_PORTRAIT.length;
+		int pageH = Math.max(playRows, moreRows) * keyH + Math.max(0, Math.max(playRows, moreRows) - 1) * gap;
+
+		FrameLayout pages = new FrameLayout(mm);
+		pages.setLayoutParams(new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, pageH));
+
+		playLetters = buildPortraitKeyPage(LETTERS_PLAY_PORTRAIT, keyH, density, gap);
+		moreLetters = buildPortraitKeyPage(LETTERS_MORE_PORTRAIT, keyH, density, gap);
+		FrameLayout.LayoutParams pageLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT);
+		playLetters.setLayoutParams(pageLp);
+		moreLetters.setLayoutParams(new FrameLayout.LayoutParams(pageLp));
+		pages.addView(playLetters);
+		pages.addView(moreLetters);
+		column.addView(pages);
+		bottomStrip = pages;
 
 		root.addView(column);
 	}
 
+	/** 竖屏固定 7 列槽位，空位占格以保持整齐。 */
+	private LinearLayout buildPortraitSlotRow(KeySpec[] slots, int keyH, float density, int gap) {
+		LinearLayout row = new LinearLayout(mm);
+		row.setOrientation(LinearLayout.HORIZONTAL);
+		row.setGravity(Gravity.CENTER_VERTICAL);
+		LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		rowLp.bottomMargin = gap;
+		row.setLayoutParams(rowLp);
+		for (KeySpec spec : slots) {
+			if (spec == null) {
+				View spacer = new View(mm);
+				LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, keyH, 1f);
+				lp.setMargins(gap / 2, 0, gap / 2, 0);
+				spacer.setLayoutParams(lp);
+				row.addView(spacer);
+			} else {
+				row.addView(makeEqualKey(spec, keyH, density, gap, KEY_ALPHA));
+			}
+		}
+		return row;
+	}
+
+	private LinearLayout buildPortraitKeyPage(KeySpec[][] rows, int keyH, float density, int gap) {
+		LinearLayout column = new LinearLayout(mm);
+		column.setOrientation(LinearLayout.VERTICAL);
+		for (int r = 0; r < rows.length; r++) {
+			KeySpec[] src = rows[r];
+			KeySpec[] slots = new KeySpec[PORTRAIT_COLS];
+			for (int i = 0; i < PORTRAIT_COLS; i++) {
+				slots[i] = i < src.length ? src[i] : null;
+			}
+			LinearLayout row = buildPortraitSlotRow(slots, keyH, density, gap);
+			if (r == rows.length - 1) {
+				((LinearLayout.LayoutParams) row.getLayoutParams()).bottomMargin = 0;
+			}
+			column.addView(row);
+		}
+		return column;
+	}
+
 	/**
-	 * 底部字母区。
-	 * 横屏：打牌 | A…N/更多键 | 更多（与字母同高，分列两端）；竖屏标签已在第二排。
+	 * 横屏底栏：打牌 | 字母区 | 更多。
+	 * 打牌 / 更多 键高与透明度统一（更矮更透）；打牌页等分对齐画面，更多页可横滑。
 	 */
-	private LinearLayout buildBottomLetterStrip(
-			KeySpec[][] playRows, KeySpec[][] moreRows,
-			int keyH, int keyMinW, float density, int gap, boolean landscape) {
+	private LinearLayout buildLandscapeLetterStrip(int keyH, int keyMinW, float density, int gap) {
 		LinearLayout strip = new LinearLayout(mm);
 		strip.setOrientation(LinearLayout.HORIZONTAL);
 		strip.setGravity(Gravity.CENTER_VERTICAL);
 		strip.setBackgroundColor(Color.TRANSPARENT);
+		FrameLayout.LayoutParams stripLp = new FrameLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				Gravity.BOTTOM | Gravity.START);
+		stripLp.setMargins(edgePad, 0, edgePad, edgePad);
+		strip.setLayoutParams(stripLp);
 
-		if (landscape) {
-			FrameLayout.LayoutParams stripLp = new FrameLayout.LayoutParams(
-					ViewGroup.LayoutParams.MATCH_PARENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT,
-					Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-			stripLp.setMargins(edgePad, 0, edgePad, edgePad);
-			strip.setLayoutParams(stripLp);
-		} else {
-			strip.setLayoutParams(new LinearLayout.LayoutParams(
-					ViewGroup.LayoutParams.MATCH_PARENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT));
-		}
+		int landH = Math.max(1, Math.round(keyH * PLAY_LAND_HEIGHT_FACTOR));
 
-		int letterRows = Math.max(playRows.length, moreRows.length);
-		int pageH = letterRows * keyH + Math.max(0, letterRows - 1) * gap;
-
-		if (landscape) {
-			tabPlay = makeFlankingTab("打牌", keyH, keyMinW, density, gap);
-			tabMore = makeFlankingTab("更多", keyH, keyMinW, density, gap);
-			tabPlay.setOnClickListener(v -> {
-				currentTab = TAB_PLAY;
-				applyTab();
-			});
-			tabMore.setOnClickListener(v -> {
-				currentTab = TAB_MORE;
-				applyTab();
-			});
-			strip.addView(tabPlay);
-		}
+		tabPlay = makeFlankingTab("打牌", landH, keyMinW, density, gap);
+		tabMore = makeFlankingTab("更多", landH, keyMinW, density, gap);
+		tabPlay.setOnClickListener(v -> {
+			currentTab = TAB_PLAY;
+			applyTab();
+		});
+		tabMore.setOnClickListener(v -> {
+			currentTab = TAB_MORE;
+			applyTab();
+		});
+		strip.addView(tabPlay);
 
 		FrameLayout pages = new FrameLayout(mm);
-		pages.setLayoutParams(new LinearLayout.LayoutParams(0, pageH, 1f));
+		pages.setLayoutParams(new LinearLayout.LayoutParams(0, landH, 1f));
 
-		playLetters = buildKeyPage(playRows, keyH, keyMinW, density, gap);
-		moreLetters = buildKeyPage(moreRows, keyH, keyMinW, density, gap);
+		playLetters = buildLandscapePlayRow(LETTERS_PLAY_LANDSCAPE, landH, density, gap);
+		moreLetters = buildScrollKeyPage(LETTERS_MORE_LANDSCAPE, landH, keyMinW, density, gap,
+				PLAY_LAND_ALPHA);
 		FrameLayout.LayoutParams pageLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT);
@@ -388,15 +433,21 @@ public class MahjongKeyboardPanel {
 		pages.addView(playLetters);
 		pages.addView(moreLetters);
 		strip.addView(pages);
-
-		if (landscape) {
-			strip.addView(tabMore);
-		}
+		strip.addView(tabMore);
 
 		return strip;
 	}
 
-	/** 横屏底栏两端标签：与字母键同高，便于点按。 */
+	private LinearLayout buildLandscapePlayRow(KeySpec[] keys, int keyH, float density, int gap) {
+		LinearLayout row = new LinearLayout(mm);
+		row.setOrientation(LinearLayout.HORIZONTAL);
+		row.setGravity(Gravity.CENTER_VERTICAL);
+		for (KeySpec spec : keys) {
+			row.addView(makeEqualKey(spec, keyH, density, gap, PLAY_LAND_ALPHA));
+		}
+		return row;
+	}
+
 	private TextView makeFlankingTab(String label, int keyH, int keyMinW, float density, int gap) {
 		TextView tab = new TextView(mm);
 		tab.setText(label);
@@ -415,7 +466,6 @@ public class MahjongKeyboardPanel {
 		return tab;
 	}
 
-	/** 竖屏第二排标签：与动作键同尺寸。 */
 	private TextView makeTabKey(String label, int keyH, float density, int gap) {
 		TextView tab = new TextView(mm);
 		tab.setText(label);
@@ -426,17 +476,15 @@ public class MahjongKeyboardPanel {
 		tab.setPadding((int) (4 * density), (int) (4 * density), (int) (4 * density), (int) (4 * density));
 		tab.setClickable(true);
 		tab.setFocusable(false);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-				0, keyH, 1f);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, keyH, 1f);
 		lp.setMargins(gap / 2, 0, gap / 2, 0);
 		tab.setLayoutParams(lp);
 		return tab;
 	}
 
-	private TextView makeEqualKey(KeySpec spec, int keyH, float density, int gap) {
-		TextView key = makeKeyView(spec, keyH, 0, density, gap);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-				0, keyH, 1f);
+	private TextView makeEqualKey(KeySpec spec, int keyH, float density, int gap, int alpha) {
+		TextView key = makeKeyView(spec, keyH, 0, density, gap, alpha);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, keyH, 1f);
 		lp.setMargins(gap / 2, 0, gap / 2, 0);
 		key.setLayoutParams(lp);
 		key.setMinWidth(0);
@@ -452,6 +500,9 @@ public class MahjongKeyboardPanel {
 		}
 		styleTab(tabPlay, currentTab == TAB_PLAY);
 		styleTab(tabMore, currentTab == TAB_MORE);
+		if (landscapeMode) {
+			syncToGameFrame();
+		}
 	}
 
 	private void styleTab(TextView tab, boolean selected) {
@@ -496,9 +547,9 @@ public class MahjongKeyboardPanel {
 		gameFrameListener = null;
 	}
 
-	/** 横屏：常驻键贴游戏画面左右；底栏对齐游戏宽度。 */
+	/** 横屏：常驻键贴游戏画面左右；打牌页底栏对齐游戏宽度。 */
 	private void syncToGameFrame() {
-		if (panelRoot == null || leftRail == null || rightRail == null) {
+		if (panelRoot == null || !landscapeMode) {
 			return;
 		}
 		View emu = mm.getEmuView();
@@ -517,12 +568,42 @@ public class MahjongKeyboardPanel {
 		int rootW = panelRoot.getWidth();
 		int rootH = panelRoot.getHeight();
 
-		int stripH = bottomStrip != null ? Math.max(bottomStrip.getHeight(), bottomReserve) : bottomReserve;
-		int availBottom = Math.min(emuBottom, rootH - stripH - edgePad);
-		int availTop = Math.max(0, emuTop);
+		if (leftRail != null && rightRail != null) {
+			int stripH = bottomStrip != null ? Math.max(bottomStrip.getHeight(), bottomReserve) : bottomReserve;
+			int availBottom = Math.min(emuBottom, rootH - stripH - edgePad);
+			int availTop = Math.max(0, emuTop);
+			layoutRail(leftRail, true, emuLeft, emuRight, rootW, availTop, availBottom);
+			layoutRail(rightRail, false, emuLeft, emuRight, rootW, availTop, availBottom);
+		}
 
-		layoutRail(leftRail, true, emuLeft, emuRight, rootW, availTop, availBottom);
-		layoutRail(rightRail, false, emuLeft, emuRight, rootW, availTop, availBottom);
+		if (bottomStrip != null) {
+			FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) bottomStrip.getLayoutParams();
+			int left;
+			int width;
+			if (currentTab == TAB_PLAY) {
+				left = Math.max(0, emuLeft);
+				width = Math.max(sideKeyW * 2, emu.getWidth());
+				if (left + width > rootW) {
+					width = rootW - left;
+				}
+			} else {
+				left = edgePad;
+				width = Math.max(0, rootW - edgePad * 2);
+			}
+			if (left == lastStripLeft && width == lastStripWidth) {
+				return;
+			}
+			lastStripLeft = left;
+			lastStripWidth = width;
+			lp.width = width;
+			lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+			lp.gravity = Gravity.BOTTOM | Gravity.START;
+			lp.leftMargin = left;
+			lp.rightMargin = 0;
+			lp.topMargin = 0;
+			lp.bottomMargin = edgePad;
+			bottomStrip.setLayoutParams(lp);
+		}
 	}
 
 	private void layoutRail(View rail, boolean leftSide, int emuLeft, int emuRight,
@@ -539,7 +620,6 @@ public class MahjongKeyboardPanel {
 
 		int x;
 		if (leftSide) {
-			// 贴在游戏画面左边外侧；空隙不够则贴画面左缘内侧
 			x = emuLeft - sideKeyW - sideGap;
 			if (x < edgePad) {
 				x = Math.max(edgePad, emuLeft + sideGap);
@@ -572,7 +652,7 @@ public class MahjongKeyboardPanel {
 		col.setOrientation(LinearLayout.VERTICAL);
 		col.setGravity(Gravity.CENTER_HORIZONTAL);
 		for (int i = 0; i < specs.length; i++) {
-			TextView key = makeKeyView(specs[i], keyH, keyMinW, density, gap);
+			TextView key = makeKeyView(specs[i], keyH, keyMinW, density, gap, KEY_ALPHA);
 			LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) key.getLayoutParams();
 			lp.setMargins(0, i == 0 ? 0 : gap / 2, 0, gap / 2);
 			lp.width = keyMinW;
@@ -582,11 +662,11 @@ public class MahjongKeyboardPanel {
 		return col;
 	}
 
-	private LinearLayout buildKeyPage(KeySpec[][] rows, int keyH, int keyMinW,
-			float density, int gap) {
+	private LinearLayout buildScrollKeyPage(KeySpec[][] rows, int keyH, int keyMinW,
+			float density, int gap, int alpha) {
 		LinearLayout column = new LinearLayout(mm);
 		column.setOrientation(LinearLayout.VERTICAL);
-		column.setGravity(Gravity.BOTTOM);
+		column.setGravity(Gravity.CENTER_VERTICAL);
 
 		for (int r = 0; r < rows.length; r++) {
 			HorizontalScrollView scroll = new HorizontalScrollView(mm);
@@ -598,7 +678,7 @@ public class MahjongKeyboardPanel {
 			rowLayout.setOrientation(LinearLayout.HORIZONTAL);
 			rowLayout.setGravity(Gravity.CENTER);
 			for (KeySpec spec : rows[r]) {
-				rowLayout.addView(makeKeyView(spec, keyH, keyMinW, density, gap));
+				rowLayout.addView(makeKeyView(spec, keyH, keyMinW, density, gap, alpha));
 			}
 			scroll.addView(rowLayout, new ViewGroup.LayoutParams(
 					ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -616,7 +696,8 @@ public class MahjongKeyboardPanel {
 		return column;
 	}
 
-	private TextView makeKeyView(KeySpec spec, int keyH, int keyMinW, float density, int gap) {
+	private TextView makeKeyView(KeySpec spec, int keyH, int keyMinW, float density, int gap,
+			int alpha) {
 		TextView key = new TextView(mm);
 		key.setText(spec.label);
 		key.setGravity(Gravity.CENTER);
@@ -627,9 +708,12 @@ public class MahjongKeyboardPanel {
 			key.setMinWidth(keyMinW);
 		}
 		key.setMinHeight(keyH);
-		key.setPadding((int) (8 * density), (int) (4 * density), (int) (8 * density), (int) (4 * density));
+		int padV = Math.max((int) (2 * density), keyH / 8);
+		key.setPadding((int) (6 * density), padV, (int) (6 * density), padV);
+		final int idleColor = (alpha << 24) | 0x00333333;
+		final int pressedColor = (Math.min(0xFF, alpha + 0x30) << 24) | 0x00666666;
 		GradientDrawable keyBg = new GradientDrawable();
-		keyBg.setColor(0xB3333333);
+		keyBg.setColor(idleColor);
 		keyBg.setCornerRadius(8f * density);
 		key.setBackground(keyBg);
 		key.setClickable(true);
@@ -653,7 +737,7 @@ public class MahjongKeyboardPanel {
 					pendingUp[0] = null;
 				}
 				Emulator.setKeyData(keyCode, Emulator.KEY_DOWN, unicode);
-				keyBg.setColor(0xCC666666);
+				keyBg.setColor(pressedColor);
 				key.setBackground(keyBg);
 				return true;
 			}
@@ -669,7 +753,7 @@ public class MahjongKeyboardPanel {
 				} else {
 					up.run();
 				}
-				keyBg.setColor(0xB3333333);
+				keyBg.setColor(idleColor);
 				key.setBackground(keyBg);
 				return true;
 			}

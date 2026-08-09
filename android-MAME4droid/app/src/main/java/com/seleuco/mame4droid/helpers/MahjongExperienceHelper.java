@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Full-edition mahjong UX: defaults, orientation bridge, portrait-forced ROMs,
- * floating chrome, and the native mahjong keyboard panel.
+ * collapsible floating chrome, and the native mahjong keyboard panel.
  * Basic edition only installs the artwork key pack ({@link AssetPackInstaller});
  * all methods here no-op when {@code FEIJUCHANG_FULL_UX} is false.
  */
@@ -48,11 +48,16 @@ public class MahjongExperienceHelper {
 	private final MahjongKeyboardPanel keyboardPanel;
 	private String lastWrittenOrient = null;
 	private String lastForcedRom = null;
+	private TextView chromeToggle = null;
 	private TextView toggleBtn = null;
 	private TextView mjKbBtn = null;
 	private TextView menuBtn = null;
+	private TextView romBtn = null;
+	private TextView snapBtn = null;
+	private LinearLayout panel = null;
 	private LinearLayout floatBar = null;
 	private boolean oscForceHidden = false;
+	private boolean menuExpanded = false;
 
 	public MahjongExperienceHelper(MAME4droid mm) {
 		this.mm = mm;
@@ -105,7 +110,7 @@ public class MahjongExperienceHelper {
 	}
 
 	/**
-	 * Floating chrome + mahjong keyboard (full edition only).
+	 * Collapsible top-left chrome + mahjong keyboard (full edition only).
 	 */
 	public void attachFloatingControls(FrameLayout emulatorFrame) {
 		if (!BuildConfig.FEIJUCHANG_FULL_UX || emulatorFrame == null) {
@@ -126,72 +131,96 @@ public class MahjongExperienceHelper {
 		LinearLayout bar = new LinearLayout(mm);
 		bar.setId(FLOAT_BAR_ID);
 		bar.setOrientation(LinearLayout.VERTICAL);
-		bar.setGravity(Gravity.END);
+		bar.setGravity(Gravity.START);
 		FrameLayout.LayoutParams barLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.END);
+				Gravity.TOP | Gravity.START);
 		barLp.setMargins(margin, margin, margin, margin);
 		bar.setLayoutParams(barLp);
 
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			toggleBtn = makeFloatButton(padH, padV, density);
-			toggleBtn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
-			toggleBtn.setOnClickListener(v -> {
-				if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
-					return;
-				}
-				TouchController tc = mm.getInputHandler().getTouchController();
-				boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER && !oscForceHidden;
-				setOscForceHidden(showing);
-				mm.getMainHelper().updateMAME4droid();
-				refreshToggleLabel();
-				bringChromeFront();
-			});
-			LinearLayout.LayoutParams padLp = new LinearLayout.LayoutParams(
-					ViewGroup.LayoutParams.WRAP_CONTENT,
-					ViewGroup.LayoutParams.WRAP_CONTENT);
-			padLp.bottomMargin = gap;
-			toggleBtn.setLayoutParams(padLp);
-			bar.addView(toggleBtn);
-		} else {
-			toggleBtn = null;
-		}
-
-		mjKbBtn = makeFloatButton(padH, padV, density);
-		mjKbBtn.setOnClickListener(v -> {
-			keyboardPanel.toggleVisible();
-			refreshMjKbLabel();
+		chromeToggle = makeFloatButton(padH, padV, density);
+		chromeToggle.setOnClickListener(v -> {
+			menuExpanded = !menuExpanded;
+			applyMenuExpanded();
 			bringChromeFront();
 		});
-		LinearLayout.LayoutParams kbLp = new LinearLayout.LayoutParams(
+		bar.addView(chromeToggle);
+
+		panel = new LinearLayout(mm);
+		panel.setOrientation(LinearLayout.VERTICAL);
+		panel.setGravity(Gravity.START);
+		LinearLayout.LayoutParams panelLp = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		kbLp.bottomMargin = gap;
-		mjKbBtn.setLayoutParams(kbLp);
-		bar.addView(mjKbBtn);
+		panelLp.topMargin = gap;
+		panel.setLayoutParams(panelLp);
 
-		menuBtn = makeFloatButton(padH, padV, density);
-		menuBtn.setText(mm.getString(R.string.mj_menu_button));
-		menuBtn.setContentDescription(mm.getString(R.string.mj_menu_button));
-		menuBtn.setOnClickListener(v -> {
+		toggleBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			if (mm.getInputHandler() == null || mm.getInputHandler().getTouchController() == null) {
+				return;
+			}
+			TouchController tc = mm.getInputHandler().getTouchController();
+			boolean showing = tc.getState() == TouchController.STATE_SHOWING_CONTROLLER && !oscForceHidden;
+			setOscForceHidden(showing);
+			mm.getMainHelper().updateMAME4droid();
+			refreshToggleLabel();
+			collapseMenu();
+		});
+		toggleBtn.setContentDescription(mm.getString(R.string.mj_toggle_controller));
+
+		mjKbBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			keyboardPanel.toggleVisible();
+			refreshMjKbLabel();
+			collapseMenu();
+		});
+
+		menuBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
 			if (Emulator.isInOptions()) {
 				return;
 			}
 			Emulator.setInOptions(true);
 			mm.showDialog(DialogHelper.DIALOG_OPTIONS);
 		});
-		menuBtn.setLayoutParams(new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT));
-		bar.addView(menuBtn);
+		menuBtn.setText(mm.getString(R.string.mj_menu_button));
+		menuBtn.setContentDescription(mm.getString(R.string.mj_menu_button_desc));
 
+		romBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
+			FrontendFolderShortcutsHelper folders = mm.getFolderShortcutsHelper();
+			if (folders != null) {
+				folders.showRomChooser();
+			}
+		});
+		romBtn.setText(mm.getString(R.string.mj_set_rom));
+		romBtn.setContentDescription(mm.getString(R.string.fj_rom_path_button));
+
+		snapBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
+			FrontendFolderShortcutsHelper folders = mm.getFolderShortcutsHelper();
+			if (folders != null) {
+				folders.showSnapChooser();
+			}
+		});
+		snapBtn.setText(mm.getString(R.string.mj_set_snap));
+		snapBtn.setContentDescription(mm.getString(R.string.fj_snap_path_button));
+
+		// last item: no bottom margin
+		LinearLayout.LayoutParams snapLp = (LinearLayout.LayoutParams) snapBtn.getLayoutParams();
+		snapLp.bottomMargin = 0;
+		snapBtn.setLayoutParams(snapLp);
+
+		bar.addView(panel);
 		emulatorFrame.addView(bar);
 		floatBar = bar;
 
+		menuExpanded = false;
 		keyboardPanel.attach(emulatorFrame);
 		refreshToggleLabel();
 		refreshMjKbLabel();
+		refreshFolderActionsVisibility();
+		applyMenuExpanded();
 		bringChromeFront();
 	}
 
@@ -200,12 +229,59 @@ public class MahjongExperienceHelper {
 		attachFloatingControls(emulatorFrame);
 	}
 
+	private TextView addPanelButton(LinearLayout panel, int padH, int padV, float density,
+			int gap, View.OnClickListener listener) {
+		TextView btn = makeFloatButton(padH, padV, density);
+		btn.setOnClickListener(listener);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		lp.bottomMargin = gap;
+		btn.setLayoutParams(lp);
+		panel.addView(btn);
+		return btn;
+	}
+
+	private void collapseMenu() {
+		menuExpanded = false;
+		applyMenuExpanded();
+	}
+
+	private void applyMenuExpanded() {
+		if (panel != null) {
+			panel.setVisibility(menuExpanded ? View.VISIBLE : View.GONE);
+		}
+		if (chromeToggle != null) {
+			chromeToggle.setText(menuExpanded
+					? mm.getString(R.string.mj_chrome_close)
+					: mm.getString(R.string.mj_chrome_open));
+			chromeToggle.setContentDescription(menuExpanded
+					? mm.getString(R.string.mj_chrome_close_desc)
+					: mm.getString(R.string.mj_chrome_open_desc));
+		}
+	}
+
+	/** ROM/snap entries: frontend only (same rule as former folder chips). */
+	public void refreshFolderActionsVisibility() {
+		boolean show = Emulator.isEmulating() && !Emulator.isInGame();
+		if (romBtn != null) {
+			romBtn.setVisibility(show ? View.VISIBLE : View.GONE);
+		}
+		if (snapBtn != null) {
+			snapBtn.setVisibility(show ? View.VISIBLE : View.GONE);
+		}
+		bringChromeFront();
+	}
+
 	private TextView makeFloatButton(int padH, int padV, float density) {
 		TextView btn = new TextView(mm);
-		btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-		btn.setTypeface(Typeface.DEFAULT_BOLD);
+		btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+		btn.setTypeface(Typeface.DEFAULT);
 		btn.setTextColor(Color.WHITE);
+		btn.setGravity(Gravity.CENTER);
 		btn.setPadding(padH, padV, padH, padV);
+		btn.setMinWidth((int) (40 * density));
+		btn.setMinHeight((int) (40 * density));
 		GradientDrawable bg = new GradientDrawable();
 		bg.setColor(0x99000000);
 		bg.setCornerRadius(10f * density);
@@ -236,6 +312,9 @@ public class MahjongExperienceHelper {
 		toggleBtn.setText(showing
 				? mm.getString(R.string.mj_hide_controller)
 				: mm.getString(R.string.mj_show_controller));
+		toggleBtn.setContentDescription(showing
+				? mm.getString(R.string.mj_hide_controller_desc)
+				: mm.getString(R.string.mj_show_controller_desc));
 		bringChromeFront();
 	}
 
@@ -247,7 +326,9 @@ public class MahjongExperienceHelper {
 		mjKbBtn.setText(showing
 				? mm.getString(R.string.mj_hide_keyboard)
 				: mm.getString(R.string.mj_show_keyboard));
-		mjKbBtn.setContentDescription(mjKbBtn.getText());
+		mjKbBtn.setContentDescription(showing
+				? mm.getString(R.string.mj_hide_keyboard_desc)
+				: mm.getString(R.string.mj_show_keyboard_desc));
 		bringChromeFront();
 	}
 
