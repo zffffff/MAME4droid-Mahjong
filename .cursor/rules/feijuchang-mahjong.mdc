@@ -26,9 +26,9 @@ alwaysApply: true
 ## 体验门控
 
 - 两版都跑 `AssetPackInstaller`
-- **仅 full**：种子默认、方向桥接、强制竖屏、悬浮栏、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）
-- 四角横屏 OSC 只在 `app/src/full/res/raw*`；`main` 保持上游布局，避免污染 basic
-- 按钮 ID `8=Coin` `9=Start`
+- **仅 full**：种子默认、方向桥接、强制竖屏、右上角工具菜单、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）
+- 横屏 OSC 只在 `app/src/full/res/raw*`，且**无** Start/Coin/Option/Exit；`main` 保持上游布局，避免污染 basic
+- 按钮 ID `8=Coin` `9=Start`；Exit / MAME 菜单改走工具箱 🚪 与麻将键更多页 Tab
 
 ## 导流
 
