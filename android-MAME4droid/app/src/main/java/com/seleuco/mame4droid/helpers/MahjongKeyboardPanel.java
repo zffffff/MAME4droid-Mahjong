@@ -348,12 +348,12 @@ public class MahjongKeyboardPanel {
 		LinearLayout column = new LinearLayout(mm);
 		column.setOrientation(LinearLayout.VERTICAL);
 		column.setBackgroundColor(Color.TRANSPARENT);
-		// 相对底边上移约 1.5 格（此前 2 格，再下移半格）
+		// 相对底边上移约 1 格（此前 1.5 格，再下移半格）
 		FrameLayout.LayoutParams colLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				Gravity.BOTTOM);
-		colLp.setMargins(edge, 0, edge, edge + keyH * 3 / 2);
+		colLp.setMargins(edge, 0, edge, edge + keyH);
 		column.setLayoutParams(colLp);
 
 		// 第一行：7 格对齐 —— 开始 押注 … 翻转 投币
@@ -493,12 +493,24 @@ public class MahjongKeyboardPanel {
 		return strip;
 	}
 
+	/**
+	 * 横屏打牌页 A–N：总宽不变；N 约占两格宽（手牌区常见），A–M 略收；键间距 1px。
+	 */
 	private LinearLayout buildLandscapePlayRow(KeySpec[] keys, int keyH, float density, int gap) {
 		LinearLayout row = new LinearLayout(mm);
 		row.setOrientation(LinearLayout.HORIZONTAL);
 		row.setGravity(Gravity.CENTER_VERTICAL);
-		for (KeySpec spec : keys) {
-			row.addView(makeEqualKey(spec, keyH, density, gap, PLAY_LAND_ALPHA));
+		final int pxGap = 1;
+		for (int i = 0; i < keys.length; i++) {
+			KeySpec spec = keys[i];
+			boolean wideN = spec.keyCode == KeyEvent.KEYCODE_N;
+			TextView key = makeKeyView(spec, keyH, 0, density, gap, PLAY_LAND_ALPHA);
+			key.setPadding((int) (2 * density), key.getPaddingTop(), (int) (2 * density), key.getPaddingBottom());
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, keyH, wideN ? 2f : 1f);
+			lp.setMargins(i == 0 ? 0 : pxGap, 0, 0, 0);
+			key.setLayoutParams(lp);
+			key.setMinWidth(0);
+			row.addView(key);
 		}
 		return row;
 	}
