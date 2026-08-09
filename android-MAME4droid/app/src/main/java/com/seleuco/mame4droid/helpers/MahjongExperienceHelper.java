@@ -110,7 +110,7 @@ public class MahjongExperienceHelper {
 	}
 
 	/**
-	 * Collapsible top-left chrome + mahjong keyboard (full edition only).
+	 * Collapsible top-right chrome + mahjong keyboard (full edition only).
 	 */
 	public void attachFloatingControls(FrameLayout emulatorFrame) {
 		if (!BuildConfig.FEIJUCHANG_FULL_UX || emulatorFrame == null) {
@@ -131,11 +131,11 @@ public class MahjongExperienceHelper {
 		LinearLayout bar = new LinearLayout(mm);
 		bar.setId(FLOAT_BAR_ID);
 		bar.setOrientation(LinearLayout.VERTICAL);
-		bar.setGravity(Gravity.START);
+		bar.setGravity(Gravity.END);
 		FrameLayout.LayoutParams barLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
-				Gravity.TOP | Gravity.START);
+				Gravity.TOP | Gravity.END);
 		barLp.setMargins(margin, margin, margin, margin);
 		bar.setLayoutParams(barLp);
 
@@ -149,7 +149,7 @@ public class MahjongExperienceHelper {
 
 		panel = new LinearLayout(mm);
 		panel.setOrientation(LinearLayout.VERTICAL);
-		panel.setGravity(Gravity.START);
+		panel.setGravity(Gravity.END);
 		LinearLayout.LayoutParams panelLp = new LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);

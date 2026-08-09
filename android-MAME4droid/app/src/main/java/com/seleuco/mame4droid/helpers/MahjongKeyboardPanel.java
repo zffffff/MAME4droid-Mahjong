@@ -83,14 +83,6 @@ public class MahjongKeyboardPanel {
 			key("和", KeyEvent.KEYCODE_Z, 'Z'),
 	};
 
-	/** 横屏左栏：上→下 开始、翻转、押注、投币 */
-	private static final KeySpec[] ACTIONS_LEFT_LANDSCAPE = {
-			key("开始", KeyEvent.KEYCODE_1, '1'),
-			key("翻转", KeyEvent.KEYCODE_Y, 'Y'),
-			key("押注", KeyEvent.KEYCODE_3, '3'),
-			key("投币", KeyEvent.KEYCODE_5, '5'),
-	};
-
 	private static final KeySpec[][] LETTERS_PLAY_PORTRAIT = {
 			{
 					key("A", KeyEvent.KEYCODE_A, 'A'),
@@ -263,12 +255,12 @@ public class MahjongKeyboardPanel {
 			float density, int gap) {
 		int sideKeyH = (int) (40 * density);
 
-		leftRail = buildVerticalKeys(ACTIONS_LEFT_LANDSCAPE, sideKeyH, sideKeyW, density, gap);
+		leftRail = buildLandscapeLeftRail(sideKeyH, sideKeyW, density, gap);
 		leftRail.setLayoutParams(new FrameLayout.LayoutParams(
 				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT));
 		root.addView(leftRail);
 
-		rightRail = buildVerticalKeys(ACTIONS_MJ, sideKeyH, sideKeyW, density, gap);
+		rightRail = buildLandscapeRightRail(sideKeyH, sideKeyW, density, gap);
 		rightRail.setLayoutParams(new FrameLayout.LayoutParams(
 				sideKeyW, ViewGroup.LayoutParams.WRAP_CONTENT));
 		root.addView(rightRail);
@@ -277,16 +269,91 @@ public class MahjongKeyboardPanel {
 		root.addView(bottomStrip);
 	}
 
+	/**
+	 * 左栏（画面外）：开始、空格、翻转、押注、投币、打牌。
+	 * 空格使「开始」与右栏「吃」顶部对齐（同为 6 格）。
+	 */
+	private LinearLayout buildLandscapeLeftRail(int keyH, int keyW, float density, int gap) {
+		LinearLayout col = new LinearLayout(mm);
+		col.setOrientation(LinearLayout.VERTICAL);
+		col.setGravity(Gravity.CENTER_HORIZONTAL);
+		addSideKey(col, key("开始", KeyEvent.KEYCODE_1, '1'), keyH, keyW, density, gap, true);
+		addSideSpacer(col, keyH, keyW, gap);
+		addSideKey(col, key("翻转", KeyEvent.KEYCODE_Y, 'Y'), keyH, keyW, density, gap, false);
+		addSideKey(col, key("押注", KeyEvent.KEYCODE_3, '3'), keyH, keyW, density, gap, false);
+		addSideKey(col, key("投币", KeyEvent.KEYCODE_5, '5'), keyH, keyW, density, gap, false);
+		tabPlay = makeSideTab("打牌", keyH, keyW, density, gap);
+		tabPlay.setOnClickListener(v -> {
+			currentTab = TAB_PLAY;
+			applyTab();
+		});
+		col.addView(tabPlay);
+		return col;
+	}
+
+	/** 右栏（画面外）：吃碰杠听和、更多。 */
+	private LinearLayout buildLandscapeRightRail(int keyH, int keyW, float density, int gap) {
+		LinearLayout col = new LinearLayout(mm);
+		col.setOrientation(LinearLayout.VERTICAL);
+		col.setGravity(Gravity.CENTER_HORIZONTAL);
+		for (int i = 0; i < ACTIONS_MJ.length; i++) {
+			addSideKey(col, ACTIONS_MJ[i], keyH, keyW, density, gap, i == 0);
+		}
+		tabMore = makeSideTab("更多", keyH, keyW, density, gap);
+		tabMore.setOnClickListener(v -> {
+			currentTab = TAB_MORE;
+			applyTab();
+		});
+		col.addView(tabMore);
+		return col;
+	}
+
+	private void addSideKey(LinearLayout col, KeySpec spec, int keyH, int keyW,
+			float density, int gap, boolean first) {
+		TextView key = makeKeyView(spec, keyH, keyW, density, gap, KEY_ALPHA);
+		LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) key.getLayoutParams();
+		lp.width = keyW;
+		lp.height = keyH;
+		lp.setMargins(0, first ? 0 : gap / 2, 0, gap / 2);
+		key.setLayoutParams(lp);
+		col.addView(key);
+	}
+
+	private void addSideSpacer(LinearLayout col, int keyH, int keyW, int gap) {
+		View spacer = new View(mm);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(keyW, keyH);
+		lp.setMargins(0, gap / 2, 0, gap / 2);
+		spacer.setLayoutParams(lp);
+		col.addView(spacer);
+	}
+
+	private TextView makeSideTab(String label, int keyH, int keyW, float density, int gap) {
+		TextView tab = new TextView(mm);
+		tab.setText(label);
+		tab.setGravity(Gravity.CENTER);
+		tab.setTypeface(Typeface.DEFAULT_BOLD);
+		tab.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
+		tab.setMinWidth(keyW);
+		tab.setMinHeight(keyH);
+		tab.setPadding((int) (4 * density), (int) (4 * density), (int) (4 * density), (int) (4 * density));
+		tab.setClickable(true);
+		tab.setFocusable(false);
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(keyW, keyH);
+		lp.setMargins(0, gap / 2, 0, 0);
+		tab.setLayoutParams(lp);
+		return tab;
+	}
+
 	private void attachPortrait(FrameLayout root, int keyH, float density, int gap, int edge) {
 		LinearLayout column = new LinearLayout(mm);
 		column.setOrientation(LinearLayout.VERTICAL);
 		column.setBackgroundColor(Color.TRANSPARENT);
-		// 整体上移约 2 格按键高度
+		// 相对底边上移约 1.5 格（此前 2 格，再下移半格）
 		FrameLayout.LayoutParams colLp = new FrameLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT,
 				Gravity.BOTTOM);
-		colLp.setMargins(edge, 0, edge, edge + keyH * 2);
+		colLp.setMargins(edge, 0, edge, edge + keyH * 3 / 2);
 		column.setLayoutParams(colLp);
 
 		// 第一行：7 格对齐 —— 开始 押注 … 翻转 投币
@@ -390,8 +457,8 @@ public class MahjongKeyboardPanel {
 	}
 
 	/**
-	 * 横屏底栏：打牌 | 字母区 | 更多。
-	 * 打牌 / 更多 键高与透明度统一（更矮更透）；打牌页等分对齐画面，更多页可横滑。
+	 * 横屏底栏仅字母区（打牌/更多在左右侧栏）。
+	 * 打牌页等分对齐画面；更多页可横滑；高度与透明度统一。
 	 */
 	private LinearLayout buildLandscapeLetterStrip(int keyH, int keyMinW, float density, int gap) {
 		LinearLayout strip = new LinearLayout(mm);
@@ -407,20 +474,9 @@ public class MahjongKeyboardPanel {
 
 		int landH = Math.max(1, Math.round(keyH * PLAY_LAND_HEIGHT_FACTOR));
 
-		tabPlay = makeFlankingTab("打牌", landH, keyMinW, density, gap);
-		tabMore = makeFlankingTab("更多", landH, keyMinW, density, gap);
-		tabPlay.setOnClickListener(v -> {
-			currentTab = TAB_PLAY;
-			applyTab();
-		});
-		tabMore.setOnClickListener(v -> {
-			currentTab = TAB_MORE;
-			applyTab();
-		});
-		strip.addView(tabPlay);
-
 		FrameLayout pages = new FrameLayout(mm);
-		pages.setLayoutParams(new LinearLayout.LayoutParams(0, landH, 1f));
+		pages.setLayoutParams(new LinearLayout.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT, landH));
 
 		playLetters = buildLandscapePlayRow(LETTERS_PLAY_LANDSCAPE, landH, density, gap);
 		moreLetters = buildScrollKeyPage(LETTERS_MORE_LANDSCAPE, landH, keyMinW, density, gap,
@@ -433,7 +489,6 @@ public class MahjongKeyboardPanel {
 		pages.addView(playLetters);
 		pages.addView(moreLetters);
 		strip.addView(pages);
-		strip.addView(tabMore);
 
 		return strip;
 	}
@@ -446,24 +501,6 @@ public class MahjongKeyboardPanel {
 			row.addView(makeEqualKey(spec, keyH, density, gap, PLAY_LAND_ALPHA));
 		}
 		return row;
-	}
-
-	private TextView makeFlankingTab(String label, int keyH, int keyMinW, float density, int gap) {
-		TextView tab = new TextView(mm);
-		tab.setText(label);
-		tab.setGravity(Gravity.CENTER);
-		tab.setTypeface(Typeface.DEFAULT_BOLD);
-		tab.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11);
-		tab.setMinWidth(keyMinW);
-		tab.setMinHeight(keyH);
-		tab.setPadding((int) (8 * density), (int) (4 * density), (int) (8 * density), (int) (4 * density));
-		tab.setClickable(true);
-		tab.setFocusable(false);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-				ViewGroup.LayoutParams.WRAP_CONTENT, keyH);
-		lp.setMargins(gap / 2, 0, gap / 2, 0);
-		tab.setLayoutParams(lp);
-		return tab;
 	}
 
 	private TextView makeTabKey(String label, int keyH, float density, int gap) {
@@ -612,10 +649,10 @@ public class MahjongKeyboardPanel {
 				View.MeasureSpec.makeMeasureSpec(sideKeyW, View.MeasureSpec.EXACTLY),
 				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
 		int colH = rail.getMeasuredHeight();
-		int availH = Math.max(colH, availBottom - availTop);
-		int y = availTop + Math.max(0, (availH - colH) / 2);
-		if (y + colH > availBottom) {
-			y = Math.max(availTop, availBottom - colH);
+		// 底边对齐（左右栏同高时，「开始」与「吃」顶部对齐）
+		int y = availBottom - colH;
+		if (y < availTop) {
+			y = availTop;
 		}
 
 		int x;
@@ -644,22 +681,6 @@ public class MahjongKeyboardPanel {
 		lp.rightMargin = 0;
 		lp.bottomMargin = 0;
 		rail.setLayoutParams(lp);
-	}
-
-	private LinearLayout buildVerticalKeys(KeySpec[] specs, int keyH, int keyMinW,
-			float density, int gap) {
-		LinearLayout col = new LinearLayout(mm);
-		col.setOrientation(LinearLayout.VERTICAL);
-		col.setGravity(Gravity.CENTER_HORIZONTAL);
-		for (int i = 0; i < specs.length; i++) {
-			TextView key = makeKeyView(specs[i], keyH, keyMinW, density, gap, KEY_ALPHA);
-			LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) key.getLayoutParams();
-			lp.setMargins(0, i == 0 ? 0 : gap / 2, 0, gap / 2);
-			lp.width = keyMinW;
-			key.setLayoutParams(lp);
-			col.addView(key);
-		}
-		return col;
 	}
 
 	private LinearLayout buildScrollKeyPage(KeySpec[][] rows, int keyH, int keyMinW,
