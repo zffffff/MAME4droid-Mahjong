@@ -177,16 +177,39 @@ public class MainHelper {
 
     public String getInstallationDIR() {
         String res_dir = null;
+		File externalFiles = null;
+		String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			try {
+				externalFiles = mm.getExternalFilesDir(null);
+			} catch (Exception ignored) {
+				externalFiles = null;
+			}
+		}
 
-        if (mm.getPrefsHelper().getInstallationDIR() != null)
-            return mm.getPrefsHelper().getInstallationDIR();
+		String saved = mm.getPrefsHelper().getInstallationDIR();
+		if (saved != null) {
+			// full UX used to lock onto getFilesDir() (/data/user/0/...) before the
+			// storage type was set; migrate to browsable Android/data when possible.
+			if (externalFiles != null) {
+				String internal = mm.getFilesDir().getAbsolutePath();
+				if (saved.startsWith(internal)) {
+					res_dir = externalFiles.getAbsolutePath() + "/";
+					mm.getPrefsHelper().setInstallationDIR(res_dir);
+					return res_dir;
+				}
+			}
+			return saved;
+		}
 
-        // android.os.Debug.waitForDebugger();
-        String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {
-            if (getInstallationDirType() == INSTALLATION_DIR_FILES_DIR)
-                res_dir = mm.getExternalFilesDir(null).getAbsolutePath() + "/";
-            else if (getInstallationDirType() == INSTALLATION_DIR_LEGACY)
+			// UNDEFINED used to fall through to internal getFilesDir(); treat phone
+			// default like FILES_DIR so paths land under Android/data/<pkg>/files/.
+            if (getInstallationDirType() == INSTALLATION_DIR_FILES_DIR
+					|| getInstallationDirType() == INSTALLATION_DIR_UNDEFINED) {
+				if (externalFiles != null)
+					res_dir = externalFiles.getAbsolutePath() + "/";
+            } else if (getInstallationDirType() == INSTALLATION_DIR_LEGACY)
                 res_dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/MAME4droid/";
             else if (getInstallationDirType() == INSTALLATION_DIR_MEDIA_FOLDER)
             {
@@ -202,11 +225,6 @@ public class MainHelper {
         }
         if (res_dir == null)
             res_dir = mm.getFilesDir().getAbsolutePath() + "/";
-
-        // res_dir =
-        // mm.getExternalFilesDir(null).getAbsolutePath()+"/MAME4droid/";
-        // File[] f = mm.getExternalFilesDirs(null);
-        // res_dir = f[f.length-1].getAbsolutePath();
 
         mm.getPrefsHelper().setInstallationDIR(res_dir);
 
@@ -872,6 +890,8 @@ galaxy sde	   --> 2560x1600 16:10
                 romsPath = "/Your_Selected_Folder";
 
             mm.getMainHelper().setInstallationDirType(MainHelper.INSTALLATION_DIR_FILES_DIR);
+			// Force recompute so we don't keep a stale /data/user/0/... path.
+			mm.getPrefsHelper().setInstallationDIR(null);
             mm.getPrefsHelper().setROMsDIR(romsPath);
             mm.getPrefsHelper().setSAF_Uri(uri.toString());
             mm.getSAFHelper().deleteCacheFile();//the persisted cache belongs to the old tree
@@ -928,6 +948,7 @@ galaxy sde	   --> 2560x1600 16:10
 		} else {
 			setInstallationDirType(INSTALLATION_DIR_FILES_DIR);
 		}
+		mm.getPrefsHelper().setInstallationDIR(null);
 		mm.getPrefsHelper().setROMsDIR("");
 		mm.getPrefsHelper().setSAF_Uri(null);
 		mm.getSAFHelper().setURI(null);

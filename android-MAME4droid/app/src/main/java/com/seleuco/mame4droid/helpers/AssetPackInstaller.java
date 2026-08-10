@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Copies VERSION-gated asset packs into the MAME installation directory
@@ -132,6 +134,10 @@ public class AssetPackInstaller {
 				copyFile(rootMame, iniMame);
 			}
 
+			// Stock MAME (0.237+) needs ui.ini system_names pointing at the .lst;
+			// merely dropping mame.lst in files/ is not enough.
+			ensureSystemNamesInUiIni(installDir);
+
 			writeMarker(installDir, pack.id, assetVersion);
 			Log.i(TAG, "Installed pack " + pack.id + " @" + assetVersion);
 		} finally {
@@ -171,7 +177,83 @@ public class AssetPackInstaller {
 		if (iniMame.isFile() && !rootMame.isFile()) {
 			return true;
 		}
+		if (new File(installDir, "mame.lst").isFile()
+				&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
+			return true;
+		}
 		return false;
+	}
+
+	/** True if ui.ini already selects a translated system-names list. */
+	private static boolean uiIniHasSystemNames(File uiIni) {
+		if (!uiIni.isFile()) {
+			return false;
+		}
+		try {
+			String text = readFileText(uiIni);
+			for (String line : text.split("\n")) {
+				String t = line.trim();
+				if (t.startsWith("#") || t.isEmpty()) {
+					continue;
+				}
+				if (t.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
+					String rest = t.substring("system_names".length()).trim();
+					return !rest.isEmpty();
+				}
+			}
+		} catch (IOException e) {
+			return false;
+		}
+		return false;
+	}
+
+	/**
+	 * Point UI at {@code mame.lst} for localised system names (MAME 0.237+).
+	 * Merges into existing ui.ini without wiping other settings.
+	 */
+	private void ensureSystemNamesInUiIni(String installDir) throws IOException {
+		File lst = new File(installDir, "mame.lst");
+		if (!lst.isFile()) {
+			return;
+		}
+		File uiIni = new File(installDir, "ui.ini");
+		List<String> lines = new ArrayList<>();
+		boolean replaced = false;
+		if (uiIni.isFile()) {
+			String text = readFileText(uiIni);
+			String[] raw = text.split("\n", -1);
+			for (int i = 0; i < raw.length; i++) {
+				String line = raw[i];
+				// Drop the empty trailing element produced by a final newline.
+				if (i == raw.length - 1 && line.isEmpty()) {
+					continue;
+				}
+				String trim = line.trim();
+				if (trim.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
+					if (!replaced) {
+						lines.add("system_names           mame.lst");
+						replaced = true;
+					}
+					continue;
+				}
+				lines.add(line);
+			}
+		}
+		if (!replaced) {
+			lines.add("system_names           mame.lst");
+		}
+		File parent = uiIni.getParentFile();
+		if (parent != null && !parent.exists() && !parent.mkdirs()) {
+			throw new IOException("Cannot create: " + parent.getAbsolutePath());
+		}
+		StringBuilder out = new StringBuilder();
+		for (String line : lines) {
+			out.append(line).append('\n');
+		}
+		try (FileOutputStream fos = new FileOutputStream(uiIni)) {
+			fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
+		}
+		Log.i(TAG, "Ensured ui.ini system_names=mame.lst");
 	}
 
 	/** True if assets contain at least one required path for this pack. */
