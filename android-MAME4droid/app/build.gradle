@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk = 37
+	// Upstream 1.38.1 uses compileSdk 37 (Android 17). CI runners may not ship
+	// platforms;android-37 yet; compile against 36 and keep target 37 + LNP permission.
+    compileSdk = 36
 
     //ndkVersion = "21.3.6528147"
 
