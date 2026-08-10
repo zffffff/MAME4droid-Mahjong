@@ -5,7 +5,7 @@ alwaysApply: true
 
 # 飞剧场怀旧麻将
 
-详见 `docs/知识库.md`、`docs/开源与合规.md`、`docs/宣传要点.md`。
+详见 `docs/知识库.md`、`docs/更新日志.md`、`docs/开源与合规.md`、`docs/宣传要点.md`。
 
 ## 身份（两套 APK，同一 Git 分支 + flavors）
 
@@ -17,6 +17,7 @@ alwaysApply: true
 ## 宣传文档
 
 - 用户可感知的功能**新增或变动**后，必须更新 `docs/宣传要点.md`（条目 +「近期变化」）
+- 发版同时追加 `docs/更新日志.md` 顶部一节
 
 ## 勿混改
 
