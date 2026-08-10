@@ -15,7 +15,7 @@ on:
           - both
 
 env:
-  MAME4DROID_UPSTREAM_VERSION: "1.37.6"
+  MAME4DROID_UPSTREAM_VERSION: "1.38.1"
 
 jobs:
   build:
@@ -45,7 +45,7 @@ jobs:
       - name: Install Android SDK packages
         run: |
           sdkmanager --install \
-            "platforms;android-36" \
+            "platforms;android-37" \
             "build-tools;35.0.0" \
             "ndk;28.2.13676358"
           yes | sdkmanager --licenses >/dev/null || true

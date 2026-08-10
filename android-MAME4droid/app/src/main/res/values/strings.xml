@@ -4,7 +4,7 @@
     <!-- app_name comes from productFlavors (full / basic) via resValue -->
     <string name="source_code_url" translatable="false">https://github.com/zffffff/MAME4droid-Mahjong</string>
     <string name="source_code_label">Source code (GitHub)</string>
-    <string name="mame_version" translatable="false">0.288</string>
+    <string name="mame_version" translatable="false">0.289</string>
     <string name="label_settings">MAME4droid Settings</string>
     <string name="label_help">MAME4droid Help</string>
     <string name="label_define_buttons">MAME4droid Define Buttons</string>

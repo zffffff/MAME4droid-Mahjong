@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdk = 36
+    compileSdk = 37
 
     //ndkVersion = "21.3.6528147"
 
@@ -18,9 +18,9 @@ android {
 
     defaultConfig {
         minSdkVersion 29
-        targetSdkVersion 36
-        versionCode 147
-        versionName '1.37.6-mj16'
+        targetSdkVersion 37
+        versionCode 148
+        versionName '1.38.1-mj1'
 
         ndk {
             moduleName = "mame4droid-jni"
@@ -79,7 +79,7 @@ android {
 			minifyEnabled false
 			//shrinkResources true
 
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
 			signingConfig = signingConfigs.debug
 		}
 		debug {
