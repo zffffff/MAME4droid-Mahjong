@@ -47,6 +47,8 @@ public class AssetPackInstaller {
 							"master_lamps.lua",
 							"fei_mj_lamps",
 							"ini/mame.ini",
+							"mame.lst",
+							"arcade.lst",
 					}
 			),
 			// Future packs, e.g.:
