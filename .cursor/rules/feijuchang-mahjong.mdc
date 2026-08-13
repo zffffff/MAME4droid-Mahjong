@@ -7,6 +7,8 @@ alwaysApply: true
 
 详见 `docs/知识库.md`、`docs/更新日志.md`、`docs/开源与合规.md`、`docs/宣传要点.md`。
 
+本仓是**公开**产品源码。若本机存在 `ops/`（私有运营仓），写星球帖 / 网盘说明 / 定价相关文案时读那里；**不要**把 `ops/` 写入本仓的 `docs/`、README、App 帮助或任何公开分支。
+
 ## 身份（两套 APK，同一 Git 分支 + flavors）
 
 - 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · 麻将体验锦上添花
@@ -14,9 +16,9 @@ alwaysApply: true
 - Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；GPL + `NOTICE`
 - 不内置 ROM；按键包在 `assets/mahjong_pack/`（已开源，见该目录 LICENSE.txt）
 
-## 宣传文档
+## 产品文档
 
-- 用户可感知的功能**新增或变动**后，必须更新 `docs/宣传要点.md`（条目 +「近期变化」）
+- 用户可感知的功能**新增或变动**后，必须更新 `docs/宣传要点.md`（条目 +「近期变化」）；不要往该文件加优惠券、定价、网盘粘贴稿
 - 发版同时追加 `docs/更新日志.md` 顶部一节，并同步改写 `docs/用户更新说明.md`（白话、无技术黑话）
 
 ## 勿混改
@@ -32,9 +34,10 @@ alwaysApply: true
 - 横屏 OSC 只在 `app/src/full/res/raw*`，且**无** Start/Coin/Option/Exit；`main` 保持上游布局，避免污染 basic
 - 按钮 ID `8=Coin` `9=Start`；Exit / MAME 菜单改走工具箱 🚪 与麻将键更多页 Tab
 
-## 导流
+## 帮助页（产品内已有，链接以代码为准）
 
-- 帮助「飞剧场」：官网 `https://roxyweal.work/majiang/` 系统浏览器；知识星球名「飞剧场的藏宝阁」；优惠券 `https://t.zsxq.com/35B0X`（复制链接 + 尝试微信 / 文件传输助手）
+- `FeiJuchangPromoHelper`：官网用系统浏览器；知识星球链接的打开方式在代码里，不要把优惠券 URL 再写进 `docs/`
+- 仅安卓；iOS / 纯血鸿蒙装不了（公开功能边界）
 
 ## CI / 分发
 

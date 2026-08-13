@@ -12,7 +12,7 @@
 **开发说明：** [docs/知识库.md](docs/知识库.md)  
 **更新日志（技术）：** [docs/更新日志.md](docs/更新日志.md)  
 **更新说明（玩家）：** [docs/用户更新说明.md](docs/用户更新说明.md)  
-**宣传要点（用户向）：** [docs/宣传要点.md](docs/宣传要点.md)  
+**用户可感知功能：** [docs/宣传要点.md](docs/宣传要点.md)  
 **开源与分发：** [docs/开源与合规.md](docs/开源与合规.md)（卖或送 APK 时，下载页请同时附上本仓库链接）
 
 源码：https://github.com/zffffff/MAME4droid-Mahjong
