@@ -5,7 +5,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEST="${ROOT}/app/src/main/jniLibs/arm64-v8a"
-VERSION="${MAME4DROID_UPSTREAM_VERSION:-1.38.1}"
+VERSION="${MAME4DROID_UPSTREAM_VERSION:-1.38.2}"
 APK_NAME="MAME4droid.2026-${VERSION}-release.apk"
 URL="${MAME4DROID_UPSTREAM_APK_URL:-https://github.com/seleuco/MAME4droid-Current/releases/download/v${VERSION}/${APK_NAME}}"
 

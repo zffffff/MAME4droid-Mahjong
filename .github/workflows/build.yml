@@ -15,7 +15,7 @@ on:
           - both
 
 env:
-  MAME4DROID_UPSTREAM_VERSION: "1.38.1"
+  MAME4DROID_UPSTREAM_VERSION: "1.38.2"
 
 jobs:
   build:
