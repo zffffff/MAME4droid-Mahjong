@@ -1,3 +1,5 @@
 # 运营私有仓（独立 git，GitHub Private）
 # 公开仓不要提交本目录。GPL 不要求开源运营 SOP。
 /ops/
+.cursor/skills/feijuchang-ops/
+
