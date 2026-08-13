@@ -1,14 +1,15 @@
 return function(machine, screen, blink_state)
+    local out = fei_output(machine)
     local w, h = screen.width, screen.height
     
     local function is_red(vx, vy)
         local color = screen:pixel(w - vx - 1, h - vy - 1)
         return ((color >> 16) & 0xFF) > 200 and ((color >> 8) & 0xFF) < 50 and (color & 0xFF) < 50
     end
-    if is_red(286, 92) then machine.output:set_value("lamp_pon", blink_state) else machine.output:set_value("lamp_pon", 0) end
-    if is_red(324, 92) then machine.output:set_value("lamp_chi", blink_state) else machine.output:set_value("lamp_chi", 0) end
-    if is_red(286, 104) then machine.output:set_value("lamp_ron", blink_state) else machine.output:set_value("lamp_ron", 0) end
-    if is_red(324, 104) then machine.output:set_value("lamp_kan", blink_state) else machine.output:set_value("lamp_kan", 0) end
+    if is_red(286, 92) then out:set_value("lamp_pon", blink_state) else out:set_value("lamp_pon", 0) end
+    if is_red(324, 92) then out:set_value("lamp_chi", blink_state) else out:set_value("lamp_chi", 0) end
+    if is_red(286, 104) then out:set_value("lamp_ron", blink_state) else out:set_value("lamp_ron", 0) end
+    if is_red(324, 104) then out:set_value("lamp_kan", blink_state) else out:set_value("lamp_kan", 0) end
 
     local function check_select_screen()
         local c1 = screen:pixel(w - 16 - 1, h - 10 - 1)
@@ -23,8 +24,8 @@ return function(machine, screen, blink_state)
     end
 
     local is_sel = check_select_screen()
-    machine.output:set_value("lamp_hint_select_a", is_sel and blink_state or 0)
-    machine.output:set_value("lamp_hint_select_b", is_sel and blink_state or 0)
-    machine.output:set_value("lamp_hint_select_c", is_sel and blink_state or 0)
-    machine.output:set_value("lamp_hint_select_d", is_sel and blink_state or 0)
+    out:set_value("lamp_hint_select_a", is_sel and blink_state or 0)
+    out:set_value("lamp_hint_select_b", is_sel and blink_state or 0)
+    out:set_value("lamp_hint_select_c", is_sel and blink_state or 0)
+    out:set_value("lamp_hint_select_d", is_sel and blink_state or 0)
 end

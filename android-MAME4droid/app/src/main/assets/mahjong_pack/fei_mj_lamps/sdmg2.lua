@@ -1,4 +1,5 @@
 return function(machine, screen, blink_state)
+    local out = fei_output(machine)
     -- 引入精确颜色匹配工具函数 (备用：如果旧逻辑不亮，可随时用探针测出确切数值后改用此函数)
     local function check_exact(x, y, r_target, g_target, b_target)
         local c = screen:pixel(x, y)
@@ -15,9 +16,9 @@ return function(machine, screen, blink_state)
     local b1 = ch & 0xFF
     
     if r1 > 200 and g1 > 130 and g1 < 170 and b1 < 40 then
-        machine.output:set_value("lamp_hint_haidi", blink_state)
+        out:set_value("lamp_hint_haidi", blink_state)
     else
-        machine.output:set_value("lamp_hint_haidi", 0)
+        out:set_value("lamp_hint_haidi", 0)
     end
 
     -- 2. 比倍侦测：联动 双倍、大、小、得分(take)
@@ -27,16 +28,16 @@ return function(machine, screen, blink_state)
     local b2 = cb & 0xFF
     
     if r2 > 200 and g2 > 100 and b2 < 50 then
-        machine.output:set_value("lamp_hint_bibei", blink_state)
-        machine.output:set_value("lamp_double", blink_state)
-        machine.output:set_value("lamp_big", blink_state)
-        machine.output:set_value("lamp_small", blink_state)
-        machine.output:set_value("lamp_take", blink_state)
+        out:set_value("lamp_hint_bibei", blink_state)
+        out:set_value("lamp_double", blink_state)
+        out:set_value("lamp_big", blink_state)
+        out:set_value("lamp_small", blink_state)
+        out:set_value("lamp_take", blink_state)
     else
-        machine.output:set_value("lamp_hint_bibei", 0)
-        machine.output:set_value("lamp_double", 0)
-        machine.output:set_value("lamp_big", 0)
-        machine.output:set_value("lamp_small", 0)
-        machine.output:set_value("lamp_take", 0)
+        out:set_value("lamp_hint_bibei", 0)
+        out:set_value("lamp_double", 0)
+        out:set_value("lamp_big", 0)
+        out:set_value("lamp_small", 0)
+        out:set_value("lamp_take", 0)
     end
 end

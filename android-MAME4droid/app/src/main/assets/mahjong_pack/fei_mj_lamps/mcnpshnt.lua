@@ -9,7 +9,7 @@
 local DEBUG_UI_PROBE = false
 
 return function(machine, screen, blink_state)
-    local out = machine.output
+    local out = fei_output(machine)
     local w, h = screen.width, screen.height
     local REF_W, REF_H = 508, 240
 

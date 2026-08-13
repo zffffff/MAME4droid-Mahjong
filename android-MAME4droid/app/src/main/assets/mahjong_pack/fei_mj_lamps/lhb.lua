@@ -1,4 +1,5 @@
 return function(machine, screen, blink_state)
+    local out = fei_output(machine)
     local rom_name = machine.system.name
 
     -- 引入精确颜色匹配工具函数 (备用：如果旧逻辑误报，可随时用探针测出确切数值后改用此函数)
@@ -21,9 +22,9 @@ return function(machine, screen, blink_state)
         local b_s = c_select & 0xFF
         
         if r_s > 180 and g_s > 130 and g_s < 180 and b_s > 20 and b_s < 80 then
-            machine.output:set_value("lamp_hint_select", blink_state)
+            out:set_value("lamp_hint_select", blink_state)
         else
-            machine.output:set_value("lamp_hint_select", 0)
+            out:set_value("lamp_hint_select", 0)
         end
 
         -- 2. 海底侦测 (坐标 60, 37)
@@ -33,9 +34,9 @@ return function(machine, screen, blink_state)
         local b1 = c_haidi & 0xFF
         
         if r1 > 130 and g1 < 20 and b1 < 20 then
-            machine.output:set_value("lamp_hint_haidi", blink_state)
+            out:set_value("lamp_hint_haidi", blink_state)
         else
-            machine.output:set_value("lamp_hint_haidi", 0)
+            out:set_value("lamp_hint_haidi", 0)
         end
 
     -- ==========================================
@@ -51,9 +52,9 @@ return function(machine, screen, blink_state)
         
         -- 色彩容错，锁定偏浅橙红的色域
         if r2 > 200 and g2 > 130 and g2 < 180 and b2 > 90 and b2 < 140 then
-            machine.output:set_value("lamp_hint_haidi", blink_state)
+            out:set_value("lamp_hint_haidi", blink_state)
         else
-            machine.output:set_value("lamp_hint_haidi", 0)
+            out:set_value("lamp_hint_haidi", 0)
         end
     end
 end

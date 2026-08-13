@@ -2,7 +2,7 @@
 -- 天开眼 (tenkai) 专属像素雷达与灯光控制逻辑
 
 return function(machine, screen, blink_state)
-    local out = machine.output
+    local out = fei_output(machine)
 
     local function check_color(x, y, target_r, target_g, target_b)
         local color = screen:pixel(x, y)

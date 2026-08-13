@@ -1,4 +1,5 @@
 return function(machine, screen, blink_state)
+    local out = fei_output(machine)
     -- 引入精确颜色匹配工具函数 (备用：如果旧逻辑误报，可随时用探针测出确切数值后改用此函数)
     local function check_exact(x, y, r_target, g_target, b_target)
         local c = screen:pixel(x, y)
@@ -18,9 +19,9 @@ return function(machine, screen, blink_state)
     local b1 = c_haidi_xymg & 0xFF
     
     if r1 > 80 and r1 < 130 and g1 > 150 and g1 < 210 and b1 > 220 then
-        machine.output:set_value("lamp_hint_haidi", blink_state)
+        out:set_value("lamp_hint_haidi", blink_state)
     else
-        machine.output:set_value("lamp_hint_haidi", 0)
+        out:set_value("lamp_hint_haidi", 0)
     end
 
     -- 2. 比倍检测 (基于特定鹅黄 坐标 5, 30，RGB 255, 247, 132)
@@ -30,9 +31,9 @@ return function(machine, screen, blink_state)
     local b2 = c_bibei_xymg & 0xFF
     
     if r2 > 220 and g2 > 210 and b2 > 100 and b2 < 160 then
-        machine.output:set_value("lamp_hint_bibei", blink_state)
+        out:set_value("lamp_hint_bibei", blink_state)
     else
-        machine.output:set_value("lamp_hint_bibei", 0)
+        out:set_value("lamp_hint_bibei", 0)
     end
 
 end

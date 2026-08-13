@@ -1,4 +1,5 @@
 return function(machine, screen, blink_state)
+    local out = fei_output(machine)
     local function check_exact(x, y, r_target, g_target, b_target)
         local c = screen:pixel(x, y)
         if not c then return false end
@@ -26,5 +27,5 @@ return function(machine, screen, blink_state)
         is_n = true
     end
 
-    machine.output:set_value("lamp_hint_n", is_n and blink_state or 0)
+    out:set_value("lamp_hint_n", is_n and blink_state or 0)
 end

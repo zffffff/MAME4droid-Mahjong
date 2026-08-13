@@ -4,6 +4,7 @@
 local frame_counter = 0
 local game_module = nil
 local module_loaded = false
+
 local last_orient = nil
 local orient_check_counter = 0
 
@@ -52,7 +53,6 @@ local function apply_device_orientation_view(machine)
                 score = 60
             end
         else
-            -- Prefer Android-tuned dual view when present
             if name == "Portrait_Touch_Dual_1024x2030" then
                 score = 100
             elseif name == "Portrait_Touch_Dual" then
@@ -78,9 +78,15 @@ local function apply_device_orientation_view(machine)
             last_orient = orient
         end
     else
-        -- No matching view (e.g. Pure_Joystick_View only) — stop retrying this orient
         last_orient = orient
     end
+end
+
+
+-- MAME 0.289+：避免 machine.output:set_value 弃用警告刷屏卡顿
+local fei_output = loadfile("fei_mj_lamps/output_proxy.lua")
+if fei_output then
+    _G.fei_output = fei_output()
 end
 
 emu.register_frame_done(function()

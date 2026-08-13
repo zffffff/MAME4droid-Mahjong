@@ -126,6 +126,7 @@
         <element ref="touch_j" inputtag="KEY1" inputmask="4"> <bounds x="940" y="742" width="80" height="130" /> </element>
         <element ref="touch_k" inputtag="KEY2" inputmask="4"> <bounds x="1020" y="742" width="80" height="130" /> </element>
         <element ref="touch_l" inputtag="KEY3" inputmask="4"> <bounds x="1100" y="742" width="80" height="130" /> </element>
+        <!-- 打牌 M/N：默认 state=0 在屏上；比倍时 letter_mn=1 移出 -->
         <element ref="touch_m" inputtag="KEY0" inputmask="8">
             <animate name="mgzz_letter_mn" />
             <bounds state="0" x="1180" y="742" width="80" height="130" />
@@ -136,15 +137,16 @@
             <bounds state="0" x="1280" y="742" width="80" height="130" />
             <bounds state="1" x="1280" y="-200" width="80" height="130" />
         </element>
+        <!-- 比倍大/小：默认 state=0 必须在屏外，否则会盖住字母 M/N 导致横版无响应 -->
         <element ref="touch_m" inputtag="KEY4" inputmask="16">
             <animate name="mgzz_bibei_mn" />
-            <bounds state="0" x="1180" y="742" width="80" height="130" />
-            <bounds state="1" x="1180" y="-200" width="80" height="130" />
+            <bounds state="0" x="1180" y="-200" width="80" height="130" />
+            <bounds state="1" x="1180" y="742" width="80" height="130" />
         </element>
         <element ref="touch_n" inputtag="KEY4" inputmask="32">
             <animate name="mgzz_bibei_mn" />
-            <bounds state="0" x="1280" y="742" width="80" height="130" />
-            <bounds state="1" x="1280" y="-200" width="80" height="130" />
+            <bounds state="0" x="1280" y="-200" width="80" height="130" />
+            <bounds state="1" x="1280" y="742" width="80" height="130" />
         </element>
 
         <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
