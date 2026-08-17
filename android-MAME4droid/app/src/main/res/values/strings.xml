@@ -587,5 +587,5 @@
     <string name="picker_empty_catalog">No mahjong pack games found.</string>
     <string name="picker_no_match">No matching games.</string>
     <string name="picker_rom_folder_ok">ROM folder saved. You can launch a game.</string>
-    <string name="picker_snap_hint">Put preview images in the app snap folder as &lt;rom&gt;.png, or import via Classic UI → 🖼.</string>
+    <string name="picker_snap_hint">Put preview images in the app snap folder as &lt;rom&gt;.png, or use Snap to import a folder.</string>
 </resources>

@@ -14,28 +14,30 @@
 | 建议尺寸 | 宽 **720–1080px**，高 **160–240px**（列表会裁切铺满一行；横图更好） |
 | 内容 | 该机种代表性画面/海报感；避免大块白边；重要内容靠左或居中（右侧常被渐变压暗） |
 
-**加载优先级（代码已按此实现）：**
+**加载优先级：**
 
-1. `mahjong_list/bg/<rom>.*`（你定制的）
+1. `mahjong_list/bg/<rom>.*`（机种定制）
 2. 安装目录 `snap/<rom>.png`（或 `.jpg`）
-3. 品牌渐变底（无图时）
+3. **缺省底图** `_default.*`（按基础版/进阶版分开，见下）
+4. 纯色渐变（最后兜底；颜色只是按短名换皮，**与 ROM 好坏无关**）
 
-没有定制图也可以先发版：会自动用 snap / 渐变。有一张加一张即可。
+### 缺省底图（两版各一张）
 
-克隆机若共用一张图：复制同名文件，或以后再做别名表；**当前不做自动共用**，请按短名各放一份（或只给主 ROM 放，克隆走 snap/渐变）。
+文件名都叫 **`_default.webp`**（也可用 png/jpg），放到不同目录：
 
-### 2. 发布签名（覆盖安装必备，与列表图无关）
+| 版本 | 放这里 |
+|------|--------|
+| 进阶版 | `android-MAME4droid/app/src/full/assets/mahjong_list/bg/_default.webp` |
+| 基础版 | `android-MAME4droid/app/src/basic/assets/mahjong_list/bg/_default.webp` |
 
-你需要在本机生成一把 **长期固定的** release keystore，并交给 CI（Secrets），不要提交到 Git。
+### 2. 发布签名
 
-见仓库 `docs/选台资源与签名.md` 操作步骤。
+见 `docs/选台资源与签名.md`（仓库已配置 CI Secrets）。
 
 ### 3. 不必提供
 
-- ROM（永不内置）
-- 全套 snap（玩家自备 / 导入；有则列表更漂亮）
-- 按键包 artwork（已在 `mahjong_pack`）
+- ROM、全套 snap、按键包 artwork
 
 ## 当前会进选台列表的机种
 
-以 `mahjong_pack/artwork/` 下有目录的机种为准（有按键包的那些）。中文名来自同包 `mame.lst`。
+以 `mahjong_pack/mame.lst` 为准（**含克隆版**）。中文名同文件。

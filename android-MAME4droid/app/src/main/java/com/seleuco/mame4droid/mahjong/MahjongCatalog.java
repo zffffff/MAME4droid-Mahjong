@@ -10,15 +10,15 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Games shown on the custom picker: artwork folders in the mahjong pack + Chinese titles from mame.lst.
+ * Picker catalog: every rom in pack {@code mame.lst} (parents + clones), with Chinese titles.
+ * Artwork folders alone are not enough — many playable sets are clones without their own lay folder.
  */
 public final class MahjongCatalog {
 
@@ -39,42 +39,38 @@ public final class MahjongCatalog {
 
 	public static List<Entry> load(Context ctx) {
 		AssetManager assets = ctx.getAssets();
-		Set<String> roms = listArtworkRoms(assets);
 		Map<String, String> names = loadMameLst(assets);
 		List<Entry> out = new ArrayList<>();
-		List<String> sorted = new ArrayList<>(roms);
-		Collections.sort(sorted);
-		for (String rom : sorted) {
-			String title = names.get(rom);
-			if (title == null || title.isEmpty()) {
-				title = rom;
+		if (!names.isEmpty()) {
+			for (Map.Entry<String, String> e : names.entrySet()) {
+				out.add(new Entry(e.getKey(), e.getValue()));
 			}
-			out.add(new Entry(rom, title));
+		} else {
+			// Fallback if lst missing: artwork folders only.
+			try {
+				String[] dirs = assets.list("mahjong_pack/artwork");
+				if (dirs != null) {
+					for (String n : dirs) {
+						if (n == null || n.isEmpty() || n.contains(".")) {
+							continue;
+						}
+						String rom = n.toLowerCase(Locale.US);
+						out.add(new Entry(rom, rom));
+					}
+				}
+			} catch (Exception e) {
+				Log.w(TAG, "list artwork failed", e);
+			}
 		}
+		Collections.sort(out, Comparator.comparing((Entry e) -> e.title)
+				.thenComparing(e -> e.rom));
 		Log.i(TAG, "catalog size=" + out.size());
 		return out;
 	}
 
-	private static Set<String> listArtworkRoms(AssetManager assets) {
-		Set<String> roms = new HashSet<>();
-		try {
-			String[] names = assets.list("mahjong_pack/artwork");
-			if (names != null) {
-				for (String n : names) {
-					if (n == null || n.isEmpty() || n.contains(".")) {
-						continue;
-					}
-					roms.add(n.toLowerCase(Locale.US));
-				}
-			}
-		} catch (Exception e) {
-			Log.w(TAG, "list artwork failed", e);
-		}
-		return roms;
-	}
-
+	/** Preserve file order from mame.lst (LinkedHashMap). */
 	private static Map<String, String> loadMameLst(AssetManager assets) {
-		Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new LinkedHashMap<>();
 		try (InputStream in = assets.open("mahjong_pack/mame.lst");
 			 BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 			String line;

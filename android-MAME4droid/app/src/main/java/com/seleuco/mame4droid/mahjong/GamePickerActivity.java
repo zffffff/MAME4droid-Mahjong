@@ -37,6 +37,7 @@ public class GamePickerActivity extends Activity {
 
 	public static final String EXTRA_ROM = "feijuchang_rom";
 	public static final String EXTRA_FROM_PICKER = "feijuchang_from_picker";
+	public static final String EXTRA_CLASSIC_UI = "feijuchang_classic_ui";
 
 	private static final int REQ_ROMS = 33;
 	private static final int REQ_SNAP = 34;
@@ -83,19 +84,23 @@ public class GamePickerActivity extends Activity {
 		});
 
 		findViewById(R.id.picker_rom_btn).setOnClickListener(v -> openTree(REQ_ROMS));
-		findViewById(R.id.picker_snap_btn).setOnClickListener(v ->
-				Toast.makeText(this, R.string.picker_snap_hint, Toast.LENGTH_LONG).show());
+		findViewById(R.id.picker_snap_btn).setOnClickListener(v -> openTree(REQ_SNAP));
 		findViewById(R.id.picker_settings_btn).setOnClickListener(v ->
 				startActivity(new Intent(this, com.seleuco.mame4droid.prefs.UserPreferences.class)));
-		findViewById(R.id.picker_classic_btn).setOnClickListener(v -> {
-			Intent i = new Intent(this, MAME4droid.class);
-			i.putExtra(EXTRA_FROM_PICKER, true);
-			startActivity(i);
-		});
+		findViewById(R.id.picker_classic_btn).setOnClickListener(v -> launchClassicUi());
 
 		all.clear();
 		all.addAll(MahjongCatalog.load(this));
 		filter("");
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// Refresh row art after snap import / return from a game.
+		if (adapter != null) {
+			adapter.notifyDataSetChanged();
+		}
 	}
 
 	private void openTree(int requestCode) {
@@ -141,7 +146,20 @@ public class GamePickerActivity extends Activity {
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_ROM, rom);
 		i.putExtra(EXTRA_FROM_PICKER, true);
+		i.putExtra(EXTRA_CLASSIC_UI, false);
 		i.putExtra("cli_params", "-skip_gameinfo");
+		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(i);
+	}
+
+	/** Open stock MAME frontend without re-launching the last picked ROM. */
+	private void launchClassicUi() {
+		Intent i = new Intent(this, MAME4droid.class);
+		i.putExtra(EXTRA_FROM_PICKER, true);
+		i.putExtra(EXTRA_CLASSIC_UI, true);
+		i.putExtra(EXTRA_ROM, "");
+		i.removeExtra("cli_params");
+		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(i);
 	}
 
@@ -172,11 +190,7 @@ public class GamePickerActivity extends Activity {
 					.apply();
 			Toast.makeText(this, R.string.picker_rom_folder_ok, Toast.LENGTH_SHORT).show();
 		} else if (requestCode == REQ_SNAP) {
-			Toast.makeText(this, R.string.picker_snap_hint, Toast.LENGTH_LONG).show();
-			// Full snap import still runs best from in-app MAME helper; open classic once or use 🖼 there.
-			Intent i = new Intent(this, MAME4droid.class);
-			i.putExtra(EXTRA_FROM_PICKER, true);
-			startActivity(i);
+			PickerSnapImporter.importTree(this, uri);
 		}
 		filter(((EditText) findViewById(R.id.picker_search)).getText().toString());
 	}

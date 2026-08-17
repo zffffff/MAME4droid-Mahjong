@@ -566,5 +566,5 @@
     <string name="picker_empty_catalog">未找到按键包机种。</string>
     <string name="picker_no_match">没有匹配的机种。</string>
     <string name="picker_rom_folder_ok">已保存 ROM 文件夹，可以点选游戏。</string>
-    <string name="picker_snap_hint">请把预览图放到应用 snap 目录，文件名为 &lt;短名&gt;.png；或经「经典界面」里的 🖼 导入。</string>
+    <string name="picker_snap_hint">请把预览图放到应用 snap 目录，文件名为 &lt;短名&gt;.png；也可点右上角 Snap 导入文件夹。</string>
 </resources>

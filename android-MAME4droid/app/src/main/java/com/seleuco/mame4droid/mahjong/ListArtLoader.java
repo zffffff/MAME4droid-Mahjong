@@ -39,6 +39,11 @@ public final class ListArtLoader {
 			bmp = decodeSnap(ctx, rom, widthPx, heightPx);
 		}
 		if (bmp == null) {
+			// Flavor-specific default: src/full|basic/assets/mahjong_list/bg/_default.webp
+			bmp = decodeAssetBgNamed(ctx.getAssets(), "_default", widthPx, heightPx);
+		}
+		if (bmp == null) {
+			// Last resort only — hash palette is decorative, NOT rom working status.
 			bmp = makeGradient(widthPx, heightPx, gradientColorsFor(rom));
 		} else {
 			bmp = applyLeftFade(bmp);
@@ -47,8 +52,12 @@ public final class ListArtLoader {
 	}
 
 	private static Bitmap decodeAssetBg(AssetManager assets, String rom, int w, int h) {
+		return decodeAssetBgNamed(assets, rom, w, h);
+	}
+
+	private static Bitmap decodeAssetBgNamed(AssetManager assets, String baseName, int w, int h) {
 		for (String ext : ASSET_EXTS) {
-			String path = "mahjong_list/bg/" + rom + ext;
+			String path = "mahjong_list/bg/" + baseName + ext;
 			try (InputStream in = assets.open(path)) {
 				return decodeSampled(in, w, h);
 			} catch (IOException ignored) {

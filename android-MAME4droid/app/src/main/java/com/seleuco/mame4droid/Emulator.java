@@ -897,9 +897,16 @@ public class Emulator {
 				boolean delete = false;
 				final boolean fromPicker = intent.getBooleanExtra(
 						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER, false);
+				final boolean classicUi = intent.getBooleanExtra(
+						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_CLASSIC_UI, false);
 				String pickerRom = intent.getStringExtra(
 						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_ROM);
-				if (pickerRom != null && !pickerRom.isEmpty()) {
+				if (classicUi) {
+					// Stock MAME frontend: clear any previous direct-launch ROM from this process.
+					Emulator.setValueStr(Emulator.CLI_PARAMS, "");
+					Emulator.setValueStr(Emulator.GAME_SELECTED, "");
+					Emulator.setValueStr(Emulator.ROM_NAME, "");
+				} else if (pickerRom != null && !pickerRom.isEmpty()) {
 					cliParams = intent.getStringExtra("cli_params");
 					if (cliParams == null || cliParams.isEmpty()) {
 						cliParams = "-skip_gameinfo";
