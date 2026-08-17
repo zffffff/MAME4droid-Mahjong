@@ -53,16 +53,25 @@ jobs:
           yes | sdkmanager --licenses >/dev/null || true
 
       - name: Decode release keystore
-        if: ${{ secrets.FEIJUCHANG_KEYSTORE_BASE64 != '' }}
         working-directory: android-MAME4droid
         env:
           FEIJUCHANG_KEYSTORE_BASE64: ${{ secrets.FEIJUCHANG_KEYSTORE_BASE64 }}
+          FEIJUCHANG_KEYSTORE_PASSWORD: ${{ secrets.FEIJUCHANG_KEYSTORE_PASSWORD }}
+          FEIJUCHANG_KEY_ALIAS: ${{ secrets.FEIJUCHANG_KEY_ALIAS }}
+          FEIJUCHANG_KEY_PASSWORD: ${{ secrets.FEIJUCHANG_KEY_PASSWORD }}
         run: |
+          if [ -z "$FEIJUCHANG_KEYSTORE_BASE64" ]; then
+            echo "No FEIJUCHANG_KEYSTORE_BASE64 secret; release will use debug signing."
+            exit 0
+          fi
           echo "$FEIJUCHANG_KEYSTORE_BASE64" | base64 -d > feijuchang-release.jks
-          echo "storeFile=$(pwd)/feijuchang-release.jks" > keystore.properties
-          echo "storePassword=${{ secrets.FEIJUCHANG_KEYSTORE_PASSWORD }}" >> keystore.properties
-          echo "keyAlias=${{ secrets.FEIJUCHANG_KEY_ALIAS }}" >> keystore.properties
-          echo "keyPassword=${{ secrets.FEIJUCHANG_KEY_PASSWORD }}" >> keystore.properties
+          {
+            echo "storeFile=$(pwd)/feijuchang-release.jks"
+            echo "storePassword=$FEIJUCHANG_KEYSTORE_PASSWORD"
+            echo "keyAlias=$FEIJUCHANG_KEY_ALIAS"
+            echo "keyPassword=$FEIJUCHANG_KEY_PASSWORD"
+          } > keystore.properties
+          echo "Release keystore ready."
 
       - name: Fetch upstream libMAME4droid.so
         working-directory: android-MAME4droid
