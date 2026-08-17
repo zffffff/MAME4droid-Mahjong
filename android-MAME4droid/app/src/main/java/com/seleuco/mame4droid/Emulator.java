@@ -895,7 +895,22 @@ public class Emulator {
 				String cliParams = null;
 				String path = null;
 				boolean delete = false;
-				if (viewIntent) {
+				final boolean fromPicker = intent.getBooleanExtra(
+						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER, false);
+				String pickerRom = intent.getStringExtra(
+						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_ROM);
+				if (pickerRom != null && !pickerRom.isEmpty()) {
+					cliParams = intent.getStringExtra("cli_params");
+					if (cliParams == null || cliParams.isEmpty()) {
+						cliParams = "-skip_gameinfo";
+					}
+					Emulator.setValueStr(Emulator.CLI_PARAMS, cliParams);
+					Emulator.setValueStr(Emulator.GAME_SELECTED, pickerRom);
+					Emulator.setValueStr(Emulator.ROM_NAME, pickerRom + ".zip");
+					extROM = true;
+					String msg = mm.getString(R.string.launching_rom, pickerRom, versionName);
+					new WarnWidget.WarnWidgetHelper(mm, msg, 3, Color.GREEN, true);
+				} else if (viewIntent) {
 					//android.os.Debug.waitForDebugger();
 					//pkg = mm.getReferrer();
 					//System.out.println("PKG: "+pkg.getHost());
@@ -993,6 +1008,17 @@ public class Emulator {
 				}
 				mm.runOnUiThread(new Runnable() {
 					public void run() {
+						isEmulating = false;
+						if (fromPicker) {
+							Intent home = new Intent(mm,
+									com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
+							home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+									| Intent.FLAG_ACTIVITY_SINGLE_TOP
+									| Intent.FLAG_ACTIVITY_NEW_TASK);
+							mm.startActivity(home);
+							mm.finish();
+							return;
+						}
 						mm.finishAndRemoveTask();
 						android.os.Process.killProcess(android.os.Process.myPid());
 					}

@@ -2,4 +2,8 @@
 # 公开仓不要提交本目录。GPL 不要求开源运营 SOP。
 /ops/
 .cursor/skills/feijuchang-ops/
+*.jks
+*.keystore
+**/keystore.properties
+.feijuchang-keystore-backup.txt
 

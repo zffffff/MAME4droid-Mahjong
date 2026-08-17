@@ -52,22 +52,28 @@
 -->
 <!-- PLAY STORE -->
 
+		<!-- Custom mahjong picker is the home screen; MAME activity launches games. -->
+		<activity android:name="com.seleuco.mame4droid.mahjong.GamePickerActivity"
+			android:exported="true"
+			android:launchMode="singleTask"
+			android:theme="@style/Theme.MAME4droid"
+			android:windowSoftInputMode="stateHidden">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+			</intent-filter>
+		</activity>
+
 		<activity android:name="com.seleuco.mame4droid.MAME4droid"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:launchMode="singleTask"
 			android:exported="true"
 			android:windowSoftInputMode="stateAlwaysHidden" android:theme="@style/Theme.MAME4droid">
-
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-				<category android:name="android.intent.category.LAUNCHER"/>
-				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-			</intent-filter>
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

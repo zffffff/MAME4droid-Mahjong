@@ -556,4 +556,15 @@
     <string name="fj_zsxq_wechat_or_file_helper">链接已复制。若未直接在微信中打开，请粘贴发送给微信「文件传输助手」后再点开。</string>
     <string name="fj_zsxq_copy_hint">链接已复制。请发送给微信「文件传输助手」，再在微信中打开以使用知识星球优惠券。</string>
     <string name="fj_zsxq_no_browser">无法打开链接。请粘贴发送给微信「文件传输助手」。</string>
+
+    <string name="picker_btn_rom">ROM</string>
+    <string name="picker_btn_snap">Snap</string>
+    <string name="picker_btn_settings">设置</string>
+    <string name="picker_btn_classic">经典界面</string>
+    <string name="picker_search_hint">搜索中文名或短名</string>
+    <string name="picker_need_rom_folder">请先点右上角 ROM，选择游戏文件夹。</string>
+    <string name="picker_empty_catalog">未找到按键包机种。</string>
+    <string name="picker_no_match">没有匹配的机种。</string>
+    <string name="picker_rom_folder_ok">已保存 ROM 文件夹，可以点选游戏。</string>
+    <string name="picker_snap_hint">请把预览图放到应用 snap 目录，文件名为 &lt;短名&gt;.png；或经「经典界面」里的 🖼 导入。</string>
 </resources>

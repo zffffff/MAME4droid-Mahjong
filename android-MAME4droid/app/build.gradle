@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
 	// Upstream 1.38.1 uses compileSdk 37 (Android 17). CI runners may not ship
 	// platforms;android-37 yet; compile against 36 and keep target 37 + LNP permission.
@@ -18,11 +24,27 @@ android {
 		targetCompatibility = JavaVersion.VERSION_17
 	}
 
+	signingConfigs {
+		release {
+			if (keystorePropertiesFile.exists()) {
+				storeFile file(keystoreProperties["storeFile"])
+				storePassword keystoreProperties["storePassword"]
+				keyAlias keystoreProperties["keyAlias"]
+				keyPassword keystoreProperties["keyPassword"]
+			} else if (System.getenv("FEIJUCHANG_KEYSTORE_PATH")) {
+				storeFile file(System.getenv("FEIJUCHANG_KEYSTORE_PATH"))
+				storePassword System.getenv("FEIJUCHANG_KEYSTORE_PASSWORD")
+				keyAlias System.getenv("FEIJUCHANG_KEY_ALIAS")
+				keyPassword System.getenv("FEIJUCHANG_KEY_PASSWORD")
+			}
+		}
+	}
+
     defaultConfig {
         minSdkVersion 29
         targetSdkVersion 37
-        versionCode 149
-        versionName '1.38.1-mj2'
+        versionCode 151
+        versionName '1.38.1-mj4'
 
         ndk {
             moduleName = "mame4droid-jni"
@@ -82,7 +104,11 @@ android {
 			//shrinkResources true
 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
-			signingConfig = signingConfigs.debug
+			if (keystorePropertiesFile.exists() || System.getenv("FEIJUCHANG_KEYSTORE_PATH")) {
+				signingConfig = signingConfigs.release
+			} else {
+				signingConfig = signingConfigs.debug
+			}
 		}
 		debug {
 			minifyEnabled false

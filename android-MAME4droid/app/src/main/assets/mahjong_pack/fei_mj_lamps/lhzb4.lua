@@ -1,4 +1,36 @@
+-- lhzb4 / lhzb4dhb：默认 Controls=Joystick 时麻将键矩阵整组失效。
+-- 手机按键包启动后强制切到 Mahjong（DSW1 bit0 = 0）。
+local controls_forced = false
+
+local function ensure_mahjong_controls(machine)
+    if controls_forced then
+        return
+    end
+    controls_forced = true
+    pcall(function()
+        local port = machine.ioport and machine.ioport.ports and machine.ioport.ports[":DSW1"]
+        if not port or not port.fields then
+            return
+        end
+        local field = port.fields["Controls"]
+        if not field then
+            for _, f in pairs(port.fields) do
+                if f and f.type_class == "dipswitch" and f.mask == 1 then
+                    field = f
+                    break
+                end
+            end
+        end
+        -- Mahjong = 0；Joystick = 1（defvalue）
+        if field and field.user_value ~= 0 then
+            field.user_value = 0
+        end
+    end)
+end
+
 return function(machine, screen, blink_state)
+    ensure_mahjong_controls(machine)
+
     local out = fei_output(machine)
     local function check_color(x, y, r_min, r_max, g_min, g_max, b_min, b_max)
         local c = screen:pixel(x, y)
