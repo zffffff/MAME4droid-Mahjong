@@ -1,134 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="#0B1218"
-	android:orientation="vertical">
+	android:background="#0B1218">
 
 	<LinearLayout
 		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center_vertical"
-		android:orientation="horizontal"
-		android:paddingLeft="16dp"
-		android:paddingTop="12dp"
-		android:paddingRight="12dp"
-		android:paddingBottom="8dp">
-
-		<TextView
-			android:id="@+id/picker_brand"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:ellipsize="end"
-			android:maxLines="1"
-			android:textColor="#F2E8D5"
-			android:textSize="20sp"
-			android:textStyle="bold" />
-
-		<TextView
-			android:id="@+id/picker_menu_btn"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="?android:attr/selectableItemBackground"
-			android:padding="8dp"
-			android:text="@string/picker_btn_menu"
-			android:textColor="#C9B896"
-			android:textSize="14sp" />
-	</LinearLayout>
-
-	<EditText
-		android:id="@+id/picker_search"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginLeft="16dp"
-		android:layout_marginRight="16dp"
-		android:layout_marginBottom="8dp"
-		android:background="#1A242C"
-		android:hint="@string/picker_search_hint"
-		android:imeOptions="actionSearch"
-		android:inputType="text"
-		android:padding="12dp"
-		android:textColor="#F2E8D5"
-		android:textColorHint="#6A7A72"
-		android:textSize="15sp" />
-
-	<FrameLayout
-		android:layout_width="match_parent"
-		android:layout_height="0dp"
-		android:layout_weight="1">
-
-		<ListView
-			android:id="@+id/picker_list"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:divider="#1FFFFFFF"
-			android:dividerHeight="1dp"
-			android:listSelector="@android:color/transparent" />
-
-		<TextView
-			android:id="@+id/picker_empty"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center"
-			android:gravity="center"
-			android:padding="24dp"
-			android:textColor="#A8B5AE"
-			android:textSize="15sp"
-			android:visibility="gone" />
+		android:layout_height="match_parent"
+		android:orientation="vertical">
 
 		<LinearLayout
-			android:id="@+id/picker_setup"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:background="#0B1218"
-			android:clickable="true"
-			android:focusable="true"
-			android:gravity="center"
-			android:orientation="vertical"
-			android:padding="28dp"
-			android:visibility="gone">
+			android:layout_height="wrap_content"
+			android:gravity="center_vertical"
+			android:orientation="horizontal"
+			android:paddingLeft="16dp"
+			android:paddingTop="12dp"
+			android:paddingRight="12dp"
+			android:paddingBottom="8dp">
 
 			<TextView
-				android:id="@+id/picker_setup_title"
-				android:layout_width="match_parent"
+				android:id="@+id/picker_brand"
+				android:layout_width="0dp"
 				android:layout_height="wrap_content"
-				android:gravity="center"
+				android:layout_weight="1"
+				android:ellipsize="end"
+				android:maxLines="1"
 				android:textColor="#F2E8D5"
 				android:textSize="20sp"
 				android:textStyle="bold" />
 
 			<TextView
-				android:id="@+id/picker_setup_body"
-				android:layout_width="match_parent"
+				android:id="@+id/picker_menu_btn"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_marginTop="12dp"
-				android:gravity="center"
-				android:lineSpacingMultiplier="1.2"
-				android:textColor="#A8B5AE"
-				android:textSize="15sp" />
-
-			<TextView
-				android:id="@+id/picker_setup_primary"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="28dp"
-				android:background="#1A242C"
-				android:gravity="center"
-				android:padding="14dp"
-				android:textColor="#F2E8D5"
-				android:textSize="16sp" />
-
-			<TextView
-				android:id="@+id/picker_setup_skip"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="12dp"
-				android:gravity="center"
-				android:padding="12dp"
+				android:background="?android:attr/selectableItemBackground"
+				android:padding="8dp"
+				android:text="@string/picker_btn_menu"
 				android:textColor="#C9B896"
+				android:textSize="14sp" />
+		</LinearLayout>
+
+		<EditText
+			android:id="@+id/picker_search"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="16dp"
+			android:layout_marginRight="16dp"
+			android:layout_marginBottom="8dp"
+			android:background="#1A242C"
+			android:hint="@string/picker_search_hint"
+			android:imeOptions="actionSearch"
+			android:inputType="text"
+			android:padding="12dp"
+			android:textColor="#F2E8D5"
+			android:textColorHint="#6A7A72"
+			android:textSize="15sp" />
+
+		<FrameLayout
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1">
+
+			<ListView
+				android:id="@+id/picker_list"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:divider="#1FFFFFFF"
+				android:dividerHeight="1dp"
+				android:listSelector="@drawable/picker_list_selector" />
+
+			<TextView
+				android:id="@+id/picker_empty"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center"
+				android:gravity="center"
+				android:padding="24dp"
+				android:textColor="#A8B5AE"
 				android:textSize="15sp"
 				android:visibility="gone" />
-		</LinearLayout>
-	</FrameLayout>
-</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/picker_setup"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:background="#0B1218"
+				android:clickable="true"
+				android:focusable="true"
+				android:gravity="center"
+				android:orientation="vertical"
+				android:padding="28dp"
+				android:visibility="gone">
+
+				<TextView
+					android:id="@+id/picker_setup_title"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="center"
+					android:textColor="#F2E8D5"
+					android:textSize="20sp"
+					android:textStyle="bold" />
+
+				<TextView
+					android:id="@+id/picker_setup_body"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="12dp"
+					android:gravity="center"
+					android:lineSpacingMultiplier="1.2"
+					android:textColor="#A8B5AE"
+					android:textSize="15sp" />
+
+				<TextView
+					android:id="@+id/picker_setup_primary"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="28dp"
+					android:background="#1A242C"
+					android:gravity="center"
+					android:padding="14dp"
+					android:textColor="#F2E8D5"
+					android:textSize="16sp" />
+
+				<TextView
+					android:id="@+id/picker_setup_skip"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="12dp"
+					android:gravity="center"
+					android:padding="12dp"
+					android:textColor="#C9B896"
+					android:textSize="15sp"
+					android:visibility="gone" />
+			</LinearLayout>
+		</FrameLayout>
+	</LinearLayout>
+
+	<View
+		android:id="@+id/picker_launch_veil"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="#000000"
+		android:clickable="true"
+		android:focusable="true"
+		android:visibility="gone" />
+</FrameLayout>

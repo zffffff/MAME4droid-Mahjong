@@ -11,6 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +28,10 @@ import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -45,21 +48,27 @@ public class GamePickerActivity extends Activity {
 
 	private static final int MENU_ROM = 1;
 	private static final int MENU_SNAP = 2;
-	private static final int MENU_SETTINGS = 3;
-	private static final int MENU_CLASSIC = 4;
+	private static final int MENU_COMPACT = 3;
+	private static final int MENU_SETTINGS = 4;
+	private static final int MENU_HELP = 5;
+	private static final int MENU_CLASSIC = 6;
 	private static final int REQ_ROMS = 33;
 	private static final int REQ_SNAP = 34;
 	private static final int SETUP_HIDDEN = 0;
 	private static final int SETUP_ROM = 1;
 	private static final int SETUP_SNAP = 2;
 	private static final int RECENT_MAX = 3;
+	private static final int ROW_COMFORT_DP = 80;
+	private static final int ROW_COMPACT_DP = 56;
 	private static final String PREF_RECENT = "fj_picker_recent";
 	private static final String PREF_LAST = "fj_picker_last";
 	private static final String PREF_SETUP_DONE = "fj_picker_setup_done";
+	private static final String PREF_COMPACT = "fj_picker_compact";
 	private static final String TAG = "GamePicker";
 
 	private final List<MahjongCatalog.Entry> all = new ArrayList<>();
 	private final Map<String, MahjongCatalog.Entry> byRom = new HashMap<>();
+	private final Set<String> recentSet = new HashSet<>();
 	private final List<Row> shown = new ArrayList<>();
 	private RowAdapter adapter;
 	private TextView emptyHint;
@@ -70,6 +79,7 @@ public class GamePickerActivity extends Activity {
 	private TextView setupBody;
 	private TextView setupPrimary;
 	private TextView setupSkip;
+	private View launchVeil;
 	private SharedPreferences prefs;
 	private Set<String> presentRoms;
 	private boolean scanDone;
@@ -97,6 +107,7 @@ public class GamePickerActivity extends Activity {
 		setupBody = findViewById(R.id.picker_setup_body);
 		setupPrimary = findViewById(R.id.picker_setup_primary);
 		setupSkip = findViewById(R.id.picker_setup_skip);
+		launchVeil = findViewById(R.id.picker_launch_veil);
 
 		adapter = new RowAdapter();
 		list.setAdapter(adapter);
@@ -145,6 +156,7 @@ public class GamePickerActivity extends Activity {
 		} else if (!prefs.getBoolean(PREF_SETUP_DONE, false)) {
 			prefs.edit().putBoolean(PREF_SETUP_DONE, true).apply();
 		}
+		persistInstallDirIfNeeded();
 		applySetupUi();
 		rebuildRows();
 	}
@@ -152,6 +164,7 @@ public class GamePickerActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+		hideLaunchVeil();
 		if (pendingScrollRom != null) {
 			rebuildRows();
 		} else if (adapter != null) {
@@ -167,8 +180,12 @@ public class GamePickerActivity extends Activity {
 		PopupMenu pm = new PopupMenu(this, anchor);
 		pm.getMenu().add(0, MENU_ROM, 0, R.string.picker_btn_rom);
 		pm.getMenu().add(0, MENU_SNAP, 1, R.string.picker_btn_snap);
-		pm.getMenu().add(0, MENU_SETTINGS, 2, R.string.picker_btn_settings);
-		pm.getMenu().add(0, MENU_CLASSIC, 3, R.string.picker_btn_classic);
+		MenuItem compact = pm.getMenu().add(0, MENU_COMPACT, 2, R.string.picker_btn_compact);
+		compact.setCheckable(true);
+		compact.setChecked(isCompact());
+		pm.getMenu().add(0, MENU_SETTINGS, 3, R.string.picker_btn_settings);
+		pm.getMenu().add(0, MENU_HELP, 4, R.string.picker_btn_help);
+		pm.getMenu().add(0, MENU_CLASSIC, 5, R.string.picker_btn_classic);
 		pm.setOnMenuItemClickListener(item -> {
 			int id = item.getItemId();
 			if (id == MENU_ROM) {
@@ -179,8 +196,17 @@ public class GamePickerActivity extends Activity {
 				openTree(REQ_SNAP);
 				return true;
 			}
+			if (id == MENU_COMPACT) {
+				prefs.edit().putBoolean(PREF_COMPACT, !isCompact()).apply();
+				list.invalidateViews();
+				return true;
+			}
 			if (id == MENU_SETTINGS) {
 				startActivity(new Intent(this, com.seleuco.mame4droid.prefs.UserPreferences.class));
+				return true;
+			}
+			if (id == MENU_HELP) {
+				openHelp();
 				return true;
 			}
 			if (id == MENU_CLASSIC) {
@@ -204,6 +230,61 @@ public class GamePickerActivity extends Activity {
 	private boolean hasRomFolder() {
 		String dir = prefs.getString(PrefsHelper.PREF_ROMsDIR, null);
 		return dir != null && !dir.isEmpty();
+	}
+
+	/**
+	 * MAME4droid shows the ROM-folder dialog when {@code PREF_INSTALLATION_DIR} is
+	 * still null. Picker used to clear that pref; persist the same default path
+	 * the emulator would compute so classic UI does not ask again.
+	 */
+	private void persistInstallDirIfNeeded() {
+		if (prefs.getString(PrefsHelper.PREF_INSTALLATION_DIR, null) != null) {
+			return;
+		}
+		File ext = getExternalFilesDir(null);
+		String dir = (ext != null ? ext.getAbsolutePath() : getFilesDir().getAbsolutePath()) + "/";
+		prefs.edit().putString(PrefsHelper.PREF_INSTALLATION_DIR, dir).apply();
+	}
+
+	private boolean isCompact() {
+		return prefs.getBoolean(PREF_COMPACT, false);
+	}
+
+	private int rowHeightPx() {
+		float density = getResources().getDisplayMetrics().density;
+		int dp = isCompact() ? ROW_COMPACT_DP : ROW_COMFORT_DP;
+		return (int) (dp * density + 0.5f);
+	}
+
+	private void openHelp() {
+		Intent i = new Intent(this, com.seleuco.mame4droid.WebHelpActivity.class);
+		String path = prefs.getString(PrefsHelper.PREF_INSTALLATION_DIR, null);
+		if (path == null) {
+			File ext = getExternalFilesDir(null);
+			path = (ext != null ? ext.getAbsolutePath() : getFilesDir().getAbsolutePath()) + "/";
+		}
+		i.putExtra("INSTALLATION_PATH", path);
+		startActivity(i);
+	}
+
+	private void startWithVeil(Intent i) {
+		if (launchVeil == null) {
+			startActivity(i);
+			return;
+		}
+		launchVeil.setVisibility(View.VISIBLE);
+		launchVeil.setAlpha(0f);
+		launchVeil.animate().cancel();
+		launchVeil.animate().alpha(1f).setDuration(180).withEndAction(() -> startActivity(i));
+	}
+
+	private void hideLaunchVeil() {
+		if (launchVeil == null) {
+			return;
+		}
+		launchVeil.animate().cancel();
+		launchVeil.setVisibility(View.GONE);
+		launchVeil.setAlpha(0f);
 	}
 
 	private void applySetupUi() {
@@ -245,8 +326,12 @@ public class GamePickerActivity extends Activity {
 			}
 		}
 
+		recentSet.clear();
 		if (needle.isEmpty()) {
 			List<MahjongCatalog.Entry> recents = resolveRecents();
+			for (MahjongCatalog.Entry e : recents) {
+				recentSet.add(e.rom);
+			}
 			if (!recents.isEmpty()) {
 				shown.add(Row.header(getString(R.string.picker_section_recent)));
 				for (MahjongCatalog.Entry e : recents) {
@@ -254,6 +339,8 @@ public class GamePickerActivity extends Activity {
 				}
 				shown.add(Row.header(getString(R.string.picker_section_all)));
 			}
+		} else {
+			recentSet.addAll(loadRecentRoms());
 		}
 		for (MahjongCatalog.Entry e : matched) {
 			shown.add(Row.game(e, false));
@@ -421,10 +508,8 @@ public class GamePickerActivity extends Activity {
 		i.putExtra(EXTRA_CLASSIC_UI, false);
 		i.putExtra("cli_params", "-skip_gameinfo");
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startActivity(i);
+		startWithVeil(i);
 	}
-
-	/** Open stock MAME frontend without re-launching the last picked ROM. */
 	private void launchClassicUi() {
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_FROM_PICKER, true);
@@ -458,8 +543,8 @@ public class GamePickerActivity extends Activity {
 			prefs.edit()
 					.putString(PrefsHelper.PREF_ROMsDIR, romsPath)
 					.putString(PrefsHelper.PREF_SAF_URI, uri.toString())
-					.putString(PrefsHelper.PREF_INSTALLATION_DIR, null)
 					.apply();
+			persistInstallDirIfNeeded();
 			Toast.makeText(this, R.string.picker_rom_folder_ok, Toast.LENGTH_SHORT).show();
 			scanPresentRoms();
 			if (setupStep == SETUP_ROM) {
@@ -561,34 +646,47 @@ public class GamePickerActivity extends Activity {
 			FrameLayout bg = v.findViewById(R.id.row_bg);
 			title.setText(e.title);
 			boolean missing = isMissing(e.rom);
+			boolean compact = isCompact();
 			if (missing) {
 				rom.setText(getString(R.string.picker_rom_absent, e.rom));
+				rom.setVisibility(View.VISIBLE);
+			} else if (compact) {
+				rom.setVisibility(View.GONE);
 			} else {
 				rom.setText(e.rom);
+				rom.setVisibility(View.VISIBLE);
 			}
 			boolean indentClone = e.clone && !row.recentSlot;
 			float density = getResources().getDisplayMetrics().density;
 			int padL = (int) ((indentClone ? 28f : 16f) * density + 0.5f);
-			int padR = (int) (16f * density + 0.5f);
+			int padR = (int) (24f * density + 0.5f);
 			View textCol = (View) title.getParent();
 			textCol.setPadding(padL, textCol.getPaddingTop(), padR, textCol.getPaddingBottom());
+			float titleSp = compact ? (indentClone ? 13f : 15f) : (indentClone ? 15f : 17f);
 			if (indentClone) {
 				title.setTextColor(0xFFC5CCD4);
-				title.setTextSize(15f);
+				title.setTextSize(titleSp);
 				title.setTypeface(android.graphics.Typeface.create(
 						android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL));
 				rom.setTextColor(0x88A8B0B8);
 			} else {
 				title.setTextColor(0xFFF7F0E6);
-				title.setTextSize(17f);
+				title.setTextSize(titleSp);
 				title.setTypeface(android.graphics.Typeface.create(
 						android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
 				rom.setTextColor(0x99D8CFC0);
 			}
+			int hPx = rowHeightPx();
+			ViewGroup.LayoutParams lp = v.getLayoutParams();
+			if (lp != null) {
+				lp.height = hPx;
+				v.setLayoutParams(lp);
+			}
 			DisplayMetrics dm = getResources().getDisplayMetrics();
-			int w = dm.widthPixels;
-			int hPx = (int) (80f * dm.density + 0.5f);
-			bg.setBackground(ListArtLoader.loadRowBackground(GamePickerActivity.this, e.rom, w, hPx));
+			bg.setBackground(ListArtLoader.loadRowBackground(
+					GamePickerActivity.this, e.rom, dm.widthPixels, hPx));
+			View played = v.findViewById(R.id.row_played);
+			played.setVisibility(recentSet.contains(e.rom) ? View.VISIBLE : View.GONE);
 			v.setAlpha(missing ? 0.42f : 1f);
 			return v;
 		}

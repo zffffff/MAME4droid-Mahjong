@@ -4,6 +4,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.util.Log;
 
@@ -72,31 +74,64 @@ public final class RomFolderScanner {
 				DocumentsContract.Document.COLUMN_DISPLAY_NAME,
 				DocumentsContract.Document.COLUMN_MIME_TYPE
 		};
-		try (Cursor c = cr.query(children, projection, null, null, null)) {
+		try (Cursor c = queryChildren(cr, children, projection)) {
 			if (c == null) {
 				return;
 			}
+			int idCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID);
+			int nameCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+			int mimeCol = c.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
+			if (idCol < 0 || nameCol < 0) {
+				return;
+			}
 			while (c.moveToNext() && budget[0] > 0) {
-				String id = c.getString(0);
-				String name = c.getString(1);
-				String mime = c.getString(2);
+				String id = c.getString(idCol);
+				String name = c.getString(nameCol);
+				String mime = mimeCol >= 0 ? c.getString(mimeCol) : null;
 				if (name == null || name.isEmpty() || name.startsWith(".")) {
 					continue;
 				}
 				budget[0]--;
+				boolean zipLike = isZipOr7zName(name);
+				if (zipLike) {
+					addRomName(out, name);
+					// Some providers expose a valid zip as a browsable directory.
+					// Count it as a ROM and do not walk inside the archive.
+					continue;
+				}
 				if (DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) {
-					if (SKIP_DIRS.contains(name.toLowerCase(Locale.US))) {
+					String lower = name.toLowerCase(Locale.US);
+					if (SKIP_DIRS.contains(lower)) {
 						continue;
+					}
+					if (name.indexOf('.') < 0) {
+						out.add(lower);
 					}
 					Uri child = DocumentsContract.buildDocumentUriUsingTree(treeUri, id);
 					scanSaf(cr, treeUri, child, out, depth + 1, budget);
-				} else {
+				} else if (mime != null && (mime.contains("zip") || mime.contains("7z"))) {
 					addRomName(out, name);
+					if (!isZipOr7zName(name)) {
+						out.add(name.toLowerCase(Locale.US));
+					}
 				}
 			}
 		} catch (Exception e) {
 			Log.w(TAG, "SAF listing failed at depth " + depth, e);
 		}
+	}
+
+	private static Cursor queryChildren(ContentResolver cr, Uri children, String[] projection) {
+		if (Build.VERSION.SDK_INT >= 26) {
+			Bundle extras = new Bundle();
+			extras.putInt(ContentResolver.QUERY_ARG_LIMIT, MAX_FILES);
+			try {
+				return cr.query(children, projection, extras, null);
+			} catch (Exception ignored) {
+				// Provider may not honor query bundles; fall back.
+			}
+		}
+		return cr.query(children, projection, null, null, null);
 	}
 
 	private static void scanFileDir(File dir, Set<String> out, int depth, int[] budget) {
@@ -117,14 +152,27 @@ public final class RomFolderScanner {
 			}
 			budget[0]--;
 			if (f.isDirectory()) {
-				if (SKIP_DIRS.contains(name.toLowerCase(Locale.US))) {
+				String lower = name.toLowerCase(Locale.US);
+				if (SKIP_DIRS.contains(lower)) {
 					continue;
+				}
+				if (isZipOr7zName(name)) {
+					addRomName(out, name);
+					continue;
+				}
+				if (name.indexOf('.') < 0) {
+					out.add(lower);
 				}
 				scanFileDir(f, out, depth + 1, budget);
 			} else {
 				addRomName(out, name);
 			}
 		}
+	}
+
+	private static boolean isZipOr7zName(String fileName) {
+		String lower = fileName.toLowerCase(Locale.US);
+		return lower.endsWith(".zip") || lower.endsWith(".7z");
 	}
 
 	private static void addRomName(Set<String> out, String fileName) {

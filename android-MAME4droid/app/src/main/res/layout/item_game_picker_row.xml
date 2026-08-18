@@ -35,4 +35,13 @@
 			android:textColor="#99D8CFC0"
 			android:textSize="12sp" />
 	</LinearLayout>
+
+	<View
+		android:id="@+id/row_played"
+		android:layout_width="6dp"
+		android:layout_height="6dp"
+		android:layout_gravity="center_vertical|end"
+		android:layout_marginEnd="12dp"
+		android:background="@drawable/picker_played_dot"
+		android:visibility="gone" />
 </FrameLayout>

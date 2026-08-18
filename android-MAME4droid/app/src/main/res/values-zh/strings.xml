@@ -561,6 +561,8 @@
     <string name="picker_btn_rom">ROM</string>
     <string name="picker_btn_snap">Snap</string>
     <string name="picker_btn_settings">设置</string>
+    <string name="picker_btn_compact">紧凑列表</string>
+    <string name="picker_btn_help">帮助</string>
     <string name="picker_btn_classic">经典界面</string>
     <string name="picker_search_hint">搜索中文名或短名</string>
     <string name="picker_need_rom_folder">请先选择 ROM 文件夹（右上角菜单 → ROM）。</string>
