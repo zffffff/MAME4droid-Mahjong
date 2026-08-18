@@ -224,6 +224,24 @@ public class GamePickerActivity extends Activity {
 			FrameLayout bg = v.findViewById(R.id.row_bg);
 			title.setText(e.title);
 			rom.setText(e.rom);
+			float density = getResources().getDisplayMetrics().density;
+			int padL = (int) ((e.clone ? 28f : 16f) * density + 0.5f);
+			int padR = (int) (16f * density + 0.5f);
+			View textCol = (View) title.getParent();
+			textCol.setPadding(padL, textCol.getPaddingTop(), padR, textCol.getPaddingBottom());
+			if (e.clone) {
+				title.setTextColor(0xFFC5CCD4);
+				title.setTextSize(15f);
+				title.setTypeface(android.graphics.Typeface.create(
+						android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL));
+				rom.setTextColor(0x88A8B0B8);
+			} else {
+				title.setTextColor(0xFFF7F0E6);
+				title.setTextSize(17f);
+				title.setTypeface(android.graphics.Typeface.create(
+						android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD));
+				rom.setTextColor(0x99D8CFC0);
+			}
 			DisplayMetrics dm = getResources().getDisplayMetrics();
 			int w = dm.widthPixels;
 			int hPx = (int) (80f * dm.density + 0.5f);

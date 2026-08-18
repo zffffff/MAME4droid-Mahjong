@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * List row art: custom assets → snap → brand gradient.
+ * List row art: per-rom hash gradient (base) → custom / snap / flavor {@code _default} (may be translucent).
  */
 public final class ListArtLoader {
 
@@ -34,25 +34,23 @@ public final class ListArtLoader {
 			heightPx = (int) (80f * dm.density + 0.5f);
 		}
 
-		Bitmap bmp = decodeAssetBg(ctx.getAssets(), rom, widthPx, heightPx);
-		if (bmp == null) {
-			bmp = decodeSnap(ctx, rom, widthPx, heightPx);
-		}
-		if (bmp == null) {
-			// Flavor-specific default: src/full|basic/assets/mahjong_list/bg/_default.webp
-			bmp = decodeAssetBgNamed(ctx.getAssets(), "_default", widthPx, heightPx);
-		}
-		if (bmp == null) {
-			// Last resort only — hash palette is decorative, NOT rom working status.
-			bmp = makeGradient(widthPx, heightPx, gradientColorsFor(rom));
-		} else {
-			bmp = applyLeftFade(bmp);
-		}
-		return new BitmapDrawable(ctx.getResources(), bmp);
-	}
+		// Always paint a per-rom dark gradient first so translucent _default can show through.
+		Bitmap base = makeGradient(widthPx, heightPx, gradientColorsFor(rom));
 
-	private static Bitmap decodeAssetBg(AssetManager assets, String rom, int w, int h) {
-		return decodeAssetBgNamed(assets, rom, w, h);
+		Bitmap overlay = decodeAssetBgNamed(ctx.getAssets(), rom, widthPx, heightPx);
+		if (overlay == null) {
+			overlay = decodeSnap(ctx, rom, widthPx, heightPx);
+		}
+		if (overlay == null) {
+			overlay = decodeAssetBgNamed(ctx.getAssets(), "_default", widthPx, heightPx);
+		}
+		if (overlay != null) {
+			Canvas c = new Canvas(base);
+			c.drawBitmap(overlay, 0, 0, null);
+			overlay.recycle();
+		}
+
+		return new BitmapDrawable(ctx.getResources(), applyLeftFade(base));
 	}
 
 	private static Bitmap decodeAssetBgNamed(AssetManager assets, String baseName, int w, int h) {
@@ -67,9 +65,50 @@ public final class ListArtLoader {
 	}
 
 	private static Bitmap decodeSnap(Context ctx, String rom, int w, int h) {
+		File snapDir = resolveSnapDir(ctx);
+		if (snapDir == null) {
+			return null;
+		}
+
+		// 1) snap/<rom>.png
+		for (String ext : SNAP_EXTS) {
+			Bitmap b = decodeFileScaled(new File(snapDir, rom + ext), w, h);
+			if (b != null) {
+				return b;
+			}
+		}
+		// 2) snap/<rom>/0000.png (MAME title snap folder layout)
+		File sub = new File(snapDir, rom);
+		if (sub.isDirectory()) {
+			for (String name : new String[]{"0000.png", "0000.jpg", "0000.jpeg", "0000.webp"}) {
+				Bitmap b = decodeFileScaled(new File(sub, name), w, h);
+				if (b != null) {
+					return b;
+				}
+			}
+			// Fallback: first image in the folder
+			File[] kids = sub.listFiles();
+			if (kids != null) {
+				for (File f : kids) {
+					if (!f.isFile()) {
+						continue;
+					}
+					String n = f.getName().toLowerCase();
+					if (n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".webp")) {
+						Bitmap b = decodeFileScaled(f, w, h);
+						if (b != null) {
+							return b;
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static File resolveSnapDir(Context ctx) {
 		String install = null;
 		try {
-			// Prefer live install dir when Activity is MAME4droid; picker may pass files dir.
 			if (ctx instanceof com.seleuco.mame4droid.MAME4droid) {
 				install = ((com.seleuco.mame4droid.MAME4droid) ctx).getMainHelper().getInstallationDIR();
 			}
@@ -87,24 +126,27 @@ public final class ListArtLoader {
 		if (!install.endsWith("/")) {
 			install += "/";
 		}
-		File snapDir = new File(install + "snap");
-		for (String ext : SNAP_EXTS) {
-			File f = new File(snapDir, rom + ext);
-			if (!f.isFile()) {
-				continue;
-			}
-			BitmapFactory.Options bounds = new BitmapFactory.Options();
-			bounds.inJustDecodeBounds = true;
-			BitmapFactory.decodeFile(f.getAbsolutePath(), bounds);
-			BitmapFactory.Options opts = new BitmapFactory.Options();
-			opts.inSampleSize = calcInSampleSize(bounds, w, h);
-			opts.inPreferredConfig = Bitmap.Config.RGB_565;
-			Bitmap raw = BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
-			if (raw != null) {
-				return scaleCenterCrop(raw, w, h);
-			}
+		return new File(install + "snap");
+	}
+
+	private static Bitmap decodeFileScaled(File f, int w, int h) {
+		if (f == null || !f.isFile()) {
+			return null;
 		}
-		return null;
+		BitmapFactory.Options bounds = new BitmapFactory.Options();
+		bounds.inJustDecodeBounds = true;
+		BitmapFactory.decodeFile(f.getAbsolutePath(), bounds);
+		if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+			return null;
+		}
+		BitmapFactory.Options opts = new BitmapFactory.Options();
+		opts.inSampleSize = calcInSampleSize(bounds, w, h);
+		opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
+		Bitmap raw = BitmapFactory.decodeFile(f.getAbsolutePath(), opts);
+		if (raw == null) {
+			return null;
+		}
+		return scaleCenterCrop(raw, w, h);
 	}
 
 	private static Bitmap decodeSampled(InputStream in, int w, int h) {
@@ -115,7 +157,7 @@ public final class ListArtLoader {
 			BitmapFactory.decodeByteArray(data, 0, data.length, bounds);
 			BitmapFactory.Options opts = new BitmapFactory.Options();
 			opts.inSampleSize = calcInSampleSize(bounds, w, h);
-			opts.inPreferredConfig = Bitmap.Config.RGB_565;
+			opts.inPreferredConfig = Bitmap.Config.ARGB_8888;
 			Bitmap raw = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
 			if (raw == null) {
 				return null;
@@ -170,17 +212,25 @@ public final class ListArtLoader {
 		return out;
 	}
 
-	/** Darken left ~55% so title stays readable. */
+	/** Strong left veil across ~2/3 width so titles stay readable. */
 	private static Bitmap applyLeftFade(Bitmap src) {
 		int w = src.getWidth();
 		int h = src.getHeight();
-		Bitmap out = src.copy(Bitmap.Config.ARGB_8888, true);
-		src.recycle();
+		Bitmap out = src.getConfig() == Bitmap.Config.ARGB_8888
+				? src
+				: src.copy(Bitmap.Config.ARGB_8888, true);
+		if (out != src) {
+			src.recycle();
+		} else if (!out.isMutable()) {
+			out = src.copy(Bitmap.Config.ARGB_8888, true);
+			src.recycle();
+		}
 		Canvas c = new Canvas(out);
 		Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+		// Higher opacity on the left; fade out through 2/3 of the row.
 		p.setShader(new LinearGradient(
-				0, 0, w * 0.62f, 0,
-				0xCC0B1218, 0x000B1218,
+				0, 0, w * (2f / 3f), 0,
+				0xF00B1218, 0x000B1218,
 				Shader.TileMode.CLAMP));
 		c.drawRect(0, 0, w, h, p);
 		return out;
@@ -195,7 +245,7 @@ public final class ListArtLoader {
 		return bmp;
 	}
 
-	/** Stable per-rom brand hues (ink / lacquer, avoid purple defaults). */
+	/** Decorative per-rom hues under translucent defaults — not ROM status. */
 	private static int[] gradientColorsFor(String rom) {
 		int hash = rom == null ? 0 : rom.hashCode();
 		int[][] palette = {

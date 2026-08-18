@@ -2,42 +2,26 @@
 
 给「自制选台页」用的美术与约定。按键包仍在 `mahjong_pack/`。
 
-## 你需要提供的资源
-
-### 1. 列表背景图（按机种，可选）
-
-| 项 | 约定 |
-|----|------|
-| 目录 | `android-MAME4droid/app/src/main/assets/mahjong_list/bg/` |
-| 文件名 | **必须与 MAME 短名完全一致**（小写），如 `lhzb4.webp`、`lhzb4dhb.webp` |
-| 格式 | 优先 **WebP**；也支持 `.png` / `.jpg` / `.jpeg` |
-| 建议尺寸 | 宽 **720–1080px**，高 **160–240px**（列表会裁切铺满一行；横图更好） |
-| 内容 | 该机种代表性画面/海报感；避免大块白边；重要内容靠左或居中（右侧常被渐变压暗） |
-
-**加载优先级：**
+## 列表背景加载顺序
 
 1. `mahjong_list/bg/<rom>.*`（机种定制）
-2. 安装目录 `snap/<rom>.png`（或 `.jpg`）
-3. **缺省底图** `_default.*`（按基础版/进阶版分开，见下）
-4. 纯色渐变（最后兜底；颜色只是按短名换皮，**与 ROM 好坏无关**）
+2. `snap/<rom>.png` **或** `snap/<rom>/0000.png`（文件夹封面）
+3. 缺省底图 `_default.*`（可半透明，底下仍有按短名区分的深色渐变）
+4. 左侧约 **2/3 宽** 深色渐隐，方便读标题
 
-### 缺省底图（两版各一张）
+缺省底图（两版各一张，文件名相同）：
 
-文件名都叫 **`_default.webp`**（也可用 png/jpg），放到不同目录：
+| 版本 | 路径 |
+|------|------|
+| 进阶版 | `app/src/full/assets/mahjong_list/bg/_default.webp` |
+| 基础版 | `app/src/basic/assets/mahjong_list/bg/_default.webp` |
 
-| 版本 | 放这里 |
-|------|--------|
-| 进阶版 | `android-MAME4droid/app/src/full/assets/mahjong_list/bg/_default.webp` |
-| 基础版 | `android-MAME4droid/app/src/basic/assets/mahjong_list/bg/_default.webp` |
+机种定制图仍放：`app/src/main/assets/mahjong_list/bg/<短名>.webp`
 
-### 2. 发布签名
+## 列表条目
 
-见 `docs/选台资源与签名.md`（仓库已配置 CI Secrets）。
+- 数据：`mahjong_pack/mame.lst`（含克隆）
+- 分组：有 `artwork/<rom>/` 的当主档；其余挂到最长前缀匹配的主档下
+- 克隆：缩进 + 浅灰标题，与主档区分
 
-### 3. 不必提供
-
-- ROM、全套 snap、按键包 artwork
-
-## 当前会进选台列表的机种
-
-以 `mahjong_pack/mame.lst` 为准（**含克隆版**）。中文名同文件。
+等 `_default` 图到位后再打包发版。
