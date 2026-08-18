@@ -2,6 +2,7 @@ package com.seleuco.mame4droid.mahjong;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -50,7 +51,9 @@ public final class ListArtLoader {
 			overlay.recycle();
 		}
 
-		return new BitmapDrawable(ctx.getResources(), applyLeftFade(base));
+		boolean portrait = ctx.getResources().getConfiguration().orientation
+				== Configuration.ORIENTATION_PORTRAIT;
+		return new BitmapDrawable(ctx.getResources(), applyLeftFade(base, portrait));
 	}
 
 	private static Bitmap decodeAssetBgNamed(AssetManager assets, String baseName, int w, int h) {
@@ -212,8 +215,11 @@ public final class ListArtLoader {
 		return out;
 	}
 
-	/** Strong left veil across ~2/3 width so titles stay readable. */
-	private static Bitmap applyLeftFade(Bitmap src) {
+	/**
+	 * Landscape: fade across ~2/3 width (already enough).
+	 * Portrait: left 1/5 solid, middle 3/5 opaque→clear, right 1/5 clear.
+	 */
+	private static Bitmap applyLeftFade(Bitmap src, boolean portrait) {
 		int w = src.getWidth();
 		int h = src.getHeight();
 		Bitmap out = src.getConfig() == Bitmap.Config.ARGB_8888
@@ -227,11 +233,20 @@ public final class ListArtLoader {
 		}
 		Canvas c = new Canvas(out);
 		Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-		// Higher opacity on the left; fade out through 2/3 of the row.
-		p.setShader(new LinearGradient(
-				0, 0, w * (2f / 3f), 0,
-				0xF00B1218, 0x000B1218,
-				Shader.TileMode.CLAMP));
+		final int solid = 0xF00B1218;
+		final int clear = 0x000B1218;
+		if (portrait) {
+			p.setShader(new LinearGradient(
+					0, 0, w, 0,
+					new int[]{solid, solid, clear, clear},
+					new float[]{0f, 0.20f, 0.80f, 1f},
+					Shader.TileMode.CLAMP));
+		} else {
+			p.setShader(new LinearGradient(
+					0, 0, w * (2f / 3f), 0,
+					solid, clear,
+					Shader.TileMode.CLAMP));
+		}
 		c.drawRect(0, 0, w, h, p);
 		return out;
 	}

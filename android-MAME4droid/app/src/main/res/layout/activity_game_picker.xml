@@ -27,44 +27,14 @@
 			android:textStyle="bold" />
 
 		<TextView
-			android:id="@+id/picker_rom_btn"
+			android:id="@+id/picker_menu_btn"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:background="?android:attr/selectableItemBackground"
 			android:padding="8dp"
-			android:text="@string/picker_btn_rom"
+			android:text="@string/picker_btn_menu"
 			android:textColor="#C9B896"
 			android:textSize="14sp" />
-
-		<TextView
-			android:id="@+id/picker_snap_btn"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="?android:attr/selectableItemBackground"
-			android:padding="8dp"
-			android:text="@string/picker_btn_snap"
-			android:textColor="#C9B896"
-			android:textSize="14sp" />
-
-		<TextView
-			android:id="@+id/picker_settings_btn"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="?android:attr/selectableItemBackground"
-			android:padding="8dp"
-			android:text="@string/picker_btn_settings"
-			android:textColor="#C9B896"
-			android:textSize="14sp" />
-
-		<TextView
-			android:id="@+id/picker_classic_btn"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="?android:attr/selectableItemBackground"
-			android:padding="8dp"
-			android:text="@string/picker_btn_classic"
-			android:textColor="#8A9A90"
-			android:textSize="13sp" />
 	</LinearLayout>
 
 	<EditText
@@ -106,5 +76,59 @@
 			android:textColor="#A8B5AE"
 			android:textSize="15sp"
 			android:visibility="gone" />
+
+		<LinearLayout
+			android:id="@+id/picker_setup"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:background="#0B1218"
+			android:clickable="true"
+			android:focusable="true"
+			android:gravity="center"
+			android:orientation="vertical"
+			android:padding="28dp"
+			android:visibility="gone">
+
+			<TextView
+				android:id="@+id/picker_setup_title"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="center"
+				android:textColor="#F2E8D5"
+				android:textSize="20sp"
+				android:textStyle="bold" />
+
+			<TextView
+				android:id="@+id/picker_setup_body"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="12dp"
+				android:gravity="center"
+				android:lineSpacingMultiplier="1.2"
+				android:textColor="#A8B5AE"
+				android:textSize="15sp" />
+
+			<TextView
+				android:id="@+id/picker_setup_primary"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="28dp"
+				android:background="#1A242C"
+				android:gravity="center"
+				android:padding="14dp"
+				android:textColor="#F2E8D5"
+				android:textSize="16sp" />
+
+			<TextView
+				android:id="@+id/picker_setup_skip"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="12dp"
+				android:gravity="center"
+				android:padding="12dp"
+				android:textColor="#C9B896"
+				android:textSize="15sp"
+				android:visibility="gone" />
+		</LinearLayout>
 	</FrameLayout>
 </LinearLayout>

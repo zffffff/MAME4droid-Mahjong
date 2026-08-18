@@ -578,14 +578,26 @@
     <string name="fj_zsxq_copy_hint">Link copied. Send it to WeChat File Transfer, then open it in WeChat for the Knowledge Planet coupon.</string>
     <string name="fj_zsxq_no_browser">No app can open this link. Paste it to WeChat File Transfer.</string>
 
+    <string name="picker_btn_menu">Menu</string>
     <string name="picker_btn_rom">ROM</string>
     <string name="picker_btn_snap">Snap</string>
     <string name="picker_btn_settings">Settings</string>
     <string name="picker_btn_classic">Classic UI</string>
     <string name="picker_search_hint">Search title or rom name</string>
-    <string name="picker_need_rom_folder">Choose a ROM folder first (top-right ROM).</string>
+    <string name="picker_need_rom_folder">Choose a ROM folder first (Menu → ROM).</string>
     <string name="picker_empty_catalog">No mahjong pack games found.</string>
     <string name="picker_no_match">No matching games.</string>
     <string name="picker_rom_folder_ok">ROM folder saved. You can launch a game.</string>
     <string name="picker_snap_hint">Put preview images in the app snap folder as &lt;rom&gt;.png, or use Snap to import a folder.</string>
+    <string name="picker_setup_rom_title">Choose your game folder</string>
+    <string name="picker_setup_rom_body">Pick the folder where your zip files are. This app does not include game ROMs.</string>
+    <string name="picker_setup_rom_btn">Choose ROM folder</string>
+    <string name="picker_setup_snap_title">Import preview images?</string>
+    <string name="picker_setup_snap_body">Covers make the list nicer. You can skip and import later from Menu → Snap.</string>
+    <string name="picker_setup_snap_btn">Import Snap</string>
+    <string name="picker_setup_snap_skip">Skip and open the list</string>
+    <string name="picker_section_recent">Recently played</string>
+    <string name="picker_section_all">All games</string>
+    <string name="picker_rom_missing">No %s.zip in the folder. Add the file, or pick another folder from Menu → ROM.</string>
+    <string name="picker_rom_absent">%s · missing ROM</string>
 </resources>

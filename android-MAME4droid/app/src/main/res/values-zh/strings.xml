@@ -557,14 +557,26 @@
     <string name="fj_zsxq_copy_hint">链接已复制。请发送给微信「文件传输助手」，再在微信中打开以使用知识星球优惠券。</string>
     <string name="fj_zsxq_no_browser">无法打开链接。请粘贴发送给微信「文件传输助手」。</string>
 
+    <string name="picker_btn_menu">菜单</string>
     <string name="picker_btn_rom">ROM</string>
     <string name="picker_btn_snap">Snap</string>
     <string name="picker_btn_settings">设置</string>
     <string name="picker_btn_classic">经典界面</string>
     <string name="picker_search_hint">搜索中文名或短名</string>
-    <string name="picker_need_rom_folder">请先点右上角 ROM，选择游戏文件夹。</string>
+    <string name="picker_need_rom_folder">请先选择 ROM 文件夹（右上角菜单 → ROM）。</string>
     <string name="picker_empty_catalog">未找到按键包机种。</string>
     <string name="picker_no_match">没有匹配的机种。</string>
     <string name="picker_rom_folder_ok">已保存 ROM 文件夹，可以点选游戏。</string>
-    <string name="picker_snap_hint">请把预览图放到应用 snap 目录，文件名为 &lt;短名&gt;.png；也可点右上角 Snap 导入文件夹。</string>
+    <string name="picker_snap_hint">请把预览图放到应用 snap 目录，文件名为 &lt;短名&gt;.png；也可点右上角菜单 → Snap 导入文件夹。</string>
+    <string name="picker_setup_rom_title">先选游戏文件夹</string>
+    <string name="picker_setup_rom_body">选你存放 zip 的那个文件夹。本 App 不自带游戏。</string>
+    <string name="picker_setup_rom_btn">选择 ROM 文件夹</string>
+    <string name="picker_setup_snap_title">要导入预览图吗？</string>
+    <string name="picker_setup_snap_body">有封面更好看，没有也可以先玩。以后可随时在右上角菜单里导入。</string>
+    <string name="picker_setup_snap_btn">导入 Snap</string>
+    <string name="picker_setup_snap_skip">先不导入，进入选台</string>
+    <string name="picker_section_recent">最近玩过</string>
+    <string name="picker_section_all">全部</string>
+    <string name="picker_rom_missing">文件夹里没有 %s.zip。请把文件放进去，或在菜单里重选文件夹。</string>
+    <string name="picker_rom_absent">%s · 缺 ROM</string>
 </resources>
