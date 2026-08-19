@@ -70,3 +70,4 @@ mgakuen	mgakuen
 mgakuen2	mgakuen2
 cultures	cultures
 mjsister	mjsister
+rbmk	rbmk

@@ -133,8 +133,8 @@ emu.register_frame_done(function()
         -- 校园狩猎麻将 (mcnpshnt)
         local is_mcnpshnt = (rom_name == "mcnpshnt")
 
-        -- 雀斗记 (jantouki) W 筐体双屏
         local is_jantouki = (rom_name == "jantouki")
+        local is_rbmk = (rom_name == "rbmk")
 
         if is_mjelctrn_family then
             game_module = loadfile("fei_mj_lamps/mjelctrn.lua")()
@@ -164,6 +164,8 @@ emu.register_frame_done(function()
             game_module = loadfile("fei_mj_lamps/mcnpshnt.lua")()
         elseif is_jantouki then
             game_module = loadfile("fei_mj_lamps/jantouki.lua")()
+        elseif is_rbmk then
+            game_module = loadfile("fei_mj_lamps/rbmk.lua")()
         end
 
         module_loaded = true

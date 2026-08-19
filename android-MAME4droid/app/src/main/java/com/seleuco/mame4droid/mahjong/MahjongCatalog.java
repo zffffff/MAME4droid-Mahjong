@@ -93,6 +93,9 @@ public final class MahjongCatalog {
 			 BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = br.readLine()) != null) {
+				if (!line.isEmpty() && line.charAt(0) == '\uFEFF') {
+					line = line.substring(1);
+				}
 				line = line.trim();
 				if (line.isEmpty() || line.startsWith("#")) {
 					continue;
