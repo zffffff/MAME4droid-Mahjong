@@ -80,7 +80,7 @@
         <bezel element="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </bezel>
         <bezel element="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </bezel>
 
-        <bezel name="lamp_hint_n" element="lamp_n_glow"> 
+        <bezel id="lamp_hint_n" element="lamp_n_glow">
             <bounds x="855" y="1440" width="142" height="200" /> 
             <color state="0" alpha="0.0" /> 
             <color state="1" alpha="1.0" /> 
@@ -122,7 +122,7 @@
         <bezel element="touch_m" inputtag="KEY0" inputmask="8"> <bounds x="1220" y="750" width="80" height="105" /> </bezel>
         <bezel element="touch_n" inputtag="KEY1" inputmask="8"> <bounds x="1305" y="750" width="80" height="105" /> </bezel>
 
-        <bezel name="lamp_hint_n" element="hint_select_n"> 
+        <bezel id="lamp_hint_n" element="hint_select_n">
             <bounds x="1305" y="750" width="80" height="105" /> 
             <color state="0" alpha="0.0" /> 
             <color state="1" alpha="1.0" /> 

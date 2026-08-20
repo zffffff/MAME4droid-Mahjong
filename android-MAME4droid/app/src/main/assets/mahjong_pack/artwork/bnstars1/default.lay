@@ -63,23 +63,23 @@
         <element ref="button_reach" inputtag="P1KEY.1" inputmask="32"> <bounds x="571" y="1110" width="142" height="130" /> </element>
         <element ref="button_ron" inputtag="P1KEY.2" inputmask="32"> <bounds x="713" y="1110" width="142" height="130" /> </element>
 
-        <element ref="lamp_chi_glow" name="lamp_chi"> 
+        <element ref="lamp_chi_glow" id="lamp_chi">
             <bounds x="145" y="1110" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_pon_glow" name="lamp_pon"> 
+        <element ref="lamp_pon_glow" id="lamp_pon">
             <bounds x="287" y="1110" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_kan_glow" name="lamp_kan"> 
+        <element ref="lamp_kan_glow" id="lamp_kan">
             <bounds x="429" y="1110" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_reach_glow" name="lamp_reach"> 
+        <element ref="lamp_reach_glow" id="lamp_reach">
             <bounds x="571" y="1110" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_ron_glow" name="lamp_ron"> 
+        <element ref="lamp_ron_glow" id="lamp_ron">
             <bounds x="713" y="1110" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
@@ -116,23 +116,23 @@
         <element ref="button_pon" inputtag="P1KEY.3" inputmask="8"> <bounds x="1400" y="380" width="142" height="130" /> </element>
         <element ref="button_chi" inputtag="P1KEY.2" inputmask="8"> <bounds x="1400" y="250" width="142" height="130" /> </element>
 
-        <element ref="lamp_ron_glow" name="lamp_ron"> 
+        <element ref="lamp_ron_glow" id="lamp_ron">
             <bounds x="1400" y="770" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_reach_glow" name="lamp_reach"> 
+        <element ref="lamp_reach_glow" id="lamp_reach">
             <bounds x="1400" y="640" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_kan_glow" name="lamp_kan"> 
+        <element ref="lamp_kan_glow" id="lamp_kan">
             <bounds x="1400" y="510" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_pon_glow" name="lamp_pon"> 
+        <element ref="lamp_pon_glow" id="lamp_pon">
             <bounds x="1400" y="380" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>
-        <element ref="lamp_chi_glow" name="lamp_chi"> 
+        <element ref="lamp_chi_glow" id="lamp_chi">
             <bounds x="1400" y="250" width="142" height="130" /> 
             <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" />
         </element>

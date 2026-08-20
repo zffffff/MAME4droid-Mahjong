@@ -91,14 +91,14 @@
         <element ref="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </element>
         <element ref="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </element>
 
-        <element ref="hint_select_n" name="lamp_hint_select"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_a" name="lamp_hint_bibei"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_c" name="lamp_hint_bibei"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_e" name="lamp_hint_bibei"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_g" name="lamp_hint_bibei"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_k" name="lamp_hint_bibei"> <bounds x="429" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_m" name="lamp_hint_bibei"> <bounds x="713" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_select_n" id="lamp_hint_select"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_a" id="lamp_hint_bibei"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_c" id="lamp_hint_bibei__1"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_e" id="lamp_hint_bibei__2"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_g" id="lamp_hint_bibei__3"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_k" id="lamp_hint_bibei__4"> <bounds x="429" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_m" id="lamp_hint_bibei__5"> <bounds x="713" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
     <view name="Landscape_Touch_Screen">
@@ -132,14 +132,14 @@
         <element ref="touch_m" inputtag="KEY0" inputmask="8"> <bounds x="1180" y="742" width="80" height="130" /> </element>
         <element ref="touch_n" inputtag="KEY1" inputmask="8"> <bounds x="1280" y="742" width="80" height="130" /> </element>
 
-        <element ref="hint_select_n" name="lamp_hint_select"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_a" name="lamp_hint_bibei"> <bounds x="220" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_c" name="lamp_hint_bibei"> <bounds x="380" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_e" name="lamp_hint_bibei"> <bounds x="540" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_g" name="lamp_hint_bibei"> <bounds x="700" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_k" name="lamp_hint_bibei"> <bounds x="1020" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_m" name="lamp_hint_bibei"> <bounds x="1180" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_select_n" id="lamp_hint_select"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_a" id="lamp_hint_bibei"> <bounds x="220" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_c" id="lamp_hint_bibei__1"> <bounds x="380" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_e" id="lamp_hint_bibei__2"> <bounds x="540" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_g" id="lamp_hint_bibei__3"> <bounds x="700" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_k" id="lamp_hint_bibei__4"> <bounds x="1020" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_m" id="lamp_hint_bibei__5"> <bounds x="1180" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
 </mamelayout>

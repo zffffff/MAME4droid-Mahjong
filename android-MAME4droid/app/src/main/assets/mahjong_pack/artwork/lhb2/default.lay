@@ -76,7 +76,7 @@
         <element ref="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </element>
         <element ref="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </element>
 
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
     <view name="Landscape_Touch_Screen">
@@ -110,7 +110,7 @@
         <element ref="touch_m" inputtag="KEY0" inputmask="8"> <bounds x="1168" y="731" width="80" height="130" /> </element>
         <element ref="touch_n" inputtag="KEY1" inputmask="8"> <bounds x="1302" y="731" width="80" height="130" /> </element>
 
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="1302" y="731" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="1302" y="731" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
 </mamelayout>

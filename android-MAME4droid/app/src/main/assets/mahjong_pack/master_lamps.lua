@@ -105,8 +105,6 @@ emu.register_frame_done(function()
     frame_counter = (frame_counter + 1) % 60
     local blink_state = (frame_counter < 30) and 1 or 0
 
-    if not machine.output then return end
-
     -- 只在第一帧运行环境准备好时，加载对应的模块，杜绝性能浪费
     if not module_loaded then
         local is_mjelctrn_family = (rom_name == "mjelctrn" or rom_name == "mjembase" or rom_name == "mjelct3bi" or rom_name == "mjelct3bia" or rom_name == "mjelct3bib" or rom_name == "mjelct3" or rom_name == "mjelct3a" or rom_name == "mjelct3b" or rom_name == "mjelctrb" or rom_name == "qyjdzjp")

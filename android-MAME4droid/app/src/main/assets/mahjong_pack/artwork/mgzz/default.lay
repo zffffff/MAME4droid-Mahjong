@@ -61,10 +61,10 @@
         
         <element ref="button_start_donden" inputtag="KEY0" inputmask="32"> <bounds x="3" y="980" width="142" height="130" /> </element>
         
-        <element ref="button_double" inputtag="KEY4" inputmask="4" name="lamp_double"> <bounds x="145" y="980" width="142" height="130" /> </element>
-        <element ref="button_big" inputtag="KEY4" inputmask="16" name="lamp_big"> <bounds x="287" y="980" width="142" height="130" /> </element>
-        <element ref="button_small" inputtag="KEY4" inputmask="32" name="lamp_small"> <bounds x="429" y="980" width="142" height="130" /> </element>
-        <element ref="button_take" inputtag="KEY4" inputmask="2" name="lamp_take"> <bounds x="571" y="980" width="142" height="130" /> </element>
+        <element ref="button_double" inputtag="KEY4" inputmask="4" id="lamp_double"> <bounds x="145" y="980" width="142" height="130" /> </element>
+        <element ref="button_big" inputtag="KEY4" inputmask="16" id="lamp_big"> <bounds x="287" y="980" width="142" height="130" /> </element>
+        <element ref="button_small" inputtag="KEY4" inputmask="32" id="lamp_small"> <bounds x="429" y="980" width="142" height="130" /> </element>
+        <element ref="button_take" inputtag="KEY4" inputmask="2" id="lamp_take"> <bounds x="571" y="980" width="142" height="130" /> </element>
         
         <element ref="button_keyin" inputtag="KEY4" inputmask="64"> <bounds x="713" y="980" width="142" height="130" /> </element>
         <element ref="button_bet" inputtag="KEY1" inputmask="32"> <bounds x="855" y="980" width="142" height="130" /> </element>
@@ -91,13 +91,13 @@
         <element ref="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </element>
         <element ref="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </element>
 
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_a" name="lamp_hint_bibei"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_c" name="lamp_hint_bibei"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_e" name="lamp_hint_bibei"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_g" name="lamp_hint_bibei"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_k" name="lamp_hint_bibei"> <bounds x="429" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_m" name="lamp_hint_bibei"> <bounds x="713" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="855" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_a" id="lamp_hint_bibei"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_c" id="lamp_hint_bibei__1"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_e" id="lamp_hint_bibei__2"> <bounds x="571" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_g" id="lamp_hint_bibei__3"> <bounds x="855" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_k" id="lamp_hint_bibei__4"> <bounds x="429" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_m" id="lamp_hint_bibei__5"> <bounds x="713" y="1440" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
     <view name="Landscape_Touch_Screen">
@@ -127,35 +127,31 @@
         <element ref="touch_k" inputtag="KEY2" inputmask="4"> <bounds x="1020" y="742" width="80" height="130" /> </element>
         <element ref="touch_l" inputtag="KEY3" inputmask="4"> <bounds x="1100" y="742" width="80" height="130" /> </element>
         <!-- 打牌 M/N：默认 state=0 在屏上；比倍时 letter_mn=1 移出 -->
-        <element ref="touch_m" inputtag="KEY0" inputmask="8">
-            <animate name="mgzz_letter_mn" />
+        <element id="mgzz_letter_mn" ref="touch_m" inputtag="KEY0" inputmask="8">
             <bounds state="0" x="1180" y="742" width="80" height="130" />
             <bounds state="1" x="1180" y="-200" width="80" height="130" />
         </element>
-        <element ref="touch_n" inputtag="KEY1" inputmask="8">
-            <animate name="mgzz_letter_mn" />
+        <element id="mgzz_letter_mn__1" ref="touch_n" inputtag="KEY1" inputmask="8">
             <bounds state="0" x="1280" y="742" width="80" height="130" />
             <bounds state="1" x="1280" y="-200" width="80" height="130" />
         </element>
         <!-- 比倍大/小：默认 state=0 必须在屏外，否则会盖住字母 M/N 导致横版无响应 -->
-        <element ref="touch_m" inputtag="KEY4" inputmask="16">
-            <animate name="mgzz_bibei_mn" />
+        <element id="mgzz_bibei_mn" ref="touch_m" inputtag="KEY4" inputmask="16">
             <bounds state="0" x="1180" y="-200" width="80" height="130" />
             <bounds state="1" x="1180" y="742" width="80" height="130" />
         </element>
-        <element ref="touch_n" inputtag="KEY4" inputmask="32">
-            <animate name="mgzz_bibei_mn" />
+        <element id="mgzz_bibei_mn__1" ref="touch_n" inputtag="KEY4" inputmask="32">
             <bounds state="0" x="1280" y="-200" width="80" height="130" />
             <bounds state="1" x="1280" y="742" width="80" height="130" />
         </element>
 
-        <element ref="hint_haidi_n" name="lamp_hint_haidi"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_a" name="lamp_hint_bibei"> <bounds x="220" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_c" name="lamp_hint_bibei"> <bounds x="380" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_e" name="lamp_hint_bibei"> <bounds x="540" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_g" name="lamp_hint_bibei"> <bounds x="700" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_k" name="lamp_hint_bibei"> <bounds x="1180" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
-        <element ref="hint_bibei_m" name="lamp_hint_bibei"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_haidi_n" id="lamp_hint_haidi"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_a" id="lamp_hint_bibei"> <bounds x="220" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_c" id="lamp_hint_bibei__1"> <bounds x="380" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_e" id="lamp_hint_bibei__2"> <bounds x="540" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_g" id="lamp_hint_bibei__3"> <bounds x="700" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_k" id="lamp_hint_bibei__4"> <bounds x="1180" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
+        <element ref="hint_bibei_m" id="lamp_hint_bibei__5"> <bounds x="1280" y="742" width="80" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </element>
     </view>
 
 </mamelayout>

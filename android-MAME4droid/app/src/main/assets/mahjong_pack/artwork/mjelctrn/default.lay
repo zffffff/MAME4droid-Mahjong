@@ -84,15 +84,15 @@
         <bezel element="button_m" inputtag="KEY0" inputmask="8"> <bounds x="713" y="1440" width="142" height="200" /> </bezel>
         <bezel element="button_n" inputtag="KEY1" inputmask="8"> <bounds x="855" y="1440" width="142" height="200" /> </bezel>
 
-        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="145" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="287" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="429" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="713" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_chi" element="lamp_chi_glow"> <bounds x="145" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_pon" element="lamp_pon_glow"> <bounds x="287" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_kan" element="lamp_kan_glow"> <bounds x="429" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_ron" element="lamp_ron_glow"> <bounds x="713" y="1110" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
 
-        <bezel name="lamp_hint_select_a" element="hint_select_a"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_b" element="hint_select_b"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_c" element="hint_select_c"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_d" element="hint_select_d"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_a" element="hint_select_a"> <bounds x="3" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_b" element="hint_select_b"> <bounds x="145" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_c" element="hint_select_c"> <bounds x="287" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_d" element="hint_select_d"> <bounds x="429" y="1240" width="142" height="200" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
     </view>
 
     <view name="Landscape_Touch_Screen">
@@ -125,15 +125,15 @@
         <bezel element="touch_m" inputtag="KEY0" inputmask="8"> <bounds x="1171" y="720" width="80" height="145" /> </bezel>
         <bezel element="touch_n" inputtag="KEY1" inputmask="8"> <bounds x="1275" y="720" width="80" height="145" /> </bezel>
 
-        <bezel name="lamp_ron" element="lamp_ron_glow"> <bounds x="1400" y="770" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_kan" element="lamp_kan_glow"> <bounds x="1400" y="510" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_pon" element="lamp_pon_glow"> <bounds x="1400" y="380" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_chi" element="lamp_chi_glow"> <bounds x="1400" y="250" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_ron" element="lamp_ron_glow"> <bounds x="1400" y="770" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_kan" element="lamp_kan_glow"> <bounds x="1400" y="510" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_pon" element="lamp_pon_glow"> <bounds x="1400" y="380" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_chi" element="lamp_chi_glow"> <bounds x="1400" y="250" width="142" height="130" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
 
-        <bezel name="lamp_hint_select_a" element="hint_select_a"> <bounds x="208" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_b" element="hint_select_b"> <bounds x="288" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_c" element="hint_select_c"> <bounds x="370" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
-        <bezel name="lamp_hint_select_d" element="hint_select_d"> <bounds x="450" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_a" element="hint_select_a"> <bounds x="208" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_b" element="hint_select_b"> <bounds x="288" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_c" element="hint_select_c"> <bounds x="370" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
+        <bezel id="lamp_hint_select_d" element="hint_select_d"> <bounds x="450" y="720" width="80" height="145" /> <color state="0" alpha="0.0" /> <color state="1" alpha="1.0" /> </bezel>
     </view>
 
 </mamelayout>
