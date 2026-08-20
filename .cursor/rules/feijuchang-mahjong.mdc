@@ -27,6 +27,7 @@ alwaysApply: true
 - 按键包开发源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（对外以本仓 mahjong_pack 为准）
 - Mods 的 bat/路径问题在仓库 A 改；本仓用 `scripts/sync-mahjong-pack.py` 同步（合并横竖屏桥接，勿裸拷 `master_lamps.lua`）
 - **打包前**先跑 `python android-MAME4droid/scripts/sync-mahjong-pack.py --check`。落后则同步后再打（用户明确说这次先不动按键包时除外）
+- 同步**不会**删/挪 `MAMEmjKey/release/`；与一键发布文件夹核对见 `docs/知识库.md` §2.2（允许 `master_lamps` 桥接差异）
 
 ## 体验门控
 
@@ -45,4 +46,5 @@ alwaysApply: true
 - 手动 Run **Build APK**，选 flavor（`both` 打两版）；**只打 release**
 - 打包前检查按键包是否最新（`sync-mahjong-pack.py --check`）；落后则先同步
 - `versionName`（如 `1.38.1-mj2`）可与 `MAME4DROID_UPSTREAM_VERSION`（抽 so，当前常为 `1.38.3`）解耦；so URL 404 时改后者指向仍有资源的上游 Release
+- Artifact 占空间大：通常只保留最新成功构建，旧 run/artifact 可删
 - 凡放 APK 下载链接处，同时附 GitHub：https://github.com/zffffff/MAME4droid-Mahjong
