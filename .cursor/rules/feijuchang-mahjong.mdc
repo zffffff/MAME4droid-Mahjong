@@ -44,5 +44,5 @@ alwaysApply: true
 
 - 手动 Run **Build APK**，选 flavor（`both` 打两版）；**只打 release**
 - 打包前检查按键包是否最新（`sync-mahjong-pack.py --check`）；落后则先同步
-- `versionName`（如 `1.38.1-mj2`）可与 `MAME4DROID_UPSTREAM_VERSION`（抽 so，当前常为 `1.38.2`）解耦；so URL 404 时改后者指向仍有资源的上游 Release
+- `versionName`（如 `1.38.1-mj2`）可与 `MAME4DROID_UPSTREAM_VERSION`（抽 so，当前常为 `1.38.3`）解耦；so URL 404 时改后者指向仍有资源的上游 Release
 - 凡放 APK 下载链接处，同时附 GitHub：https://github.com/zffffff/MAME4droid-Mahjong
