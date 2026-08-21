@@ -316,10 +316,31 @@ public class MAME4droid extends Activity {
 
 		getMainHelper().copyFiles();
 		getMainHelper().removeFiles();
-		// After stock files.zip extract: VERSION-gated key packs (mahjong, …)
-		new AssetPackInstaller(this).installAllIfNeeded();
 
-		Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			// Full: install complete pack before emulate (picker / in-game lamps).
+			new AssetPackInstaller(this).installAllIfNeeded();
+			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+		} else {
+			// Basic: scrub old lua/ini/lst first, boot classic on a clean tree,
+			// then copy artwork-only in the background.
+			AssetPackInstaller pack = new AssetPackInstaller(this);
+			pack.prepareBasicClassicBoot();
+			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+			final MAME4droid app = this;
+			new Thread(() -> {
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					return;
+				}
+				try {
+					new AssetPackInstaller(app).installAllIfNeeded();
+				} catch (Exception e) {
+					Log.e("MAME4droid", "basic pack install failed", e);
+				}
+			}, "fj-basic-pack").start();
+		}
 	}
 
 

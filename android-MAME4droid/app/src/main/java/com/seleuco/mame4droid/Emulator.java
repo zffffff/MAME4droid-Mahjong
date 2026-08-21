@@ -833,6 +833,10 @@ public class Emulator {
 	 * surface while the OSC still draws.
 	 */
 	private static void ensureMahjongAutobootCli() {
+		// Basic classic home never ships lamp Lua; only full edition injects it.
+		if (!com.seleuco.mame4droid.BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
 		String game = getValueStr(GAME_SELECTED);
 		if (game == null || game.isEmpty()) {
 			String rom = getValueStr(ROM_NAME);

@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.util.Log;
 
+import com.seleuco.mame4droid.BuildConfig;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.widgets.WarnWidget;
@@ -26,8 +27,10 @@ import java.util.List;
  * ({@link MainHelper#getInstallationDIR()}, typically
  * {@code /storage/emulated/0/Android/data/.../files/}).
  * <p>
- * To ship another game pack later: put it under {@code assets/<id>/} with a
- * {@code VERSION.txt}, then add a {@link PackSpec} entry to {@link #PACKS}.
+ * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
+ * game is selected).<br>
+ * <b>basic</b>: artwork only — no Lua / stub ini / name-list churn on the
+ * classic frontend boot path (those historically blanked the system list).
  */
 public class AssetPackInstaller {
 
@@ -37,24 +40,21 @@ public class AssetPackInstaller {
 	private static final String MARKER_DIR = ".asset_packs";
 	private static final int BUFFER_SIZE = 8192;
 
-	/**
-	 * Registered packs. Contents (except VERSION.txt) are merged into the
-	 * installation root. {@code requiredPaths} trigger a reinstall if missing
-	 * even when the VERSION marker matches (e.g. after "restore default data").
-	 */
 	private static final PackSpec[] PACKS = {
 			new PackSpec(
 					"mahjong_pack",
+					// Never require ini/mame.ini — stub is not installed, and
+					// requiring it forced a full reinstall every cold start.
 					new String[]{
 							"master_lamps.lua",
 							"fei_mj_lamps",
-							"ini/mame.ini",
 							"mame.lst",
 							"arcade.lst",
+					},
+					new String[]{
+							"artwork",
 					}
 			),
-			// Future packs, e.g.:
-			// new PackSpec("other_pack", new String[]{ "..." }),
 	};
 
 	private final MAME4droid mm;
@@ -65,12 +65,9 @@ public class AssetPackInstaller {
 
 	/** Install every registered pack that needs an update. */
 	public void installAllIfNeeded() {
-		String installDir = mm.getMainHelper().getInstallationDIR();
-		if (installDir == null || installDir.isEmpty()) {
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
 			return;
-		}
-		if (!installDir.endsWith("/")) {
-			installDir += "/";
 		}
 
 		for (PackSpec pack : PACKS) {
@@ -81,9 +78,38 @@ public class AssetPackInstaller {
 				showError(mm.getString(R.string.asset_pack_install_failed, pack.id, e.getMessage()));
 			}
 		}
-		// Leftover stubs from older builds can blank the classic frontend.
 		scrubMahjongStubRootIni(installDir);
 		scrubStubUiIni(installDir);
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			scrubBasicClassicPoisons(installDir);
+		}
+	}
+
+	/**
+	 * Basic only: delete leftover lua / stub ini / name lists <b>before</b>
+	 * {@code Emulator.emulate} so classic UI is not blanked by older installs.
+	 * Artwork copy can still run later via {@link #installAllIfNeeded()}.
+	 */
+	public void prepareBasicClassicBoot() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return;
+		}
+		scrubBasicClassicPoisons(installDir);
+	}
+
+	private String resolveInstallDir() {
+		String installDir = mm.getMainHelper().getInstallationDIR();
+		if (installDir == null || installDir.isEmpty()) {
+			return null;
+		}
+		if (!installDir.endsWith("/")) {
+			installDir += "/";
+		}
+		return installDir;
 	}
 
 	private void installPackIfNeeded(PackSpec pack, String installDir) throws IOException {
@@ -99,14 +125,18 @@ public class AssetPackInstaller {
 			return;
 		}
 
-		// Placeholder only (VERSION/README, no real content yet) → do nothing.
 		if (!hasPackContent(assets, pack)) {
 			Log.i(TAG, "Pack has no installable content yet, skip: " + pack.id);
 			return;
 		}
 
-		if (!needsInstall(pack, installDir, assetVersion, assets)) {
-			Log.i(TAG, "Pack up to date: " + pack.id + " @" + assetVersion);
+		boolean fullUx = BuildConfig.FEIJUCHANG_FULL_UX;
+		if (!needsInstall(pack, installDir, assetVersion, assets, fullUx)) {
+			Log.i(TAG, "Pack up to date: " + pack.id + " @" + assetVersion
+					+ (fullUx ? " (full)" : " (basic artwork)"));
+			if (!fullUx) {
+				scrubBasicClassicPoisons(installDir);
+			}
 			return;
 		}
 
@@ -121,28 +151,26 @@ public class AssetPackInstaller {
 					true);
 			progress.init();
 
-			copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress);
-
-			// Pack ships a tiny ini/mame.ini (autoboot_script + cheat only). Never
-			// mirror that stub over root mame.ini — a partial root file makes the
-			// classic MAME frontend open as a black GL surface (OSC still draws).
-			// Lamps are injected via CLI in Emulator.emulate(); scrub any old stub.
-			scrubMahjongStubRootIni(installDir);
-			File iniStub = new File(installDir, "ini/mame.ini");
-			if (isMahjongStubIni(iniStub)) {
-				// Keep artwork/lua; drop the stub so MAME does not load it via inipath.
-				if (iniStub.delete()) {
+			if (fullUx) {
+				copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress);
+				scrubMahjongStubRootIni(installDir);
+				File iniStub = new File(installDir, "ini/mame.ini");
+				if (isMahjongStubIni(iniStub) && iniStub.delete()) {
 					Log.i(TAG, "Removed stub ini/mame.ini");
 				}
+				scrubStubUiIni(installDir);
+				ensureSystemNamesInUiIni(installDir);
+			} else {
+				// Classic home: only merge artwork. Skip lua / lst / ini so the
+				// stock MAME list can paint; lamps stay a full-edition concern.
+				copyAssetTree(assets, pack.id + "/artwork",
+						new File(installDir, "artwork"), pack.id, progress);
+				scrubBasicClassicPoisons(installDir);
 			}
 
-			// Only merge system_names into a real MAME-written ui.ini. Creating a
-			// one-line ui.ini before first boot blanks the classic system list.
-			scrubStubUiIni(installDir);
-			ensureSystemNamesInUiIni(installDir);
-
-			writeMarker(installDir, pack.id, assetVersion);
-			Log.i(TAG, "Installed pack " + pack.id + " @" + assetVersion);
+			writeMarker(installDir, pack.id, assetVersion + (fullUx ? "" : "-basic"));
+			Log.i(TAG, "Installed pack " + pack.id + " @" + assetVersion
+					+ (fullUx ? " (full)" : " (basic artwork)"));
 		} finally {
 			if (progress != null) {
 				progress.end();
@@ -150,51 +178,92 @@ public class AssetPackInstaller {
 		}
 	}
 
+	/**
+	 * Leftovers from older basic builds (lua / stub ini / name lists) can blank
+	 * the classic system list. Artwork layouts stay; lamps are full-only.
+	 */
+	private void scrubBasicClassicPoisons(String installDir) {
+		scrubMahjongStubRootIni(installDir);
+		scrubStubUiIni(installDir);
+		deleteIfExists(new File(installDir, "ini/mame.ini"));
+		deleteIfExists(new File(installDir, "master_lamps.lua"));
+		deleteTree(new File(installDir, "fei_mj_lamps"));
+		deleteIfExists(new File(installDir, "mame.lst"));
+		deleteIfExists(new File(installDir, "arcade.lst"));
+	}
+
+	private static void deleteIfExists(File f) {
+		if (f != null && f.isFile() && f.delete()) {
+			Log.i(TAG, "Removed for basic classic: " + f.getName());
+		}
+	}
+
+	private static void deleteTree(File root) {
+		if (root == null || !root.exists()) {
+			return;
+		}
+		if (root.isDirectory()) {
+			File[] kids = root.listFiles();
+			if (kids != null) {
+				for (File k : kids) {
+					deleteTree(k);
+				}
+			}
+		}
+		if (root.delete()) {
+			Log.i(TAG, "Removed for basic classic: " + root.getName());
+		}
+	}
+
 	private boolean needsInstall(PackSpec pack, String installDir, String assetVersion,
-			AssetManager assets) {
+			AssetManager assets, boolean fullUx) {
 		File marker = markerFile(installDir, pack.id);
+		String wantMarker = assetVersion + (fullUx ? "" : "-basic");
 		if (!marker.isFile()) {
 			return true;
 		}
 		try {
 			String installed = readFileText(marker).trim();
-			if (!assetVersion.equals(installed)) {
+			if (!wantMarker.equals(installed)) {
 				return true;
 			}
 		} catch (IOException e) {
 			return true;
 		}
-		for (String required : pack.requiredPaths) {
-			if (!assetExists(assets, pack.id + "/" + required)) {
-				continue; // not shipped in this APK build
+		String[] required = fullUx ? pack.requiredPathsFull : pack.requiredPathsBasic;
+		for (String requiredPath : required) {
+			if (!assetExists(assets, pack.id + "/" + requiredPath)) {
+				continue;
 			}
-			File f = new File(installDir, required);
+			File f = new File(installDir, requiredPath);
 			if (!f.exists()) {
-				Log.i(TAG, "Missing required path for " + pack.id + ": " + required);
+				Log.i(TAG, "Missing required path for " + pack.id + ": " + requiredPath);
 				return true;
 			}
 		}
-		// Old builds mirrored the stub to root; force a reinstall pass to scrub it.
-		if (isMahjongStubIni(new File(installDir, "mame.ini"))) {
-			return true;
-		}
-		if (isStubUiIni(new File(installDir, "ui.ini"))) {
-			return true;
-		}
-		if (new File(installDir, "mame.lst").isFile()
-				&& new File(installDir, "ui.ini").isFile()
-				&& !isStubUiIni(new File(installDir, "ui.ini"))
-				&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
+		if (fullUx) {
+			if (isMahjongStubIni(new File(installDir, "mame.ini"))) {
+				return true;
+			}
+			if (isStubUiIni(new File(installDir, "ui.ini"))) {
+				return true;
+			}
+			if (new File(installDir, "mame.lst").isFile()
+					&& new File(installDir, "ui.ini").isFile()
+					&& !isStubUiIni(new File(installDir, "ui.ini"))
+					&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
+				return true;
+			}
+		} else if (new File(installDir, "master_lamps.lua").isFile()
+				|| new File(installDir, "mame.lst").isFile()
+				|| isMahjongStubIni(new File(installDir, "mame.ini"))
+				|| isStubUiIni(new File(installDir, "ui.ini"))) {
+			// Force a scrub pass.
 			return true;
 		}
 		return false;
 	}
 
-	/**
-	 * Pack {@code ini/mame.ini} is only {@code autoboot_script}/{@code cheat}.
-	 * If that stub was copied to {@code files/mame.ini}, delete it so stock
-	 * defaults + CLI apply. Leave a full player-saved mame.ini alone.
-	 */
 	private void scrubMahjongStubRootIni(String installDir) {
 		File rootMame = new File(installDir, "mame.ini");
 		if (isMahjongStubIni(rootMame)) {
@@ -204,11 +273,6 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/**
-	 * Older builds wrote a one-line {@code ui.ini} with only {@code system_names}
-	 * before MAME's first run. That blanks the classic system-selection UI
-	 * (black GL + OSC still visible). Delete it so MAME recreates a full ui.ini.
-	 */
 	private void scrubStubUiIni(String installDir) {
 		File uiIni = new File(installDir, "ui.ini");
 		if (isStubUiIni(uiIni)) {
@@ -218,7 +282,6 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/** True if ui.ini exists and every non-comment key is system_names. */
 	private static boolean isStubUiIni(File f) {
 		if (f == null || !f.isFile()) {
 			return false;
@@ -245,7 +308,6 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/** True if file exists and every non-comment key is autoboot_script or cheat. */
 	private static boolean isMahjongStubIni(File f) {
 		if (f == null || !f.isFile()) {
 			return false;
@@ -272,7 +334,6 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/** True if ui.ini already selects a translated system-names list. */
 	private static boolean uiIniHasSystemNames(File uiIni) {
 		if (!uiIni.isFile()) {
 			return false;
@@ -295,11 +356,6 @@ public class AssetPackInstaller {
 		return false;
 	}
 
-	/**
-	 * Point UI at {@code mame.lst} for localised system names (MAME 0.237+).
-	 * Only merges into an existing full ui.ini — never creates a one-line stub
-	 * (that blanks the classic frontend on first boot).
-	 */
 	private void ensureSystemNamesInUiIni(String installDir) throws IOException {
 		File lst = new File(installDir, "mame.lst");
 		if (!lst.isFile()) {
@@ -316,7 +372,6 @@ public class AssetPackInstaller {
 		String[] raw = text.split("\n", -1);
 		for (int i = 0; i < raw.length; i++) {
 			String line = raw[i];
-			// Drop the empty trailing element produced by a final newline.
 			if (i == raw.length - 1 && line.isEmpty()) {
 				continue;
 			}
@@ -343,9 +398,13 @@ public class AssetPackInstaller {
 		Log.i(TAG, "Ensured ui.ini system_names=mame.lst");
 	}
 
-	/** True if assets contain at least one required path for this pack. */
 	private boolean hasPackContent(AssetManager assets, PackSpec pack) {
-		for (String required : pack.requiredPaths) {
+		for (String required : pack.requiredPathsFull) {
+			if (assetExists(assets, pack.id + "/" + required)) {
+				return true;
+			}
+		}
+		for (String required : pack.requiredPathsBasic) {
 			if (assetExists(assets, pack.id + "/" + required)) {
 				return true;
 			}
@@ -357,10 +416,10 @@ public class AssetPackInstaller {
 		try {
 			String[] kids = assets.list(path);
 			if (kids != null && kids.length > 0) {
-				return true; // directory with entries
+				return true;
 			}
 			try (InputStream in = assets.open(path)) {
-				return true; // file
+				return true;
 			}
 		} catch (IOException e) {
 			return false;
@@ -374,7 +433,6 @@ public class AssetPackInstaller {
 			return;
 		}
 
-		// File leaf: list() returns empty; try open().
 		if (children.length == 0) {
 			copyAssetFile(assets, assetPath, destDir, progress);
 			return;
@@ -386,10 +444,11 @@ public class AssetPackInstaller {
 
 		for (String child : children) {
 			if (assetPath.equals(packRoot)
-					&& (VERSION_FILE.equals(child) || README_FILE.equals(child))) {
-				continue; // meta files stay in APK only
+					&& (VERSION_FILE.equals(child) || README_FILE.equals(child)
+					|| "LICENSE.txt".equals(child))) {
+				continue;
 			}
-			// Stub ini/mame.ini must not land under files/ (classic UI blacks out).
+			// Never land stub ini/ under files/ (classic UI blacks out).
 			if (assetPath.equals(packRoot) && "ini".equals(child)) {
 				continue;
 			}
@@ -401,7 +460,6 @@ public class AssetPackInstaller {
 				try {
 					copyAssetFile(assets, childAsset, new File(destDir, child), progress);
 				} catch (IOException openAsFileFailed) {
-					// Empty directory in assets
 					File emptyDir = new File(destDir, child);
 					if (!emptyDir.exists() && !emptyDir.mkdirs()) {
 						throw new IOException("Cannot create: " + emptyDir.getAbsolutePath());
@@ -489,11 +547,13 @@ public class AssetPackInstaller {
 
 	private static final class PackSpec {
 		final String id;
-		final String[] requiredPaths;
+		final String[] requiredPathsFull;
+		final String[] requiredPathsBasic;
 
-		PackSpec(String id, String[] requiredPaths) {
+		PackSpec(String id, String[] requiredPathsFull, String[] requiredPathsBasic) {
 			this.id = id;
-			this.requiredPaths = requiredPaths;
+			this.requiredPathsFull = requiredPathsFull;
+			this.requiredPathsBasic = requiredPathsBasic;
 		}
 	}
 }
