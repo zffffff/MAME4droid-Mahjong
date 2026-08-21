@@ -69,6 +69,8 @@ import com.seleuco.mame4droid.views.EmulatorViewGL;
 import com.seleuco.mame4droid.widgets.WarnWidget;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 
 public class Emulator {
 
@@ -827,13 +829,57 @@ public class Emulator {
 	}
 
 	/**
-	 * Lamp Lua via CLI is disabled on this line: the same
-	 * {@code -autoboot_script} that blanks the classic frontend also blanks
-	 * picker direct-launches (black GL + OSC/toolbox still visible). Artwork
-	 * and Lua files still install; lamps need a later in-game deferred load.
+	 * Do not use CLI {@code -autoboot_script} (blanks picker direct-launch GL).
+	 * Instead write {@code ini/<rom>.ini} so MAME loads {@code master_lamps.lua}
+	 * only for that game — restores lamps and landscape artwork switching via
+	 * {@code .device_orientation} without touching the classic frontend.
 	 */
-	private static void ensureMahjongAutobootCli() {
-		// Intentionally no-op (line-full / mj17-full diagnosis).
+	private static void ensureMahjongPerGameAutobootIni(String installDir) {
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		if (installDir == null || installDir.isEmpty()) {
+			return;
+		}
+		String game = getValueStr(GAME_SELECTED);
+		if (game == null || game.isEmpty() || "___empty".equals(game)) {
+			String rom = getValueStr(ROM_NAME);
+			if (rom == null || rom.isEmpty() || "___empty".equals(rom)) {
+				return;
+			}
+			String lower = rom.toLowerCase(java.util.Locale.ROOT);
+			if (lower.endsWith(".zip")) {
+				game = rom.substring(0, rom.length() - 4);
+			} else if (lower.endsWith(".7z")) {
+				game = rom.substring(0, rom.length() - 3);
+			} else {
+				game = rom;
+			}
+		}
+		if (game.isEmpty() || "___empty".equals(game)) {
+			return;
+		}
+
+		String dir = installDir.endsWith("/") ? installDir : (installDir + "/");
+		File lua = new File(dir + "master_lamps.lua");
+		if (!lua.isFile()) {
+			Log.w(TAG, "master_lamps.lua missing; skip per-game lamp ini");
+			return;
+		}
+		File iniDir = new File(dir + "ini");
+		if (!iniDir.exists() && !iniDir.mkdirs()) {
+			Log.w(TAG, "Cannot create ini/ for per-game lamp script");
+			return;
+		}
+		File gameIni = new File(iniDir, game + ".ini");
+		byte[] body = ("autoboot_script master_lamps.lua\ncheat 1\n")
+				.getBytes(StandardCharsets.UTF_8);
+		try (FileOutputStream out = new FileOutputStream(gameIni)) {
+			out.write(body);
+			Log.i(TAG, "Per-game lamp ini: ini/" + game + ".ini");
+		} catch (Exception e) {
+			Log.w(TAG, "Failed writing per-game lamp ini", e);
+		}
 	}
 
 	/**
@@ -1047,9 +1093,11 @@ public class Emulator {
 
 				mm.getMainHelper().updateEmuValues();
 
-				// Mahjong lamps: inject via CLI instead of a stub root mame.ini
-				// (partial mame.ini blacks out the classic frontend).
-				ensureMahjongAutobootCli();
+				// Per-game ini lamp script (not CLI) — keeps picker GL alive.
+				ensureMahjongPerGameAutobootIni(resPath);
+				if (mm.getMahjongHelper() != null) {
+					mm.getMahjongHelper().syncOrientationBridge();
+				}
 
 				View emuView = mm.getEmuView();
 
