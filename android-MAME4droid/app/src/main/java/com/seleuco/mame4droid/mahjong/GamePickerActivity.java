@@ -45,7 +45,7 @@ public class GamePickerActivity extends Activity {
 
 	public static final String EXTRA_ROM = "feijuchang_rom";
 	public static final String EXTRA_FROM_PICKER = "feijuchang_from_picker";
-	/** When true, {@link MAME4droid} opens the stock classic frontend (no ROM). */
+	/** Kept for intents; classic entry temporarily removed again (black screen). */
 	public static final String EXTRA_CLASSIC_UI = "feijuchang_classic_ui";
 
 	private static final int MENU_ROM = 1;
@@ -53,7 +53,6 @@ public class GamePickerActivity extends Activity {
 	private static final int MENU_COMPACT = 3;
 	private static final int MENU_SETTINGS = 4;
 	private static final int MENU_HELP = 5;
-	private static final int MENU_CLASSIC = 6;
 	private static final int REQ_ROMS = 33;
 	private static final int REQ_SNAP = 34;
 	private static final int SETUP_HIDDEN = 0;
@@ -187,7 +186,6 @@ public class GamePickerActivity extends Activity {
 		compact.setChecked(isCompact());
 		pm.getMenu().add(0, MENU_SETTINGS, 3, R.string.picker_btn_settings);
 		pm.getMenu().add(0, MENU_HELP, 4, R.string.picker_btn_help);
-		pm.getMenu().add(0, MENU_CLASSIC, 5, R.string.picker_btn_classic);
 		pm.setOnMenuItemClickListener(item -> {
 			int id = item.getItemId();
 			if (id == MENU_ROM) {
@@ -209,10 +207,6 @@ public class GamePickerActivity extends Activity {
 			}
 			if (id == MENU_HELP) {
 				openHelp();
-				return true;
-			}
-			if (id == MENU_CLASSIC) {
-				launchClassicUi();
 				return true;
 			}
 			return false;
@@ -507,25 +501,9 @@ public class GamePickerActivity extends Activity {
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_ROM, rom);
 		i.putExtra(EXTRA_FROM_PICKER, true);
-		i.putExtra(EXTRA_CLASSIC_UI, false);
 		i.putExtra("cli_params", "-skip_gameinfo");
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startWithVeil(i);
-	}
-
-	/**
-	 * Temporary: open stock classic MAME frontend. Keeps ROM / install prefs so
-	 * the user is not forced to re-pick folders; avoids process kill (that path
-	 * previously looked like a crash / black screen).
-	 */
-	private void launchClassicUi() {
-		persistInstallDirIfNeeded();
-		Intent i = new Intent(this, MAME4droid.class);
-		i.putExtra(EXTRA_FROM_PICKER, true);
-		i.putExtra(EXTRA_CLASSIC_UI, true);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		startActivity(i);
-		finish();
 	}
 
 	@Override
