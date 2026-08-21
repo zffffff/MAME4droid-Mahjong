@@ -431,6 +431,13 @@ public class MAME4droid extends Activity {
 		super.onNewIntent(intent);
 		Log.d("EMULATOR", "onNewIntent " + this);
 		System.out.println("onNewIntent action:" + intent.getAction());
+		setIntent(intent);
+		if (intent.getBooleanExtra(
+				com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_CLASSIC_UI, false)) {
+			// Classic must not reuse a live activity with leftover native ROM state.
+			getMainHelper().relaunchActivityFresh(intent);
+			return;
+		}
 		mainHelper.checkNewViewIntent(intent);
 	}
 

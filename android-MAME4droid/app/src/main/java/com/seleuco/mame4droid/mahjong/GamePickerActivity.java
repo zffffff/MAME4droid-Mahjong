@@ -1,11 +1,15 @@
 package com.seleuco.mame4droid.mahjong;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -511,13 +515,25 @@ public class GamePickerActivity extends Activity {
 		startWithVeil(i);
 	}
 	private void launchClassicUi() {
+		persistInstallDirIfNeeded();
+		// Cold-start MAME4droid so native ROM slots are pristine. Reusing the
+		// process after a picker direct-launch left GAME_SELECTED set; clearing
+		// it to "" blacked out the classic OSD and blocked returning home.
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_FROM_PICKER, true);
 		i.putExtra(EXTRA_CLASSIC_UI, true);
-		i.putExtra(EXTRA_ROM, "");
-		i.removeExtra("cli_params");
-		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startActivity(i);
+		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+		int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			piFlags |= PendingIntent.FLAG_IMMUTABLE;
+		}
+		PendingIntent pi = PendingIntent.getActivity(this, 9102, i, piFlags);
+		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+		if (am != null) {
+			am.set(AlarmManager.ELAPSED_REALTIME,
+					SystemClock.elapsedRealtime() + 250, pi);
+		}
+		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 
 	@Override

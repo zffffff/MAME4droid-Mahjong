@@ -49,6 +49,7 @@ import static com.seleuco.mame4droid.input.InputHandler.PRESS_WAIT;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.view.View;
 
 import com.seleuco.mame4droid.Emulator;
@@ -154,7 +155,29 @@ public class DialogHelper {
 					.setCancelable(false)
 					.setPositiveButton(mm.getString(R.string.yes), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
-							//System.exit(0);
+							DialogHelper.savedDialog = DIALOG_NONE;
+							mm.removeDialog(DIALOG_EXIT);
+							boolean fromPicker = mm.getIntent() != null
+									&& mm.getIntent().getBooleanExtra(
+									com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER,
+									false);
+							if (fromPicker) {
+								if (Emulator.isEmulating()) {
+									// Let native exit; Emulator thread returns to GamePicker.
+									Emulator.setValue(Emulator.EXIT_GAME, 1);
+									mm.getWindow().getDecorView().postDelayed(
+											() -> Emulator.setValue(Emulator.EXIT_GAME, 0), 300);
+								} else {
+									Intent home = new Intent(mm,
+											com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
+									home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+											| Intent.FLAG_ACTIVITY_SINGLE_TOP
+											| Intent.FLAG_ACTIVITY_NEW_TASK);
+									mm.startActivity(home);
+									mm.finish();
+								}
+								return;
+							}
 							mm.finishAndRemoveTask();
 							android.os.Process.killProcess(android.os.Process.myPid());
 						}
