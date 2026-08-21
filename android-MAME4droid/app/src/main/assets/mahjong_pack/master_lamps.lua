@@ -84,16 +84,30 @@ end
 
 
 -- MAME 0.289+：避免 machine.output:set_value 弃用警告刷屏卡顿
-local fei_output = loadfile("fei_mj_lamps/output_proxy.lua")
-if fei_output then
-    _G.fei_output = fei_output()
+-- 勿在脚本顶层 loadfile：经典前端 (___empty) 阶段加载会黑屏只剩 OSC。
+local function ensure_fei_output()
+    if _G.fei_output then
+        return
+    end
+    local loader = loadfile("fei_mj_lamps/output_proxy.lua")
+    if loader then
+        local ok, factory = pcall(loader)
+        if ok and factory then
+            _G.fei_output = factory
+        end
+    end
 end
 
 emu.register_frame_done(function()
+    local ok, err = pcall(function()
     if not manager or not manager.machine then return end
     local machine = manager.machine
-    local rom_name = machine.system.name
-    if not rom_name or rom_name == "___empty" then return end
+    local sys = machine.system
+    if not sys or not sys.name then return end
+    local rom_name = sys.name
+    if rom_name == "___empty" then return end
+
+    ensure_fei_output()
 
     apply_device_orientation_view(machine)
 
@@ -107,6 +121,7 @@ emu.register_frame_done(function()
 
     -- 只在第一帧运行环境准备好时，加载对应的模块，杜绝性能浪费
     if not module_loaded then
+        ensure_fei_output()
         local is_mjelctrn_family = (rom_name == "mjelctrn" or rom_name == "mjembase" or rom_name == "mjelct3bi" or rom_name == "mjelct3bia" or rom_name == "mjelct3bib" or rom_name == "mjelct3" or rom_name == "mjelct3a" or rom_name == "mjelct3b" or rom_name == "mjelctrb" or rom_name == "qyjdzjp")
         local is_lhzb_1_2 = (rom_name == "lhzb" or string.sub(rom_name, 1, 5) == "lhzb2" or string.sub(rom_name, 1, 6) == "lhzb1")
         local is_lhzb3 = (string.find(rom_name, "lhzb3") or rom_name == "lthyp" or string.find(rom_name, "lhdmg"))
@@ -188,4 +203,8 @@ emu.register_frame_done(function()
     -- local debug_probe = loadfile("fei_mj_lamps/pixel_probe.lua")
     -- if debug_probe then debug_probe()(machine, screen) end
 
+    end)
+    if not ok then
+        -- swallow so a Lua error cannot blank the classic frontend
+    end
 end)

@@ -248,6 +248,66 @@ def main() -> None:
     if hook_old not in merged:
         raise SystemExit("unexpected master_lamps format: hook")
     merged = merged.replace(hook_old, hook_new, 1)
+
+    # Defer output_proxy load until a real game runs (classic ___empty frontend
+    # blacks out if the proxy is constructed at autoboot parse time).
+    top_load = (
+        "-- MAME 0.289+：避免 machine.output:set_value 弃用警告刷屏卡顿\n"
+        'local fei_output = loadfile("fei_mj_lamps/output_proxy.lua")\n'
+        "if fei_output then\n"
+        "    _G.fei_output = fei_output()\n"
+        "end\n"
+        "\n"
+        "emu.register_frame_done(function()\n"
+        "    if not manager or not manager.machine then return end\n"
+        "    local machine = manager.machine\n"
+        "    local rom_name = machine.system.name\n"
+        '    if not rom_name or rom_name == "___empty" then return end\n'
+    )
+    top_safe = (
+        "-- MAME 0.289+：避免 machine.output:set_value 弃用警告刷屏卡顿\n"
+        "-- 勿在脚本顶层 loadfile：经典前端 (___empty) 阶段加载会黑屏只剩 OSC。\n"
+        "local function ensure_fei_output()\n"
+        "    if _G.fei_output then\n"
+        "        return\n"
+        "    end\n"
+        '    local loader = loadfile("fei_mj_lamps/output_proxy.lua")\n'
+        "    if loader then\n"
+        "        local ok, factory = pcall(loader)\n"
+        "        if ok and factory then\n"
+        "            _G.fei_output = factory\n"
+        "        end\n"
+        "    end\n"
+        "end\n"
+        "\n"
+        "emu.register_frame_done(function()\n"
+        "    local ok, err = pcall(function()\n"
+        "    if not manager or not manager.machine then return end\n"
+        "    local machine = manager.machine\n"
+        "    local sys = machine.system\n"
+        "    if not sys or not sys.name then return end\n"
+        "    local rom_name = sys.name\n"
+        '    if rom_name == "___empty" then return end\n'
+        "\n"
+        "    ensure_fei_output()\n"
+    )
+    if top_load in merged:
+        merged = merged.replace(top_load, top_safe, 1)
+        if not merged.rstrip().endswith("end)"):
+            # close pcall wrapper before final end of register_frame_done
+            merged = merged.replace(
+                "\nend)\n",
+                "\n    end)\n"
+                "    if not ok then\n"
+                "        -- swallow so a Lua error cannot blank the classic frontend\n"
+                "    end\n"
+                "end)\n",
+                1,
+            )
+        print("deferred output_proxy load for classic frontend safety")
+    else:
+        print("note: output_proxy defer pattern not applied (already patched?)")
+
     (PACK / "master_lamps.lua").write_text(merged, encoding="utf-8", newline="\n")
     print("wrote merged master_lamps.lua")
 

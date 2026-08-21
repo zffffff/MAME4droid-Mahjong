@@ -81,8 +81,9 @@ public class AssetPackInstaller {
 				showError(mm.getString(R.string.asset_pack_install_failed, pack.id, e.getMessage()));
 			}
 		}
-		// Even when VERSION matches, remove a leftover stub root mame.ini.
+		// Leftover stubs from older builds can blank the classic frontend.
 		scrubMahjongStubRootIni(installDir);
+		scrubStubUiIni(installDir);
 	}
 
 	private void installPackIfNeeded(PackSpec pack, String installDir) throws IOException {
@@ -127,9 +128,17 @@ public class AssetPackInstaller {
 			// classic MAME frontend open as a black GL surface (OSC still draws).
 			// Lamps are injected via CLI in Emulator.emulate(); scrub any old stub.
 			scrubMahjongStubRootIni(installDir);
+			File iniStub = new File(installDir, "ini/mame.ini");
+			if (isMahjongStubIni(iniStub)) {
+				// Keep artwork/lua; drop the stub so MAME does not load it via inipath.
+				if (iniStub.delete()) {
+					Log.i(TAG, "Removed stub ini/mame.ini");
+				}
+			}
 
-			// Stock MAME (0.237+) needs ui.ini system_names pointing at the .lst;
-			// merely dropping mame.lst in files/ is not enough.
+			// Only merge system_names into a real MAME-written ui.ini. Creating a
+			// one-line ui.ini before first boot blanks the classic system list.
+			scrubStubUiIni(installDir);
 			ensureSystemNamesInUiIni(installDir);
 
 			writeMarker(installDir, pack.id, assetVersion);
@@ -169,7 +178,12 @@ public class AssetPackInstaller {
 		if (isMahjongStubIni(new File(installDir, "mame.ini"))) {
 			return true;
 		}
+		if (isStubUiIni(new File(installDir, "ui.ini"))) {
+			return true;
+		}
 		if (new File(installDir, "mame.lst").isFile()
+				&& new File(installDir, "ui.ini").isFile()
+				&& !isStubUiIni(new File(installDir, "ui.ini"))
 				&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
 			return true;
 		}
@@ -187,6 +201,47 @@ public class AssetPackInstaller {
 			if (rootMame.delete()) {
 				Log.i(TAG, "Removed stub root mame.ini (lamps via CLI)");
 			}
+		}
+	}
+
+	/**
+	 * Older builds wrote a one-line {@code ui.ini} with only {@code system_names}
+	 * before MAME's first run. That blanks the classic system-selection UI
+	 * (black GL + OSC still visible). Delete it so MAME recreates a full ui.ini.
+	 */
+	private void scrubStubUiIni(String installDir) {
+		File uiIni = new File(installDir, "ui.ini");
+		if (isStubUiIni(uiIni)) {
+			if (uiIni.delete()) {
+				Log.i(TAG, "Removed stub ui.ini (classic frontend)");
+			}
+		}
+	}
+
+	/** True if ui.ini exists and every non-comment key is system_names. */
+	private static boolean isStubUiIni(File f) {
+		if (f == null || !f.isFile()) {
+			return false;
+		}
+		try {
+			String text = readFileText(f);
+			boolean sawSystemNames = false;
+			for (String line : text.split("\n")) {
+				String t = line.trim();
+				if (t.isEmpty() || t.startsWith("#") || t.startsWith(";")) {
+					continue;
+				}
+				int sp = t.indexOf(' ');
+				String key = (sp < 0 ? t : t.substring(0, sp)).toLowerCase(java.util.Locale.ROOT);
+				if ("system_names".equals(key)) {
+					sawSystemNames = true;
+				} else {
+					return false;
+				}
+			}
+			return sawSystemNames;
+		} catch (IOException e) {
+			return false;
 		}
 	}
 
@@ -242,7 +297,8 @@ public class AssetPackInstaller {
 
 	/**
 	 * Point UI at {@code mame.lst} for localised system names (MAME 0.237+).
-	 * Merges into existing ui.ini without wiping other settings.
+	 * Only merges into an existing full ui.ini — never creates a one-line stub
+	 * (that blanks the classic frontend on first boot).
 	 */
 	private void ensureSystemNamesInUiIni(String installDir) throws IOException {
 		File lst = new File(installDir, "mame.lst");
@@ -250,34 +306,32 @@ public class AssetPackInstaller {
 			return;
 		}
 		File uiIni = new File(installDir, "ui.ini");
+		if (!uiIni.isFile() || isStubUiIni(uiIni)) {
+			Log.i(TAG, "Defer system_names until MAME writes a full ui.ini");
+			return;
+		}
 		List<String> lines = new ArrayList<>();
 		boolean replaced = false;
-		if (uiIni.isFile()) {
-			String text = readFileText(uiIni);
-			String[] raw = text.split("\n", -1);
-			for (int i = 0; i < raw.length; i++) {
-				String line = raw[i];
-				// Drop the empty trailing element produced by a final newline.
-				if (i == raw.length - 1 && line.isEmpty()) {
-					continue;
-				}
-				String trim = line.trim();
-				if (trim.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
-					if (!replaced) {
-						lines.add("system_names           mame.lst");
-						replaced = true;
-					}
-					continue;
-				}
-				lines.add(line);
+		String text = readFileText(uiIni);
+		String[] raw = text.split("\n", -1);
+		for (int i = 0; i < raw.length; i++) {
+			String line = raw[i];
+			// Drop the empty trailing element produced by a final newline.
+			if (i == raw.length - 1 && line.isEmpty()) {
+				continue;
 			}
+			String trim = line.trim();
+			if (trim.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
+				if (!replaced) {
+					lines.add("system_names           mame.lst");
+					replaced = true;
+				}
+				continue;
+			}
+			lines.add(line);
 		}
 		if (!replaced) {
 			lines.add("system_names           mame.lst");
-		}
-		File parent = uiIni.getParentFile();
-		if (parent != null && !parent.exists() && !parent.mkdirs()) {
-			throw new IOException("Cannot create: " + parent.getAbsolutePath());
 		}
 		StringBuilder out = new StringBuilder();
 		for (String line : lines) {
@@ -334,6 +388,10 @@ public class AssetPackInstaller {
 			if (assetPath.equals(packRoot)
 					&& (VERSION_FILE.equals(child) || README_FILE.equals(child))) {
 				continue; // meta files stay in APK only
+			}
+			// Stub ini/mame.ini must not land under files/ (classic UI blacks out).
+			if (assetPath.equals(packRoot) && "ini".equals(child)) {
+				continue;
 			}
 			String childAsset = assetPath + "/" + child;
 			String[] grandChildren = assets.list(childAsset);
