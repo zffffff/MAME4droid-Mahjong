@@ -827,10 +827,19 @@ public class Emulator {
 	}
 
 	/**
-	 * Append {@code -autoboot_script master_lamps.lua} when missing.
-	 * Keeps lamps working without writing a stub root {@code mame.ini}.
+	 * Append {@code -autoboot_script master_lamps.lua} only when launching a
+	 * concrete game (picker / VIEW). Classic frontend (___empty) must not load
+	 * it — on this Android port that combination yields a permanent black GL
+	 * surface while the OSC still draws.
 	 */
 	private static void ensureMahjongAutobootCli() {
+		String game = getValueStr(GAME_SELECTED);
+		if (game == null || game.isEmpty()) {
+			String rom = getValueStr(ROM_NAME);
+			if (rom == null || rom.isEmpty()) {
+				return;
+			}
+		}
 		String cli = getValueStr(CLI_PARAMS);
 		if (cli == null) {
 			cli = "";

@@ -1092,16 +1092,28 @@ galaxy sde	   --> 2560x1600 16:10
         int widthSize = 1;
         int heightSize = 1;
 
-        if (!Emulator.isInGame() && !(scaleType == PrefsHelper.PREF_STRETCH))
-            scaleType = PrefsHelper.PREF_SCALE;
+		// Classic frontend (___empty): always fill the EmulatorFrame. PREF_SCALE
+		// against a bad/zero emu size can collapse the GLSurfaceView to ~1px,
+		// leaving a black FrameLayout with only the 📁/🖼 chips visible.
+		if (!Emulator.isInGame()) {
+			scaleType = PrefsHelper.PREF_STRETCH;
+		}
 
         if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
         {
             widthSize = MeasureSpec.getSize(widthMeasureSpec);
             heightSize = MeasureSpec.getSize(heightMeasureSpec);
+			if (heightSize <= 0) heightSize = 1;
+			if (widthSize <= 0) widthSize = 1;
+			ArrayList<Integer> stretch = new ArrayList<Integer>();
+			stretch.add(Integer.valueOf(widthSize));
+			stretch.add(Integer.valueOf(heightSize));
+			return stretch;
         } else {
             int emu_w = Emulator.getEmulatedVisWidth();
             int emu_h = Emulator.getEmulatedVisHeight();
+			if (emu_w <= 0) emu_w = 640;
+			if (emu_h <= 0) emu_h = 480;
 
             if (scaleType == PrefsHelper.PREF_SCALE_INTEGER) {
 
