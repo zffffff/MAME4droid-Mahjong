@@ -827,32 +827,60 @@ public class Emulator {
 	}
 
 	/**
-	 * Append {@code -autoboot_script master_lamps.lua} only when launching a
-	 * concrete game (picker / VIEW). Classic frontend (___empty) must not load
-	 * it — on this Android port that combination yields a permanent black GL
-	 * surface while the OSC still draws.
+	 * Lamp Lua via CLI is disabled on this line: the same
+	 * {@code -autoboot_script} that blanks the classic frontend also blanks
+	 * picker direct-launches (black GL + OSC/toolbox still visible). Artwork
+	 * and Lua files still install; lamps need a later in-game deferred load.
 	 */
 	private static void ensureMahjongAutobootCli() {
-		// Basic classic home never ships lamp Lua; only full edition injects it.
-		if (!com.seleuco.mame4droid.BuildConfig.FEIJUCHANG_FULL_UX) {
+		// Intentionally no-op (line-full / mj17-full diagnosis).
+	}
+
+	/**
+	 * Ask native to exit; if launched from the mahjong picker and the native
+	 * thread never returns (e.g. black-screen stuck), force-return to the
+	 * picker without {@code killProcess}.
+	 */
+	public static void requestExitToPickerOrFinish() {
+		if (mm == null) {
 			return;
 		}
-		String game = getValueStr(GAME_SELECTED);
-		if (game == null || game.isEmpty()) {
-			String rom = getValueStr(ROM_NAME);
-			if (rom == null || rom.isEmpty()) {
-				return;
-			}
-		}
-		String cli = getValueStr(CLI_PARAMS);
-		if (cli == null) {
-			cli = "";
-		}
-		if (cli.contains("autoboot_script")) {
+		final boolean fromPicker = mm.getIntent() != null
+				&& mm.getIntent().getBooleanExtra(
+				com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER,
+				false);
+		if (!fromPicker) {
+			setValue(EXIT_GAME, 1);
+			mm.getWindow().getDecorView().postDelayed(
+					() -> setValue(EXIT_GAME, 0), 300);
 			return;
 		}
-		String add = "-autoboot_script master_lamps.lua";
-		setValueStr(CLI_PARAMS, cli.isEmpty() ? add : (cli.trim() + " " + add));
+		if (isEmulating) {
+			setValue(EXIT_GAME, 1);
+			mm.getWindow().getDecorView().postDelayed(
+					() -> setValue(EXIT_GAME, 0), 300);
+			mm.getWindow().getDecorView().postDelayed(() -> {
+				if (!isEmulating || mm == null) {
+					return;
+				}
+				Log.w(TAG, "Native exit stalled; forcing return to GamePicker");
+				Intent home = new Intent(mm,
+						com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
+				home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+						| Intent.FLAG_ACTIVITY_SINGLE_TOP
+						| Intent.FLAG_ACTIVITY_NEW_TASK);
+				mm.startActivity(home);
+				mm.finish();
+			}, 2000);
+		} else {
+			Intent home = new Intent(mm,
+					com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
+			home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+					| Intent.FLAG_ACTIVITY_SINGLE_TOP
+					| Intent.FLAG_ACTIVITY_NEW_TASK);
+			mm.startActivity(home);
+			mm.finish();
+		}
 	}
 
 	//EMULATOR

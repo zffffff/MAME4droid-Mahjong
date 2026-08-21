@@ -192,11 +192,7 @@ public class MahjongExperienceHelper {
 
 		exitBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
 			collapseMenu();
-			// 等价于屏幕 Exit：游戏中退出到列表，选游戏界面退出 App
-			Emulator.setValue(Emulator.EXIT_GAME, 1);
-			new Handler(Looper.getMainLooper()).postDelayed(
-					() -> Emulator.setValue(Emulator.EXIT_GAME, 0),
-					InputHandler.PRESS_WAIT);
+			Emulator.requestExitToPickerOrFinish();
 		});
 		exitBtn.setText(mm.getString(R.string.mj_exit_button));
 		exitBtn.setContentDescription(mm.getString(R.string.mj_exit_button_desc));

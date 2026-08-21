@@ -162,20 +162,7 @@ public class DialogHelper {
 									com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER,
 									false);
 							if (fromPicker) {
-								if (Emulator.isEmulating()) {
-									// Let native exit; Emulator thread returns to GamePicker.
-									Emulator.setValue(Emulator.EXIT_GAME, 1);
-									mm.getWindow().getDecorView().postDelayed(
-											() -> Emulator.setValue(Emulator.EXIT_GAME, 0), 300);
-								} else {
-									Intent home = new Intent(mm,
-											com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
-									home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-											| Intent.FLAG_ACTIVITY_SINGLE_TOP
-											| Intent.FLAG_ACTIVITY_NEW_TASK);
-									mm.startActivity(home);
-									mm.finish();
-								}
+								Emulator.requestExitToPickerOrFinish();
 								return;
 							}
 							mm.finishAndRemoveTask();
