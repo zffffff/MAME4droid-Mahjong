@@ -602,7 +602,9 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener {
 	}
 
 	public boolean isSAFLazyNormalBoot() {
-		return getSharedPreferences().getBoolean(PREF_SAF_LAZY_NORMAL_BOOT, false);
+		// Default true: full recursive SAF scan on classic frontend boot freezes
+		// the emu thread (black GL + OSC still visible from the UI thread).
+		return getSharedPreferences().getBoolean(PREF_SAF_LAZY_NORMAL_BOOT, true);
 	}
 
 	public boolean isSAFRescanPending() {

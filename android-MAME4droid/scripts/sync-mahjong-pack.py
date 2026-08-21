@@ -273,7 +273,11 @@ def main() -> None:
             continue
         if dst.exists():
             shutil.rmtree(dst)
-        shutil.copytree(src, dst)
+        shutil.copytree(
+            src,
+            dst,
+            ignore=shutil.ignore_patterns("*.bak*", "*.bak_diag"),
+        )
     print("artwork synced", len(wl) - len(missing), "missing", missing)
 
     version = next_version()

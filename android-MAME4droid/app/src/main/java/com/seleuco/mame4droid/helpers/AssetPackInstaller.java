@@ -81,6 +81,8 @@ public class AssetPackInstaller {
 				showError(mm.getString(R.string.asset_pack_install_failed, pack.id, e.getMessage()));
 			}
 		}
+		// Even when VERSION matches, remove a leftover stub root mame.ini.
+		scrubMahjongStubRootIni(installDir);
 	}
 
 	private void installPackIfNeeded(PackSpec pack, String installDir) throws IOException {
@@ -120,19 +122,11 @@ public class AssetPackInstaller {
 
 			copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress);
 
-			// MAME reads cwd/mame.ini after chdir(installDir); keep ini/mame.ini
-			// (player layout) and mirror to root so autoboot_script is effective.
-			File iniMame = new File(installDir, "ini/mame.ini");
-			File rootMame = new File(installDir, "mame.ini");
-			if (iniMame.isFile()) {
-				copyFile(iniMame, rootMame);
-			} else if (rootMame.isFile()) {
-				File iniDir = new File(installDir, "ini");
-				if (!iniDir.exists() && !iniDir.mkdirs()) {
-					throw new IOException("Cannot create: " + iniDir.getAbsolutePath());
-				}
-				copyFile(rootMame, iniMame);
-			}
+			// Pack ships a tiny ini/mame.ini (autoboot_script + cheat only). Never
+			// mirror that stub over root mame.ini — a partial root file makes the
+			// classic MAME frontend open as a black GL surface (OSC still draws).
+			// Lamps are injected via CLI in Emulator.emulate(); scrub any old stub.
+			scrubMahjongStubRootIni(installDir);
 
 			// Stock MAME (0.237+) needs ui.ini system_names pointing at the .lst;
 			// merely dropping mame.lst in files/ is not enough.
@@ -171,10 +165,8 @@ public class AssetPackInstaller {
 				return true;
 			}
 		}
-		// Default-data reset deletes root mame.ini; re-mirror if needed.
-		File iniMame = new File(installDir, "ini/mame.ini");
-		File rootMame = new File(installDir, "mame.ini");
-		if (iniMame.isFile() && !rootMame.isFile()) {
+		// Old builds mirrored the stub to root; force a reinstall pass to scrub it.
+		if (isMahjongStubIni(new File(installDir, "mame.ini"))) {
 			return true;
 		}
 		if (new File(installDir, "mame.lst").isFile()
@@ -182,6 +174,47 @@ public class AssetPackInstaller {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Pack {@code ini/mame.ini} is only {@code autoboot_script}/{@code cheat}.
+	 * If that stub was copied to {@code files/mame.ini}, delete it so stock
+	 * defaults + CLI apply. Leave a full player-saved mame.ini alone.
+	 */
+	private void scrubMahjongStubRootIni(String installDir) {
+		File rootMame = new File(installDir, "mame.ini");
+		if (isMahjongStubIni(rootMame)) {
+			if (rootMame.delete()) {
+				Log.i(TAG, "Removed stub root mame.ini (lamps via CLI)");
+			}
+		}
+	}
+
+	/** True if file exists and every non-comment key is autoboot_script or cheat. */
+	private static boolean isMahjongStubIni(File f) {
+		if (f == null || !f.isFile()) {
+			return false;
+		}
+		try {
+			String text = readFileText(f);
+			boolean sawPackKey = false;
+			for (String line : text.split("\n")) {
+				String t = line.trim();
+				if (t.isEmpty() || t.startsWith("#") || t.startsWith(";")) {
+					continue;
+				}
+				int sp = t.indexOf(' ');
+				String key = (sp < 0 ? t : t.substring(0, sp)).toLowerCase(java.util.Locale.ROOT);
+				if ("autoboot_script".equals(key) || "cheat".equals(key)) {
+					sawPackKey = true;
+				} else {
+					return false;
+				}
+			}
+			return sawPackKey;
+		} catch (IOException e) {
+			return false;
+		}
 	}
 
 	/** True if ui.ini already selects a translated system-names list. */
@@ -333,22 +366,6 @@ public class AssetPackInstaller {
 
 		try (InputStream in = new BufferedInputStream(assets.open(assetPath));
 			 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(destFile), BUFFER_SIZE)) {
-			byte[] buf = new byte[BUFFER_SIZE];
-			int n;
-			while ((n = in.read(buf)) != -1) {
-				out.write(buf, 0, n);
-			}
-			out.flush();
-		}
-	}
-
-	private void copyFile(File src, File dest) throws IOException {
-		File parent = dest.getParentFile();
-		if (parent != null && !parent.exists() && !parent.mkdirs()) {
-			throw new IOException("Cannot create: " + parent.getAbsolutePath());
-		}
-		try (InputStream in = new BufferedInputStream(new FileInputStream(src));
-			 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(dest), BUFFER_SIZE)) {
 			byte[] buf = new byte[BUFFER_SIZE];
 			int n;
 			while ((n = in.read(buf)) != -1) {

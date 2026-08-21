@@ -826,6 +826,22 @@ public class Emulator {
 			audioTrack.play();
 	}
 
+	/**
+	 * Append {@code -autoboot_script master_lamps.lua} when missing.
+	 * Keeps lamps working without writing a stub root {@code mame.ini}.
+	 */
+	private static void ensureMahjongAutobootCli() {
+		String cli = getValueStr(CLI_PARAMS);
+		if (cli == null) {
+			cli = "";
+		}
+		if (cli.contains("autoboot_script")) {
+			return;
+		}
+		String add = "-autoboot_script master_lamps.lua";
+		setValueStr(CLI_PARAMS, cli.isEmpty() ? add : (cli.trim() + " " + add));
+	}
+
 	//EMULATOR
 	public static void emulate(final String libPath, final String resPath) {
 
@@ -989,6 +1005,10 @@ public class Emulator {
 				}
 
 				mm.getMainHelper().updateEmuValues();
+
+				// Mahjong lamps: inject via CLI instead of a stub root mame.ini
+				// (partial mame.ini blacks out the classic frontend).
+				ensureMahjongAutobootCli();
 
 				View emuView = mm.getEmuView();
 

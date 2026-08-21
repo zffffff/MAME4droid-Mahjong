@@ -208,7 +208,10 @@ public class MAME4droid extends Activity {
 	protected void initMame4droid() {
 		if (!Emulator.isEmulating()) {
 
-			if (getPrefsHelper().getInstallationDIR() == null || prefsHelper.getROMsDIR() == null) {
+			// Only the ROMs preference gates the first-run dialog. Clearing
+			// PREF_INSTALLATION_DIR before recompute used to leave install=null
+			// with ROMs already set → dialog again ("specify ROM folder twice").
+			if (prefsHelper.getROMsDIR() == null) {
 				if (DialogHelper.savedDialog == DialogHelper.DIALOG_NONE) {
 					if(getMainHelper().isAndroidTV() && getPrefsHelper().getInstallationDIR() == null ) {
 						getMainHelper().setInstallationDirType(MainHelper.INSTALLATION_DIR_MEDIA_FOLDER);

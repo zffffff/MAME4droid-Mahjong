@@ -894,6 +894,8 @@ galaxy sde	   --> 2560x1600 16:10
 			mm.getPrefsHelper().setInstallationDIR(null);
             mm.getPrefsHelper().setROMsDIR(romsPath);
             mm.getPrefsHelper().setSAF_Uri(uri.toString());
+			// Persist install dir immediately (do not leave install=null until emulate).
+			getInstallationDIR();
             mm.getSAFHelper().deleteCacheFile();//the persisted cache belongs to the old tree
 
 			reloadAfterRomsPathChange();
@@ -951,6 +953,7 @@ galaxy sde	   --> 2560x1600 16:10
 		mm.getPrefsHelper().setInstallationDIR(null);
 		mm.getPrefsHelper().setROMsDIR("");
 		mm.getPrefsHelper().setSAF_Uri(null);
+		getInstallationDIR(); // persist before reload / any activity recreate
 		mm.getSAFHelper().setURI(null);
 		mm.getSAFHelper().deleteCacheFile();
 		reloadAfterRomsPathChange();
@@ -1297,21 +1300,18 @@ galaxy sde	   --> 2560x1600 16:10
     }
 
     public void restartApp() {
-
-        if (Build.VERSION.SDK_INT < 30) {
-            Intent oldintent = mm.getIntent();
-            // System.out.println("OLD INTENT:"+oldintent.getAction());
-            int flags = oldintent.getFlags();
-
-            if(Build.VERSION.SDK_INT >= 33)//para que no saque error el UI
-               flags |=  PendingIntent.FLAG_IMMUTABLE;//67108864; //FLAG_IMMUTABLE
-
-            PendingIntent intent = PendingIntent.getActivity(mm.getBaseContext(),
-                    0, new Intent(oldintent), flags);
-            AlarmManager manager = (AlarmManager) mm
-                    .getSystemService(Context.ALARM_SERVICE);
-            manager.set(AlarmManager.RTC, System.currentTimeMillis() + 250, intent);
-        }
+		// Always schedule a relaunch. On API 30+ the old path only killProcess'd,
+		// which looked like a crash and could re-prompt for the ROM folder.
+		Intent oldintent = mm.getIntent();
+		int flags = oldintent.getFlags();
+		if (Build.VERSION.SDK_INT >= 23) {
+			flags |= PendingIntent.FLAG_IMMUTABLE;
+		}
+		PendingIntent intent = PendingIntent.getActivity(mm.getBaseContext(),
+				0, new Intent(oldintent), flags);
+		AlarmManager manager = (AlarmManager) mm
+				.getSystemService(Context.ALARM_SERVICE);
+		manager.set(AlarmManager.RTC, System.currentTimeMillis() + 250, intent);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
