@@ -1,15 +1,11 @@
 package com.seleuco.mame4droid.mahjong;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -42,12 +38,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Full-screen mahjong game picker. Launches {@link MAME4droid} with a ROM short name.
+ * Full-edition mahjong game picker (LAUNCHER). Basic edition uses stock
+ * {@link MAME4droid} as home and does not open this activity.
  */
 public class GamePickerActivity extends Activity {
 
 	public static final String EXTRA_ROM = "feijuchang_rom";
 	public static final String EXTRA_FROM_PICKER = "feijuchang_from_picker";
+	/** @deprecated Full edition no longer offers classic UI; kept for old intents. */
+	@Deprecated
 	public static final String EXTRA_CLASSIC_UI = "feijuchang_classic_ui";
 
 	private static final int MENU_ROM = 1;
@@ -55,7 +54,6 @@ public class GamePickerActivity extends Activity {
 	private static final int MENU_COMPACT = 3;
 	private static final int MENU_SETTINGS = 4;
 	private static final int MENU_HELP = 5;
-	private static final int MENU_CLASSIC = 6;
 	private static final int REQ_ROMS = 33;
 	private static final int REQ_SNAP = 34;
 	private static final int SETUP_HIDDEN = 0;
@@ -189,7 +187,6 @@ public class GamePickerActivity extends Activity {
 		compact.setChecked(isCompact());
 		pm.getMenu().add(0, MENU_SETTINGS, 3, R.string.picker_btn_settings);
 		pm.getMenu().add(0, MENU_HELP, 4, R.string.picker_btn_help);
-		pm.getMenu().add(0, MENU_CLASSIC, 5, R.string.picker_btn_classic);
 		pm.setOnMenuItemClickListener(item -> {
 			int id = item.getItemId();
 			if (id == MENU_ROM) {
@@ -211,10 +208,6 @@ public class GamePickerActivity extends Activity {
 			}
 			if (id == MENU_HELP) {
 				openHelp();
-				return true;
-			}
-			if (id == MENU_CLASSIC) {
-				launchClassicUi();
 				return true;
 			}
 			return false;
@@ -509,31 +502,9 @@ public class GamePickerActivity extends Activity {
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_ROM, rom);
 		i.putExtra(EXTRA_FROM_PICKER, true);
-		i.putExtra(EXTRA_CLASSIC_UI, false);
 		i.putExtra("cli_params", "-skip_gameinfo");
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startWithVeil(i);
-	}
-	private void launchClassicUi() {
-		persistInstallDirIfNeeded();
-		// Cold-start MAME4droid so native ROM slots are pristine. Reusing the
-		// process after a picker direct-launch left GAME_SELECTED set; clearing
-		// it to "" blacked out the classic OSD and blocked returning home.
-		Intent i = new Intent(this, MAME4droid.class);
-		i.putExtra(EXTRA_FROM_PICKER, true);
-		i.putExtra(EXTRA_CLASSIC_UI, true);
-		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		int piFlags = PendingIntent.FLAG_UPDATE_CURRENT;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			piFlags |= PendingIntent.FLAG_IMMUTABLE;
-		}
-		PendingIntent pi = PendingIntent.getActivity(this, 9102, i, piFlags);
-		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-		if (am != null) {
-			am.set(AlarmManager.ELAPSED_REALTIME,
-					SystemClock.elapsedRealtime() + 250, pi);
-		}
-		android.os.Process.killProcess(android.os.Process.myPid());
 	}
 
 	@Override

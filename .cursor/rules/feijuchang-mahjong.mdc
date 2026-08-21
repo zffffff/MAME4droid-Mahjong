@@ -11,8 +11,9 @@ alwaysApply: true
 
 ## 身份（两套 APK，同一 Git 分支 + flavors）
 
-- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · 麻将体验锦上添花
-- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **尽量贴近官方**；只做必要减负（按键包、主界面 📁/🖼 等）
+- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · **LAUNCHER=选台**；麻将体验锦上添花（**无经典界面入口**）
+- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **LAUNCHER=官方风格 MAME4droid**；只做必要减负（按键包、主界面 📁/🖼 等）
+- Manifest：`src/full` / `src/basic` 分别挂 LAUNCHER；勿在 `main` 写死共用 LAUNCHER
 - Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；GPL + `NOTICE`
 - 不内置 ROM；按键包在 `assets/mahjong_pack/`（已开源，见该目录 LICENSE.txt）
 

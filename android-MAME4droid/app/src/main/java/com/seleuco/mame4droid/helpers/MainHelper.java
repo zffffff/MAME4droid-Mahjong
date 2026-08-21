@@ -1315,25 +1315,6 @@ galaxy sde	   --> 2560x1600 16:10
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    /** Schedule {@code launch} then kill this process (cold native state). */
-    public void relaunchActivityFresh(Intent launch) {
-        Intent i = new Intent(launch);
-        if (i.getComponent() == null) {
-            i.setClass(mm, mm.getClass());
-        }
-        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        }
-        PendingIntent pi = PendingIntent.getActivity(mm.getBaseContext(), 9103, i, flags);
-        AlarmManager am = (AlarmManager) mm.getSystemService(Context.ALARM_SERVICE);
-        if (am != null) {
-            am.set(AlarmManager.ELAPSED_REALTIME,
-                    android.os.SystemClock.elapsedRealtime() + 250, pi);
-        }
-        android.os.Process.killProcess(android.os.Process.myPid());
-    }
-
     public void checkNewViewIntent(Intent intent) {//TODO
         if (Intent.ACTION_VIEW.equals(intent.getAction()) && Emulator.isEmulating()) {
             Uri uri = intent.getData();

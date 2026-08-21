@@ -19,12 +19,6 @@
           android:anyDensity="true" android:resizeable="true"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
-<!-- Android TV -->
-<!--
-    <uses-feature android:name="android.software.leanback" android:required="true" />
-    <uses-feature android:name="android.hardware.gamepad" android:required="true" />
--->
-
 	<uses-feature android:name="android.hardware.gamepad" android:required="false" />
 
 	<!-- Package visibility: detect / launch WeChat for 知识星球 coupon links -->
@@ -41,33 +35,14 @@
         android:allowBackup="false"
         android:hasFragileUserData="true"
         >
-<!-- META QUEST -->
-<!--
-        <activity android:name="com.seleuco.mame4droid.MAME4droid"
-                  android:configChanges="keyboardHidden|orientation|screenSize"
-                  android:launchMode="singleTask"
-                  android:exported="true"
-			      android:screenOrientation="landscape"
-                  android:windowSoftInputMode="stateAlwaysHidden" android:theme="@style/Theme.MAME4droid">
--->
-<!-- PLAY STORE -->
 
-		<!-- Custom mahjong picker is the home screen; MAME activity launches games. -->
+		<!-- LAUNCHER intent-filters are flavor-specific:
+		     full → GamePickerActivity (src/full), basic → MAME4droid (src/basic). -->
 		<activity android:name="com.seleuco.mame4droid.mahjong.GamePickerActivity"
 			android:exported="true"
 			android:launchMode="singleTask"
 			android:theme="@style/Theme.MAME4droid"
-			android:windowSoftInputMode="stateHidden">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-			</intent-filter>
-		</activity>
+			android:windowSoftInputMode="stateHidden" />
 
 		<activity android:name="com.seleuco.mame4droid.MAME4droid"
 			android:configChanges="keyboardHidden|orientation|screenSize"

@@ -897,13 +897,9 @@ public class Emulator {
 				boolean delete = false;
 				final boolean fromPicker = intent.getBooleanExtra(
 						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER, false);
-				final boolean classicUi = intent.getBooleanExtra(
-						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_CLASSIC_UI, false);
 				String pickerRom = intent.getStringExtra(
 						com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_ROM);
-				// classicUi: stock frontend — do not set ROM_NAME/GAME_SELECTED (empty
-				// strings blacked out the OSD). GamePicker cold-restarts the process.
-				if (!classicUi && pickerRom != null && !pickerRom.isEmpty()) {
+				if (pickerRom != null && !pickerRom.isEmpty()) {
 					cliParams = intent.getStringExtra("cli_params");
 					if (cliParams == null || cliParams.isEmpty()) {
 						cliParams = "-skip_gameinfo";
@@ -914,7 +910,7 @@ public class Emulator {
 					extROM = true;
 					String msg = mm.getString(R.string.launching_rom, pickerRom, versionName);
 					new WarnWidget.WarnWidgetHelper(mm, msg, 3, Color.GREEN, true);
-				} else if (!classicUi && viewIntent) {
+				} else if (viewIntent) {
 					//android.os.Debug.waitForDebugger();
 					//pkg = mm.getReferrer();
 					//System.out.println("PKG: "+pkg.getHost());
