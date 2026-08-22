@@ -317,30 +317,9 @@ public class MAME4droid extends Activity {
 		getMainHelper().copyFiles();
 		getMainHelper().removeFiles();
 
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			// Full: install complete pack before emulate (picker / in-game lamps).
-			new AssetPackInstaller(this).installAllIfNeeded();
-			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
-		} else {
-			// Basic: mj2 path — scrub lua/stub only, install Chinese lst before emulate.
-			AssetPackInstaller pack = new AssetPackInstaller(this);
-			pack.prepareBasicClassicBoot();
-			pack.installBasicChineseNamesBeforeEmulate();
-			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
-			final MAME4droid app = this;
-			new Thread(() -> {
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					return;
-				}
-				try {
-					new AssetPackInstaller(app).installAllIfNeeded();
-				} catch (Exception e) {
-					Log.e("MAME4droid", "basic pack install failed", e);
-				}
-			}, "fj-basic-pack").start();
-		}
+		// mj2 boot: install key pack before emulate (basic = full mahjong_pack tree).
+		new AssetPackInstaller(this).installAllIfNeeded();
+		Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 	}
 
 	@Override

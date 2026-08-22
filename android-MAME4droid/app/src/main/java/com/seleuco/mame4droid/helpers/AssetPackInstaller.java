@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.util.Log;
 
 import com.seleuco.mame4droid.BuildConfig;
-import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.widgets.WarnWidget;
@@ -24,15 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Copies VERSION-gated asset packs into the MAME installation directory
- * ({@link MainHelper#getInstallationDIR()}, typically
- * {@code /storage/emulated/0/Android/data/.../files/}).
+ * Copies VERSION-gated asset packs into the MAME installation directory.
  * <p>
- * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
- * game is selected).<br>
- * <b>basic</b>: artwork in the background; Chinese {@code mame.lst} is copied
- * and {@code ui.ini} is merged <em>before</em> {@code Emulator.emulate} (same
- * as mj2). Only lamp Lua / stub ini are scrubbed — they blank the classic list.
+ * <b>full</b>: artwork + lamp Lua + Chinese lists; scrubs stub ini after install.<br>
+ * <b>basic</b>: mj2 boot path — full {@code mahjong_pack} tree before {@code emulate}
+ * (same as {@code 1.38.1-mj2}).
  */
 public class AssetPackInstaller {
 
@@ -52,12 +47,14 @@ public class AssetPackInstaller {
 							"arcade.lst",
 					},
 					new String[]{
-							"artwork",
+							"master_lamps.lua",
+							"fei_mj_lamps",
+							"ini/mame.ini",
+							"mame.lst",
+							"arcade.lst",
 					}
 			),
 	};
-
-	private static final String BASIC_MARKER_SUFFIX = "-basic-mj2cn";
 
 	private final MAME4droid mm;
 
@@ -80,88 +77,10 @@ public class AssetPackInstaller {
 				showError(mm.getString(R.string.asset_pack_install_failed, pack.id, e.getMessage()));
 			}
 		}
-		scrubMahjongStubRootIni(installDir);
-		scrubStubUiIni(installDir);
-		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
-			scrubBasicClassicBoot(installDir);
-		}
-	}
 
-	/**
-	 * Basic only: scrub lamp Lua / stub ini before {@code Emulator.emulate}.
-	 * Strip {@code mame.lst} only when the user chose English names.
-	 */
-	public void prepareBasicClassicBoot() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		String installDir = resolveInstallDir();
-		if (installDir == null) {
-			return;
-		}
-		scrubBasicClassicBoot(installDir);
-	}
-
-	/**
-	 * Basic only: mj2-style Chinese names — copy lst and merge {@code system_names}
-	 * into the stock {@code ui.ini} from {@code copyFiles()}, then emulate.
-	 */
-	public void installBasicChineseNamesBeforeEmulate() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		if (!mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
-			return;
-		}
-		String installDir = resolveInstallDir();
-		if (installDir == null) {
-			return;
-		}
-		File uiIni = new File(installDir, "ui.ini");
-		if (!uiIni.isFile()) {
-			Log.w(TAG, "basic Chinese names need stock ui.ini from copyFiles");
-			return;
-		}
-		try {
-			AssetManager assets = mm.getAssets();
-			copyAssetFileIfPresent(assets, "mahjong_pack/mame.lst",
-					new File(installDir, "mame.lst"), null);
-			copyAssetFileIfPresent(assets, "mahjong_pack/arcade.lst",
-					new File(installDir, "arcade.lst"), null);
-			ensureSystemNamesInUiIni(installDir);
-			Log.i(TAG, "basic Chinese names installed before emulate (mj2 path)");
-		} catch (IOException e) {
-			Log.w(TAG, "basic Chinese name pre-emulate install failed", e);
-		}
-	}
-
-	/** Basic only: user opted into Chinese names (takes effect after app restart). */
-	public void applyBasicChineseNamesInSession() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		mm.getPrefsHelper().setBasicChineseNamesEnabled(true);
-		Log.i(TAG, "basic Chinese names enabled; restart app to apply");
-	}
-
-	/** Basic only: remove Chinese list files and {@code system_names} hook. */
-	public void removeBasicChineseNames() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		String installDir = resolveInstallDir();
-		if (installDir == null) {
-			return;
-		}
-		scrubBasicNameLists(installDir);
-		mm.getPrefsHelper().setBasicChineseNamesEnabled(false);
-		Log.i(TAG, "basic Chinese names removed; restart app to apply");
-	}
-
-	private void scrubBasicClassicBoot(String installDir) {
-		scrubBasicToxicPoisons(installDir);
-		if (!mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
-			scrubBasicNameLists(installDir);
+			scrubMahjongStubRootIni(installDir);
+			scrubStubUiIni(installDir);
 		}
 	}
 
@@ -197,10 +116,7 @@ public class AssetPackInstaller {
 		boolean fullUx = BuildConfig.FEIJUCHANG_FULL_UX;
 		if (!needsInstall(pack, installDir, assetVersion, assets, fullUx)) {
 			Log.i(TAG, "Pack up to date: " + pack.id + " @" + assetVersion
-					+ (fullUx ? " (full)" : " (basic)"));
-			if (!fullUx && !Emulator.isEmulating()) {
-				scrubBasicToxicPoisons(installDir);
-			}
+					+ (fullUx ? " (full)" : " (basic/mj2)"));
 			return;
 		}
 
@@ -216,25 +132,14 @@ public class AssetPackInstaller {
 			progress.init();
 
 			if (fullUx) {
-				copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress);
-				scrubMahjongStubRootIni(installDir);
-				File iniStub = new File(installDir, "ini/mame.ini");
-				if (isMahjongStubIni(iniStub) && iniStub.delete()) {
-					Log.i(TAG, "Removed stub ini/mame.ini");
-				}
-				scrubStubUiIni(installDir);
-				ensureSystemNamesInUiIni(installDir);
+				installFullPack(assets, pack, installDir, progress);
 			} else {
-				copyAssetTree(assets, pack.id + "/artwork",
-						new File(installDir, "artwork"), pack.id, progress);
-				if (!Emulator.isEmulating()) {
-					scrubBasicToxicPoisons(installDir);
-				}
+				installBasicPackMj2(assets, pack, installDir, progress);
 			}
 
-			writeMarker(installDir, pack.id, assetVersion + (fullUx ? "" : BASIC_MARKER_SUFFIX));
+			writeMarker(installDir, pack.id, assetVersion);
 			Log.i(TAG, "Installed pack " + pack.id + " @" + assetVersion
-					+ (fullUx ? " (full)" : " (basic)"));
+					+ (fullUx ? " (full)" : " (basic/mj2)"));
 		} finally {
 			if (progress != null) {
 				progress.end();
@@ -242,90 +147,53 @@ public class AssetPackInstaller {
 		}
 	}
 
-	private void scrubBasicToxicPoisons(String installDir) {
+	private void installFullPack(AssetManager assets, PackSpec pack, String installDir,
+			WarnWidget progress) throws IOException {
+		copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress, true);
 		scrubMahjongStubRootIni(installDir);
+		File iniStub = new File(installDir, "ini/mame.ini");
+		if (isMahjongStubIni(iniStub) && iniStub.delete()) {
+			Log.i(TAG, "Removed stub ini/mame.ini");
+		}
 		scrubStubUiIni(installDir);
-		deleteIfExists(new File(installDir, "ini/mame.ini"));
-		deleteIfExists(new File(installDir, "master_lamps.lua"));
-		deleteTree(new File(installDir, "fei_mj_lamps"));
+		ensureSystemNamesInUiIni(installDir);
 	}
 
-	private void scrubBasicNameLists(String installDir) {
-		deleteIfExists(new File(installDir, "mame.lst"));
-		deleteIfExists(new File(installDir, "arcade.lst"));
-		stripSystemNamesFromUiIni(installDir);
-	}
+	/** Same steps as {@code 1.38.1-mj2} before {@code Emulator.emulate}. */
+	private void installBasicPackMj2(AssetManager assets, PackSpec pack, String installDir,
+			WarnWidget progress) throws IOException {
+		copyAssetTree(assets, pack.id, new File(installDir), pack.id, progress, false);
 
-	private void stripSystemNamesFromUiIni(String installDir) {
-		File uiIni = new File(installDir, "ui.ini");
-		if (!uiIni.isFile() || isStubUiIni(uiIni)) {
-			return;
+		File iniMame = new File(installDir, "ini/mame.ini");
+		File rootMame = new File(installDir, "mame.ini");
+		if (iniMame.isFile()) {
+			copyFile(iniMame, rootMame);
+		} else if (rootMame.isFile()) {
+			File iniDir = new File(installDir, "ini");
+			if (!iniDir.exists() && !iniDir.mkdirs()) {
+				throw new IOException("Cannot create: " + iniDir.getAbsolutePath());
+			}
+			copyFile(rootMame, iniMame);
 		}
-		try {
-			List<String> lines = new ArrayList<>();
-			boolean changed = false;
-			for (String line : readFileText(uiIni).split("\n", -1)) {
-				String trim = line.trim();
-				if (trim.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
-					changed = true;
-					continue;
-				}
-				lines.add(line);
-			}
-			if (!changed) {
-				return;
-			}
-			StringBuilder out = new StringBuilder();
-			for (String line : lines) {
-				out.append(line).append('\n');
-			}
-			try (FileOutputStream fos = new FileOutputStream(uiIni)) {
-				fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
-			}
-			Log.i(TAG, "Stripped system_names from ui.ini");
-		} catch (IOException e) {
-			Log.w(TAG, "strip system_names failed", e);
-		}
-	}
 
-	private static void deleteIfExists(File f) {
-		if (f != null && f.isFile() && f.delete()) {
-			Log.i(TAG, "Removed for basic classic: " + f.getName());
-		}
-	}
-
-	private static void deleteTree(File root) {
-		if (root == null || !root.exists()) {
-			return;
-		}
-		if (root.isDirectory()) {
-			File[] kids = root.listFiles();
-			if (kids != null) {
-				for (File k : kids) {
-					deleteTree(k);
-				}
-			}
-		}
-		if (root.delete()) {
-			Log.i(TAG, "Removed for basic classic: " + root.getName());
-		}
+		ensureSystemNamesInUiIni(installDir);
 	}
 
 	private boolean needsInstall(PackSpec pack, String installDir, String assetVersion,
 			AssetManager assets, boolean fullUx) {
 		File marker = markerFile(installDir, pack.id);
-		String wantMarker = assetVersion + (fullUx ? "" : BASIC_MARKER_SUFFIX);
 		if (!marker.isFile()) {
 			return true;
 		}
 		try {
 			String installed = readFileText(marker).trim();
-			if (!wantMarker.equals(installed)) {
+			if (!assetVersion.equals(installed)) {
 				return true;
 			}
 		} catch (IOException e) {
 			return true;
 		}
+
 		String[] required = fullUx ? pack.requiredPathsFull : pack.requiredPathsBasic;
 		for (String requiredPath : required) {
 			if (!assetExists(assets, pack.id + "/" + requiredPath)) {
@@ -337,6 +205,7 @@ public class AssetPackInstaller {
 				return true;
 			}
 		}
+
 		if (fullUx) {
 			if (isMahjongStubIni(new File(installDir, "mame.ini"))) {
 				return true;
@@ -350,13 +219,16 @@ public class AssetPackInstaller {
 					&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
 				return true;
 			}
-		} else if (new File(installDir, "master_lamps.lua").isFile()
-				|| isMahjongStubIni(new File(installDir, "mame.ini"))
-				|| isStubUiIni(new File(installDir, "ui.ini"))) {
-			return true;
-		} else if (new File(installDir, "mame.lst").isFile()
-				&& !mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
-			return true;
+		} else {
+			File iniMame = new File(installDir, "ini/mame.ini");
+			File rootMame = new File(installDir, "mame.ini");
+			if (iniMame.isFile() && !rootMame.isFile()) {
+				return true;
+			}
+			if (new File(installDir, "mame.lst").isFile()
+					&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -453,7 +325,6 @@ public class AssetPackInstaller {
 		return false;
 	}
 
-	/** mj2-style merge into stock {@code ui.ini} (no stub deferral). */
 	private void ensureSystemNamesInUiIni(String installDir) throws IOException {
 		File lst = new File(installDir, "mame.lst");
 		if (!lst.isFile()) {
@@ -527,7 +398,7 @@ public class AssetPackInstaller {
 	}
 
 	private void copyAssetTree(AssetManager assets, String assetPath, File destDir,
-			String packRoot, WarnWidget progress) throws IOException {
+			String packRoot, WarnWidget progress, boolean fullUx) throws IOException {
 		String[] children = assets.list(assetPath);
 		if (children == null) {
 			return;
@@ -545,16 +416,16 @@ public class AssetPackInstaller {
 		for (String child : children) {
 			if (assetPath.equals(packRoot)
 					&& (VERSION_FILE.equals(child) || README_FILE.equals(child)
-					|| "LICENSE.txt".equals(child))) {
+					|| (fullUx && "LICENSE.txt".equals(child)))) {
 				continue;
 			}
-			if (assetPath.equals(packRoot) && "ini".equals(child)) {
+			if (fullUx && assetPath.equals(packRoot) && "ini".equals(child)) {
 				continue;
 			}
 			String childAsset = assetPath + "/" + child;
 			String[] grandChildren = assets.list(childAsset);
 			if (grandChildren != null && grandChildren.length > 0) {
-				copyAssetTree(assets, childAsset, new File(destDir, child), packRoot, progress);
+				copyAssetTree(assets, childAsset, new File(destDir, child), packRoot, progress, fullUx);
 			} else {
 				try {
 					copyAssetFile(assets, childAsset, new File(destDir, child), progress);
@@ -566,14 +437,6 @@ public class AssetPackInstaller {
 				}
 			}
 		}
-	}
-
-	private void copyAssetFileIfPresent(AssetManager assets, String assetPath, File destFile,
-			WarnWidget progress) throws IOException {
-		if (!assetExists(assets, assetPath)) {
-			return;
-		}
-		copyAssetFile(assets, assetPath, destFile, progress);
 	}
 
 	private void copyAssetFile(AssetManager assets, String assetPath, File destFile,
@@ -589,6 +452,22 @@ public class AssetPackInstaller {
 
 		try (InputStream in = new BufferedInputStream(assets.open(assetPath));
 			 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(destFile), BUFFER_SIZE)) {
+			byte[] buf = new byte[BUFFER_SIZE];
+			int n;
+			while ((n = in.read(buf)) != -1) {
+				out.write(buf, 0, n);
+			}
+			out.flush();
+		}
+	}
+
+	private static void copyFile(File src, File dest) throws IOException {
+		File parent = dest.getParentFile();
+		if (parent != null && !parent.exists() && !parent.mkdirs()) {
+			throw new IOException("Cannot create: " + parent.getAbsolutePath());
+		}
+		try (InputStream in = new BufferedInputStream(new FileInputStream(src));
+			 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(dest), BUFFER_SIZE)) {
 			byte[] buf = new byte[BUFFER_SIZE];
 			int n;
 			while ((n = in.read(buf)) != -1) {
