@@ -53,8 +53,6 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.Gravity;
@@ -63,7 +61,6 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
 import com.seleuco.mame4droid.helpers.BasicBootProbe;
@@ -80,6 +77,7 @@ import com.seleuco.mame4droid.helpers.ScraperHelper;
 import com.seleuco.mame4droid.input.ControlCustomizer;
 import com.seleuco.mame4droid.input.GameController;
 import com.seleuco.mame4droid.input.InputHandler;
+import com.seleuco.mame4droid.mahjong.GamePickerActivity;
 import com.seleuco.mame4droid.views.IEmuView;
 import com.seleuco.mame4droid.views.InputView;
 
@@ -102,23 +100,6 @@ public class MAME4droid extends Activity {
 	protected FrontendFolderShortcutsHelper folderShortcutsHelper = null;
 
 	protected InputHandler inputHandler = null;
-
-	private final Handler basicCnHandler = new Handler(Looper.getMainLooper());
-	private Runnable basicClassicPoll;
-	private boolean basicChineseApplied;
-	private volatile boolean basicChineseReloadPending;
-
-	public void requestBasicChineseReload() {
-		basicChineseReloadPending = true;
-	}
-
-	public boolean consumeBasicChineseReloadPending() {
-		if (!basicChineseReloadPending) {
-			return false;
-		}
-		basicChineseReloadPending = false;
-		return true;
-	}
 
 	public PrefsHelper getPrefsHelper() {
 		return prefsHelper;
@@ -340,93 +321,57 @@ public class MAME4droid extends Activity {
 		BasicBootProbe.logUiIniState(this, "after_copyFiles");
 		getMainHelper().removeFiles();
 
+		Intent intent = getIntent();
+		boolean classicUi = intent != null
+				&& intent.getBooleanExtra(GamePickerActivity.EXTRA_CLASSIC_UI, false);
+		String pickerRom = intent != null
+				? intent.getStringExtra(GamePickerActivity.EXTRA_ROM) : null;
+		boolean pickerRomLaunch = pickerRom != null && !pickerRom.isEmpty();
+
+		AssetPackInstaller pack = new AssetPackInstaller(this);
+
+		if (classicUi) {
+			BasicBootProbe.log(this, "boot", "classic_frontend");
+			pack.prepareClassicFrontendBoot();
+			BasicBootProbe.logUiIniState(this, "after_prepareClassicBoot");
+			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+			if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+				scheduleBasicBackgroundPackInstall();
+			}
+			return;
+		}
+
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			new AssetPackInstaller(this).installAllIfNeeded();
+			pack.installAllIfNeeded();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 		} else {
-			BasicBootProbe.log(this, "basic_boot", "prepareClassicBoot");
-			AssetPackInstaller pack = new AssetPackInstaller(this);
+			BasicBootProbe.log(this, "basic_boot",
+					pickerRomLaunch ? "picker_rom" : "prepareClassicBoot");
 			pack.prepareBasicClassicBoot();
 			BasicBootProbe.logUiIniState(this, "after_prepareBasicClassicBoot");
 			BasicBootProbe.log(this, "emulate", "start");
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
-			scheduleBasicClassicFollowUp(pack);
-			final MAME4droid app = this;
-			new Thread(() -> {
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					return;
-				}
-				try {
-					BasicBootProbe.log(app, "background_pack", "installAllIfNeeded");
-					new AssetPackInstaller(app).installAllIfNeeded();
-					BasicBootProbe.logUiIniState(app, "after_background_pack");
-				} catch (Exception e) {
-					Log.e("MAME4droid", "basic pack install failed", e);
-					BasicBootProbe.log(app, "background_pack_error", String.valueOf(e.getMessage()));
-				}
-			}, "fj-basic-pack").start();
+			scheduleBasicBackgroundPackInstall();
 		}
 	}
 
-	/**
-	 * Basic: mark session when the classic list is up; merge Chinese names in-session
-	 * (never before emulate). User may need to leave and re-enter the list.
-	 */
-	private void scheduleBasicClassicFollowUp(final AssetPackInstaller pack) {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		if (basicClassicPoll != null) {
-			basicCnHandler.removeCallbacks(basicClassicPoll);
-		}
-		basicChineseApplied = false;
-		basicClassicPoll = new Runnable() {
-			private int attempts;
-
-			@Override
-			public void run() {
-				if (!Emulator.isEmulating()) {
-					return;
-				}
-				attempts++;
-				boolean menuUp = Emulator.isInMenu()
-						|| (!Emulator.isInGame() && attempts >= 4);
-				if (!menuUp) {
-					if (attempts < 40) {
-						basicCnHandler.postDelayed(this, 500);
-					}
-					return;
-				}
-				if (!pack.isBasicChineseSessionReady()) {
-					pack.markBasicClassicSessionComplete();
-					BasicBootProbe.log(MAME4droid.this, "basic_cn_marker", "menu_poll");
-					basicCnHandler.postDelayed(this, 500);
-					return;
-				}
-				if (basicChineseApplied) {
-					return;
-				}
-				if (pack.applyBasicChineseNamesInSession()) {
-					basicChineseApplied = true;
-					BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
-					requestBasicChineseReload();
-					BasicBootProbe.log(MAME4droid.this, "basic_cn_reload", "request");
-					Toast.makeText(MAME4droid.this,
-							R.string.fj_basic_chinese_names_reloading_toast,
-							Toast.LENGTH_SHORT).show();
-					Emulator.setValue(Emulator.EXIT_GAME, 1);
-					getWindow().getDecorView().postDelayed(
-							() -> Emulator.setValue(Emulator.EXIT_GAME, 0), 300);
-					return;
-				}
-				if (attempts < 60) {
-					basicCnHandler.postDelayed(this, 500);
-				}
+	private void scheduleBasicBackgroundPackInstall() {
+		final MAME4droid app = this;
+		new Thread(() -> {
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				return;
 			}
-		};
-		basicCnHandler.postDelayed(basicClassicPoll, 1500);
+			try {
+				BasicBootProbe.log(app, "background_pack", "installAllIfNeeded");
+				new AssetPackInstaller(app).installAllIfNeeded();
+				BasicBootProbe.logUiIniState(app, "after_background_pack");
+			} catch (Exception e) {
+				Log.e("MAME4droid", "basic pack install failed", e);
+				BasicBootProbe.log(app, "background_pack_error", String.valueOf(e.getMessage()));
+			}
+		}, "fj-basic-pack").start();
 	}
 
 	@Override
@@ -565,11 +510,6 @@ public class MAME4droid extends Activity {
 
 		if (scraperHelper != null) {
 			scraperHelper.stop();
-		}
-
-		if (basicClassicPoll != null) {
-			basicCnHandler.removeCallbacks(basicClassicPoll);
-			basicClassicPoll = null;
 		}
 
 		/* Never leak the netplay Wi-Fi radio lock past the activity. */

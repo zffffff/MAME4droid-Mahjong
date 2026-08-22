@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<!-- Basic edition: stock MAME4droid home (no custom picker launcher). -->
+	<!-- Basic edition: mahjong picker is the home screen (same as full). -->
 	<application>
-		<activity android:name="com.seleuco.mame4droid.MAME4droid"
-			android:configChanges="keyboardHidden|orientation|screenSize"
-			android:launchMode="singleTask"
+		<activity android:name="com.seleuco.mame4droid.mahjong.GamePickerActivity"
 			android:exported="true"
-			android:windowSoftInputMode="stateAlwaysHidden"
-			android:theme="@style/Theme.MAME4droid">
+			android:launchMode="singleTask"
+			android:theme="@style/Theme.MAME4droid"
+			android:windowSoftInputMode="stateHidden">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

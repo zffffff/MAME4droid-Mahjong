@@ -37,7 +37,7 @@
         >
 
 		<!-- LAUNCHER intent-filters are flavor-specific:
-		     full → GamePickerActivity (src/full), basic → MAME4droid (src/basic). -->
+		     full and basic → GamePickerActivity (src/full, src/basic). -->
 		<activity android:name="com.seleuco.mame4droid.mahjong.GamePickerActivity"
 			android:exported="true"
 			android:launchMode="singleTask"

@@ -11,8 +11,8 @@ alwaysApply: true
 
 ## 身份（两套 APK，同一 Git 分支 + flavors）
 
-- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · **LAUNCHER=选台**；麻将体验锦上添花（**无经典界面入口**）
-- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **LAUNCHER=官方风格 MAME4droid**；只做必要减负（按键包、主界面 📁/🖼 等）
+- 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · **LAUNCHER=选台**；麻将体验锦上添花；选台菜单可进**经典界面**（英文列表，防黑屏）
+- 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **LAUNCHER=选台**（中文机种名）；菜单可进**经典界面**（英文列表，防黑屏）；进阶麻将键盘等仍仅 full
 - Manifest：`src/full` / `src/basic` 分别挂 LAUNCHER；勿在 `main` 写死共用 LAUNCHER
 - Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；GPL + `NOTICE`
 - 不内置 ROM；按键包在 `assets/mahjong_pack/`（已开源，见该目录 LICENSE.txt）
@@ -32,7 +32,7 @@ alwaysApply: true
 
 ## 体验门控
 
-- 两版都跑 `AssetPackInstaller`（**basic：artwork + 二次冷启动中文名，启动前清污染文件**；**full 装完整包，暂不 CLI 灯控**）
+- 两版都跑 `AssetPackInstaller`（**basic：artwork + per-game 灯控，启动前清污染文件**；**full 装完整包，暂不 CLI 灯控**）
 - **仅 full**：种子默认、方向桥接、强制竖屏、右上角工具菜单、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）
 - 横屏 OSC 只在 `app/src/full/res/raw*`，且**无** Start/Coin/Option/Exit；`main` 保持上游布局，避免污染 basic
 - 按钮 ID `8=Coin` `9=Start`；Exit / MAME 菜单改走工具箱 🚪 与麻将键更多页 Tab；退出回选台用 `Emulator.requestExitToPickerOrFinish()`

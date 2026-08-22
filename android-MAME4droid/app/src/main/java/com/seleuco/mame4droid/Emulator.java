@@ -1058,25 +1058,6 @@ public class Emulator {
 				isEmulating = true;
 				runT();
 
-				if (!BuildConfig.FEIJUCHANG_FULL_UX && mm.consumeBasicChineseReloadPending()) {
-					new AssetPackInstaller(mm).prepareBasicChineseReloadBoot();
-					BasicBootProbe.log(mm, "basic_cn_reload", "reinit");
-					BasicBootProbe.logUiIniState(mm, "before_cn_reload_runT");
-					Size szReload = mm.getMainHelper().getWindowSize();
-					init(libPath, resPath,
-							Math.max(szReload.getWidth(), szReload.getHeight()),
-							Math.min(szReload.getWidth(), szReload.getHeight()));
-					mm.getMainHelper().updateEmuValues();
-					ensureMahjongAutobootCli();
-					runT();
-					BasicBootProbe.logUiIniState(mm, "after_cn_reload_runT");
-				}
-
-				if (!BuildConfig.FEIJUCHANG_FULL_UX) {
-					new AssetPackInstaller(mm).stageBasicChineseNamesAfterSession();
-					BasicBootProbe.logUiIniState(mm, "after_emulate_session");
-				}
-
 				// Persist SAF cache changes made during the session (savestates,
 				// created dirs) in one shot, now that the emulator is done.
 				mm.getSAFHelper().persistCacheIfDirty();
