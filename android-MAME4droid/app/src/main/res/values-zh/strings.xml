@@ -555,10 +555,8 @@
 
     <string name="fj_basic_chinese_names_enable">中文名</string>
     <string name="fj_basic_chinese_names_disable">英文名</string>
-    <string name="fj_basic_chinese_names_enabled_toast">已启用中文名。首屏可能仍是英文；等几秒后返回上一级菜单再进入列表即可刷新。</string>
-    <string name="fj_basic_chinese_names_applied_toast">中文名已写入。请返回上一级菜单再进入列表查看。</string>
-    <string name="fj_basic_chinese_names_deferred_toast">中文名尚未就绪。请等游戏列表出来后再点一次。</string>
-    <string name="fj_basic_chinese_names_disabled_toast">已切换为英文机种名。请返回上一级菜单或重启应用查看。</string>
+    <string name="fj_basic_chinese_names_enabled_toast">已启用中文名。请完全退出应用后再打开生效。</string>
+    <string name="fj_basic_chinese_names_disabled_toast">已切换为英文名。请完全退出应用后再打开生效。</string>
     <string name="fj_basic_chinese_names_need_list">请在游戏列表界面使用此功能</string>
 
     <string name="fj_zsxq_wechat_or_file_helper">链接已复制。若未直接在微信中打开，请粘贴发送给微信「文件传输助手」后再点开。</string>

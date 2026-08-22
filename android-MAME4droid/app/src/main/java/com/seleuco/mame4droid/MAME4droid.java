@@ -53,8 +53,6 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.Gravity;
@@ -63,7 +61,6 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
 import com.seleuco.mame4droid.helpers.AssetPackInstaller;
@@ -101,10 +98,6 @@ public class MAME4droid extends Activity {
 	protected FrontendFolderShortcutsHelper folderShortcutsHelper = null;
 
 	protected InputHandler inputHandler = null;
-
-	private final Handler basicBootHandler = new Handler(Looper.getMainLooper());
-	private Runnable basicMenuReadyPoll;
-	private Runnable basicChineseBootPoll;
 
 	public PrefsHelper getPrefsHelper() {
 		return prefsHelper;
@@ -329,12 +322,11 @@ public class MAME4droid extends Activity {
 			new AssetPackInstaller(this).installAllIfNeeded();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 		} else {
-			// Basic: scrub old lua/ini/lst first, boot classic on a clean tree,
-			// then copy artwork-only in the background.
+			// Basic: mj2 path — scrub lua/stub only, install Chinese lst before emulate.
 			AssetPackInstaller pack = new AssetPackInstaller(this);
 			pack.prepareBasicClassicBoot();
+			pack.installBasicChineseNamesBeforeEmulate();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
-			scheduleBasicBootHelpers();
 			final MAME4droid app = this;
 			new Thread(() -> {
 				try {
@@ -350,78 +342,6 @@ public class MAME4droid extends Activity {
 			}, "fj-basic-pack").start();
 		}
 	}
-
-	private void scheduleBasicBootHelpers() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		if (basicMenuReadyPoll != null) {
-			basicBootHandler.removeCallbacks(basicMenuReadyPoll);
-		}
-		if (basicChineseBootPoll != null) {
-			basicBootHandler.removeCallbacks(basicChineseBootPoll);
-		}
-
-		final AssetPackInstaller installer = new AssetPackInstaller(this);
-		basicMenuReadyPoll = new Runnable() {
-			private int attempts;
-
-			@Override
-			public void run() {
-				if (!Emulator.isEmulating()) {
-					return;
-				}
-				if (!Emulator.isInGame()) {
-					installer.markBasicClassicMenuReady();
-					return;
-				}
-				attempts++;
-				if (attempts < 60) {
-					basicBootHandler.postDelayed(this, 500);
-				}
-			}
-		};
-		basicBootHandler.postDelayed(basicMenuReadyPoll, 2000);
-
-		if (!getPrefsHelper().isBasicChineseNamesEnabled()) {
-			return;
-		}
-		basicChineseBootPoll = new Runnable() {
-			private int attempts;
-
-			@Override
-			public void run() {
-				if (!Emulator.isEmulating()) {
-					return;
-				}
-				if (!Emulator.isInGame()) {
-					if (installer.ensureBasicChineseNamesInSession()) {
-						Toast.makeText(MAME4droid.this,
-								R.string.fj_basic_chinese_names_applied_toast,
-								Toast.LENGTH_LONG).show();
-					}
-					return;
-				}
-				attempts++;
-				if (attempts < 60) {
-					basicBootHandler.postDelayed(this, 500);
-				}
-			}
-		};
-		basicBootHandler.postDelayed(basicChineseBootPoll, 2500);
-	}
-
-	private void cancelBasicBootHelpers() {
-		if (basicMenuReadyPoll != null) {
-			basicBootHandler.removeCallbacks(basicMenuReadyPoll);
-			basicMenuReadyPoll = null;
-		}
-		if (basicChineseBootPoll != null) {
-			basicBootHandler.removeCallbacks(basicChineseBootPoll);
-			basicChineseBootPoll = null;
-		}
-	}
-
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
@@ -540,7 +460,6 @@ public class MAME4droid extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		cancelBasicBootHelpers();
 		super.onDestroy();
 		Log.d("EMULATOR", "onDestroy " + this);
 

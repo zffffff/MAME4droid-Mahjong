@@ -148,16 +148,8 @@ public class FrontendFolderShortcutsHelper {
 			installer.removeBasicChineseNames();
 			Toast.makeText(mm, R.string.fj_basic_chinese_names_disabled_toast, Toast.LENGTH_LONG).show();
 		} else {
-			if (!Emulator.isEmulating() || Emulator.isInGame()) {
-				Toast.makeText(mm, R.string.fj_basic_chinese_names_need_list, Toast.LENGTH_SHORT).show();
-				return;
-			}
 			installer.applyBasicChineseNamesInSession();
-			if (mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
-				Toast.makeText(mm, R.string.fj_basic_chinese_names_enabled_toast, Toast.LENGTH_LONG).show();
-			} else {
-				Toast.makeText(mm, R.string.fj_basic_chinese_names_deferred_toast, Toast.LENGTH_LONG).show();
-			}
+			Toast.makeText(mm, R.string.fj_basic_chinese_names_enabled_toast, Toast.LENGTH_LONG).show();
 		}
 		refreshChineseLabel();
 	}

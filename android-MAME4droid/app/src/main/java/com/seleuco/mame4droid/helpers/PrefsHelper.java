@@ -878,7 +878,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener {
 	}
 
 	public boolean isBasicChineseNamesEnabled() {
-		return getSharedPreferences().getBoolean(PREF_BASIC_CHINESE_NAMES, false);
+		return getSharedPreferences().getBoolean(PREF_BASIC_CHINESE_NAMES, true);
 	}
 
 	public void setBasicChineseNamesEnabled(boolean enabled) {
