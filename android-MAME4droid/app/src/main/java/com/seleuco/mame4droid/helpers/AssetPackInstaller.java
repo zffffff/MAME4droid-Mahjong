@@ -60,7 +60,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn18";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn19";
 	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
@@ -105,15 +105,18 @@ public class AssetPackInstaller {
 			return;
 		}
 		scrubBasicBootInis(installDir);
-		if (!isBasicChineseSessionReady() || !hasFullUiIni(installDir)) {
+		if (!isBasicChineseSessionReady()) {
 			deleteIfExists(new File(installDir, "mame.lst"));
 			deleteIfExists(new File(installDir, "arcade.lst"));
-			String why = !isBasicChineseSessionReady() ? "no_session_marker" : "no_full_ui_ini";
-			BasicBootProbe.log(mm, "basic_first_boot", why);
+			BasicBootProbe.log(mm, "basic_first_boot", "no_session_marker");
+			return;
+		}
+		if (!shouldStageBasicChineseBeforeBoot(installDir)) {
+			BasicBootProbe.log(mm, "basic_cn_defer", "ui_ini_not_ready");
 			return;
 		}
 		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, false);
+			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, false, false);
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name prep failed", e);
 		}
@@ -134,11 +137,7 @@ public class AssetPackInstaller {
 		}
 		markBasicClassicSessionComplete();
 		try {
-			if (hasFullUiIni(installDir)) {
-				stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
-			} else {
-				BasicBootProbe.log(mm, "basic_cn_defer", "session_no_full_ui_ini");
-			}
+			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true, true);
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name post-session failed", e);
 		}
@@ -184,7 +183,7 @@ public class AssetPackInstaller {
 			return;
 		}
 		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
+			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true, false);
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name apply failed", e);
 		}
@@ -331,7 +330,7 @@ public class AssetPackInstaller {
 	}
 
 	private void stageBasicChineseNamesInternal(String installDir, AssetManager assets,
-			WarnWidget progress, boolean allowDuringEmulate) throws IOException {
+			WarnWidget progress, boolean allowDuringEmulate, boolean forceReady) throws IOException {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			return;
 		}
@@ -344,10 +343,13 @@ public class AssetPackInstaller {
 			BasicBootProbe.log(mm, "basic_cn_defer", "no_session_marker");
 			return;
 		}
-		if (!hasFullUiIni(installDir)) {
-			deleteIfExists(new File(installDir, "mame.lst"));
-			deleteIfExists(new File(installDir, "arcade.lst"));
-			BasicBootProbe.log(mm, "basic_cn_defer", "no_full_ui_ini");
+		if (!forceReady && !allowDuringEmulate && !shouldStageBasicChineseBeforeBoot(installDir)) {
+			BasicBootProbe.log(mm, "basic_cn_defer", "ui_ini_not_ready");
+			return;
+		}
+		if (!forceReady && !isUiIniReadyForChineseNames(installDir)
+				&& !uiIniHasConfiguredSystemNames(new File(installDir, "ui.ini"))) {
+			BasicBootProbe.log(mm, "basic_cn_defer", "stock_ui_ini");
 			return;
 		}
 		copyAssetFileIfPresent(assets, "mahjong_pack/mame.lst",
@@ -358,9 +360,65 @@ public class AssetPackInstaller {
 		BasicBootProbe.log(mm, "basic_cn_ready", "system_names=mame.lst");
 	}
 
-	private static boolean hasFullUiIni(String installDir) {
+	/**
+	 * True when {@code ui.ini} is no longer the stock {@code files.zip} copy
+	 * (MAME has persisted session prefs), or Chinese names are already configured.
+	 */
+	public boolean isUiIniReadyForChineseNames() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return false;
+		}
+		String installDir = resolveInstallDir();
+		return installDir != null && isUiIniReadyForChineseNames(installDir);
+	}
+
+	private static boolean shouldStageBasicChineseBeforeBoot(String installDir) {
 		File uiIni = new File(installDir, "ui.ini");
-		return uiIni.isFile() && !isStubUiIni(uiIni);
+		if (uiIniHasConfiguredSystemNames(uiIni)) {
+			return true;
+		}
+		return isUiIniReadyForChineseNames(installDir);
+	}
+
+	private static boolean isUiIniReadyForChineseNames(String installDir) {
+		File uiIni = new File(installDir, "ui.ini");
+		if (!uiIni.isFile() || isStubUiIni(uiIni)) {
+			return false;
+		}
+		return !isStockShippedUiIni(uiIni);
+	}
+
+	/** Stock {@code files.zip} ui.ini before MAME writes session state. */
+	private static boolean isStockShippedUiIni(File uiIni) {
+		if (!uiIni.isFile()) {
+			return true;
+		}
+		try {
+			String text = readFileText(uiIni);
+			// Demo machine baked into upstream files.zip (see ui.ini.bak).
+			return text.contains("last_used_machine         1292apvs");
+		} catch (IOException e) {
+			return true;
+		}
+	}
+
+	private static boolean uiIniHasConfiguredSystemNames(File uiIni) {
+		if (!uiIni.isFile()) {
+			return false;
+		}
+		try {
+			String text = readFileText(uiIni);
+			for (String line : text.split("\n")) {
+				String t = line.trim();
+				if (t.regionMatches(true, 0, "system_names", 0, "system_names".length())) {
+					String rest = t.substring("system_names".length()).trim();
+					return !rest.isEmpty();
+				}
+			}
+		} catch (IOException e) {
+			return false;
+		}
+		return false;
 	}
 
 	/** Remove only <em>empty</em> {@code system_names} lines (stock poison on 1.38.3). */

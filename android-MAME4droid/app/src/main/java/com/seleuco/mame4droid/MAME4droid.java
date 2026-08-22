@@ -63,6 +63,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
 import com.seleuco.mame4droid.helpers.BasicBootProbe;
@@ -357,9 +358,8 @@ public class MAME4droid extends Activity {
 	}
 
 	/**
-	 * Basic: when the classic list is up, write the session marker (first visit)
-	 * or merge Chinese names in-session (later visits). Does not rely on
-	 * {@code runT()} returning — swiping the app away would otherwise skip marker.
+	 * Basic: mark session when the classic list is up; stage Chinese names only
+	 * after MAME has replaced stock {@code ui.ini} (or on the next cold start).
 	 */
 	private void scheduleBasicClassicFollowUp(final AssetPackInstaller pack) {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -390,11 +390,21 @@ public class MAME4droid extends Activity {
 					pack.markBasicClassicSessionComplete();
 					BasicBootProbe.log(MAME4droid.this, "basic_cn_marker", "menu_poll");
 				}
-				if (!basicChineseApplied) {
-					pack.applyBasicChineseNamesInSession();
-					basicChineseApplied = true;
-					BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
+				if (basicChineseApplied) {
+					return;
 				}
+				if (!pack.isUiIniReadyForChineseNames()) {
+					if (attempts < 120) {
+						basicCnHandler.postDelayed(this, 1000);
+					}
+					return;
+				}
+				pack.applyBasicChineseNamesInSession();
+				basicChineseApplied = true;
+				BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
+				Toast.makeText(MAME4droid.this,
+						R.string.fj_basic_chinese_names_enabled_toast,
+						Toast.LENGTH_LONG).show();
 			}
 		};
 		basicCnHandler.postDelayed(basicClassicPoll, 2500);
