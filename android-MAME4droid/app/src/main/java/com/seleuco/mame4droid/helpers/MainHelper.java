@@ -1092,9 +1092,12 @@ galaxy sde	   --> 2560x1600 16:10
         int widthSize = 1;
         int heightSize = 1;
 
-		// Keep user/default scale for the classic frontend (typically 4:3 letterbox).
-		// Forcing STRETCH here made the MAME list fill the phone screen and was
-		// a suspect for basic black-screen regressions after mj14.
+		// Classic frontend (___empty): fill the EmulatorFrame. PREF_SCALE with
+		// zero/bad emu size collapses GLSurfaceView to ~1px → black screen with
+		// only 📁/🖼 chips visible (basic13 regression).
+		if (!Emulator.isInGame()) {
+			scaleType = PrefsHelper.PREF_STRETCH;
+		}
 
         if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
         {
