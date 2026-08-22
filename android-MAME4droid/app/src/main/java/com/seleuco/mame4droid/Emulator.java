@@ -1058,7 +1058,7 @@ public class Emulator {
 				runT();
 
 				if (!BuildConfig.FEIJUCHANG_FULL_UX) {
-					new AssetPackInstaller(mm).stageBasicChineseNamesAfterSession();
+					new AssetPackInstaller(mm).markBasicClassicSessionComplete();
 				}
 
 				// Persist SAF cache changes made during the session (savestates,

@@ -53,6 +53,8 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.Gravity;
@@ -98,6 +100,10 @@ public class MAME4droid extends Activity {
 	protected FrontendFolderShortcutsHelper folderShortcutsHelper = null;
 
 	protected InputHandler inputHandler = null;
+
+	private final Handler basicCnHandler = new Handler(Looper.getMainLooper());
+	private Runnable basicChinesePoll;
+	private boolean basicChineseApplied;
 
 	public PrefsHelper getPrefsHelper() {
 		return prefsHelper;
@@ -327,6 +333,7 @@ public class MAME4droid extends Activity {
 			AssetPackInstaller pack = new AssetPackInstaller(this);
 			pack.prepareBasicClassicBoot();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+			scheduleBasicChineseNamesWhenMenuReady(pack);
 			final MAME4droid app = this;
 			new Thread(() -> {
 				try {
@@ -341,6 +348,38 @@ public class MAME4droid extends Activity {
 				}
 			}, "fj-basic-pack").start();
 		}
+	}
+
+	private void scheduleBasicChineseNamesWhenMenuReady(final AssetPackInstaller pack) {
+		if (BuildConfig.FEIJUCHANG_FULL_UX || !pack.isBasicChineseSessionReady()) {
+			return;
+		}
+		if (basicChinesePoll != null) {
+			basicCnHandler.removeCallbacks(basicChinesePoll);
+		}
+		basicChineseApplied = false;
+		basicChinesePoll = new Runnable() {
+			private int attempts;
+
+			@Override
+			public void run() {
+				if (!Emulator.isEmulating() || basicChineseApplied) {
+					return;
+				}
+				attempts++;
+				boolean menuUp = Emulator.isInMenu()
+						|| (!Emulator.isInGame() && attempts >= 6);
+				if (menuUp) {
+					pack.applyBasicChineseNamesInSession();
+					basicChineseApplied = true;
+					return;
+				}
+				if (attempts < 40) {
+					basicCnHandler.postDelayed(this, 500);
+				}
+			}
+		};
+		basicCnHandler.postDelayed(basicChinesePoll, 2500);
 	}
 
 
@@ -488,6 +527,11 @@ public class MAME4droid extends Activity {
 
 		if (adpfHelper != null)
 			adpfHelper.close();
+
+		if (basicChinesePoll != null) {
+			basicCnHandler.removeCallbacks(basicChinesePoll);
+			basicChinesePoll = null;
+		}
 
         /*
         if(inputView!=null)
