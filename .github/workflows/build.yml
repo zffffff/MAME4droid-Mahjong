@@ -16,6 +16,8 @@ on:
 
 env:
   MAME4DROID_UPSTREAM_VERSION: "1.38.3"
+  # mj2-era arm64 lib for basic flavor (MAME 1.38.1); override via repo variable if moved.
+  BASIC_MAME_SO_URL: "https://github.com/zffffff/MAME4droid-Mahjong/releases/download/ref-mj2-basic-lib/libMAME4droid.so"
 
 jobs:
   build:
@@ -75,6 +77,8 @@ jobs:
 
       - name: Fetch upstream libMAME4droid.so
         working-directory: android-MAME4droid
+        env:
+          FLAVOR: ${{ github.event.inputs.flavor }}
         run: bash scripts/fetch-mame-lib.sh
 
       - name: Build release APK(s)
