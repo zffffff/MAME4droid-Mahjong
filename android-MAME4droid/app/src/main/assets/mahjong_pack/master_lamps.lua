@@ -202,4 +202,8 @@ emu.register_frame_done(function()
     -- local debug_probe = loadfile("fei_mj_lamps/pixel_probe.lua")
     -- if debug_probe then debug_probe()(machine, screen) end
 
+    end)
+    if not ok then
+        -- swallow so a Lua error cannot blank the classic frontend
+    end
 end)
