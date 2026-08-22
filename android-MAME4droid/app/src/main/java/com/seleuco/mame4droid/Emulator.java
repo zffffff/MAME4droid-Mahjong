@@ -62,6 +62,7 @@ import android.util.Size;
 import android.view.View;
 
 
+import com.seleuco.mame4droid.helpers.AssetPackInstaller;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.TouchController;
@@ -1055,6 +1056,10 @@ public class Emulator {
 
 				isEmulating = true;
 				runT();
+
+				if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+					new AssetPackInstaller(mm).stageBasicChineseNamesAfterSession();
+				}
 
 				// Persist SAF cache changes made during the session (savestates,
 				// created dirs) in one shot, now that the emulator is done.
