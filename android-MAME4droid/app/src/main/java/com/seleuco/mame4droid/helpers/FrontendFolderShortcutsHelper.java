@@ -71,6 +71,10 @@ public class FrontendFolderShortcutsHelper {
 		romBtn.setText(R.string.fj_rom_path_button_short);
 		romBtn.setContentDescription(mm.getString(R.string.fj_rom_path_button));
 		romBtn.setOnClickListener(v -> showRomChooser());
+		romBtn.setOnLongClickListener(v -> {
+			showBootProbeLog();
+			return true;
+		});
 		row.addView(romBtn);
 
 		TextView snapBtn = makeChip(pad, density);
@@ -144,6 +148,26 @@ public class FrontendFolderShortcutsHelper {
 						mm.getMainHelper().startRomsDirectoryPicker())
 				.setNeutralButton(R.string.fj_rom_path_use_default, (d, w) ->
 						mm.getMainHelper().applyDefaultRomsPathAndReload())
+				.setNegativeButton(R.string.cancel, null)
+				.show();
+	}
+
+	public void showBootProbeLog() {
+		String log = BasicBootProbe.readTail(mm, 40);
+		if (log == null || log.isEmpty()) {
+			Toast.makeText(mm, R.string.fj_basic_boot_probe_empty, Toast.LENGTH_LONG).show();
+			return;
+		}
+		new AlertDialog.Builder(mm)
+				.setTitle(R.string.fj_basic_boot_probe_title)
+				.setMessage(log)
+				.setPositiveButton(R.string.fj_basic_boot_probe_copy, (d, w) -> {
+					ClipboardManager cm = (ClipboardManager) mm.getSystemService(Context.CLIPBOARD_SERVICE);
+					if (cm != null) {
+						cm.setPrimaryClip(ClipData.newPlainText("boot_probe", log));
+					}
+					Toast.makeText(mm, R.string.fj_basic_boot_probe_copied, Toast.LENGTH_SHORT).show();
+				})
 				.setNegativeButton(R.string.cancel, null)
 				.show();
 	}

@@ -228,6 +228,8 @@ public class AssetPackInstaller {
 		deleteTree(new File(installDir, "fei_mj_lamps"));
 		deleteIfExists(new File(installDir, "mame.lst"));
 		deleteIfExists(new File(installDir, "arcade.lst"));
+		BasicBootProbe.log(mm, "scrub_basic", "done");
+		BasicBootProbe.logUiIniState(mm, "after_scrub");
 	}
 
 	private void stageBasicChineseNamesIfReady(String installDir, AssetManager assets,
@@ -284,6 +286,7 @@ public class AssetPackInstaller {
 				fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
 			}
 			Log.i(TAG, "Stripped system_names from ui.ini for basic classic");
+			BasicBootProbe.log(mm, "strip_system_names", "ui.ini");
 		} catch (IOException e) {
 			Log.w(TAG, "stripSystemNamesFromUiIni failed", e);
 		}

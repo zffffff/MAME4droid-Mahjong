@@ -63,6 +63,7 @@ import android.view.View;
 
 
 import com.seleuco.mame4droid.helpers.AssetPackInstaller;
+import com.seleuco.mame4droid.helpers.BasicBootProbe;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
 import com.seleuco.mame4droid.input.TouchController;
@@ -1059,6 +1060,7 @@ public class Emulator {
 
 				if (!BuildConfig.FEIJUCHANG_FULL_UX) {
 					new AssetPackInstaller(mm).stageBasicChineseNamesAfterSession();
+					BasicBootProbe.logUiIniState(mm, "after_emulate_session");
 				}
 
 				// Persist SAF cache changes made during the session (savestates,

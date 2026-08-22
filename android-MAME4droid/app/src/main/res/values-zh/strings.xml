@@ -538,6 +538,10 @@
     <string name="fj_rom_path_dialog_message">请选择存放游戏 ROM 的文件夹。确认后应用会重新加载。\n\n提示：请选择装有 .zip 游戏文件的文件夹（不是单个文件）。</string>
     <string name="fj_rom_path_pick_folder">选择文件夹</string>
     <string name="fj_rom_path_use_default">使用应用默认位置</string>
+    <string name="fj_basic_boot_probe_title">启动探针（基础版）</string>
+    <string name="fj_basic_boot_probe_copy">复制日志</string>
+    <string name="fj_basic_boot_probe_copied">已复制启动日志</string>
+    <string name="fj_basic_boot_probe_empty">暂无日志。请先完全退出应用再打开一次。</string>
 
     <string name="fj_snap_path_button">设置 snap 文件夹</string>
     <string name="fj_snap_path_button_short">🖼</string>

@@ -63,6 +63,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
+import com.seleuco.mame4droid.helpers.BasicBootProbe;
 import com.seleuco.mame4droid.helpers.AssetPackInstaller;
 import com.seleuco.mame4droid.helpers.DialogHelper;
 import com.seleuco.mame4droid.helpers.LocaleHelper;
@@ -314,17 +315,20 @@ public class MAME4droid extends Activity {
 
 	public void runMAME4droid() {
 
+		BasicBootProbe.markBootStart(this);
 		getMainHelper().copyFiles();
+		BasicBootProbe.logUiIniState(this, "after_copyFiles");
 		getMainHelper().removeFiles();
 
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			new AssetPackInstaller(this).installAllIfNeeded();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 		} else {
-			// Basic: scrub lua/stub ini/lst, boot classic immediately, artwork
-			// + Chinese names (second cold start) in background.
+			BasicBootProbe.log(this, "basic_boot", "prepareClassicBoot");
 			AssetPackInstaller pack = new AssetPackInstaller(this);
 			pack.prepareBasicClassicBoot();
+			BasicBootProbe.logUiIniState(this, "after_prepareBasicClassicBoot");
+			BasicBootProbe.log(this, "emulate", "start");
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 			final MAME4droid app = this;
 			new Thread(() -> {
@@ -334,9 +338,12 @@ public class MAME4droid extends Activity {
 					return;
 				}
 				try {
+					BasicBootProbe.log(app, "background_pack", "installAllIfNeeded");
 					new AssetPackInstaller(app).installAllIfNeeded();
+					BasicBootProbe.logUiIniState(app, "after_background_pack");
 				} catch (Exception e) {
 					Log.e("MAME4droid", "basic pack install failed", e);
+					BasicBootProbe.log(app, "background_pack_error", String.valueOf(e.getMessage()));
 				}
 			}, "fj-basic-pack").start();
 		}

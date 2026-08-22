@@ -559,6 +559,10 @@
     <string name="fj_rom_path_dialog_message">Choose the folder where your game ROM files are stored. After you confirm, the app will reload.\n\nTip: pick the folder that contains the .zip ROM files (not a single file).</string>
     <string name="fj_rom_path_pick_folder">Choose folder</string>
     <string name="fj_rom_path_use_default">Use app default</string>
+    <string name="fj_basic_boot_probe_title">Boot trace (basic)</string>
+    <string name="fj_basic_boot_probe_copy">Copy log</string>
+    <string name="fj_basic_boot_probe_copied">Boot trace copied</string>
+    <string name="fj_basic_boot_probe_empty">No boot trace yet. Fully exit and reopen the app once.</string>
 
     <string name="fj_snap_path_button">Snap folder</string>
     <string name="fj_snap_path_button_short">🖼</string>

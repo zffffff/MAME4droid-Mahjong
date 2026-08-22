@@ -135,6 +135,8 @@ public class MainHelper {
 
     protected int oldInGame = 0;
 
+	private boolean basicMeasureLogged = false;
+
 	protected int oldState = -1;
 
     final public static int REQUEST_CODE_OPEN_DIRECTORY = 33;
@@ -1097,6 +1099,14 @@ galaxy sde	   --> 2560x1600 16:10
 		// only 📁/🖼 chips visible (basic13 regression).
 		if (!Emulator.isInGame()) {
 			scaleType = PrefsHelper.PREF_STRETCH;
+		}
+
+		if (!BuildConfig.FEIJUCHANG_FULL_UX && !basicMeasureLogged) {
+			basicMeasureLogged = true;
+			BasicBootProbe.log(mm, "measureWindow",
+					"scale=" + scaleType + " inGame=" + Emulator.isInGame()
+							+ " emu=" + Emulator.getEmulatedVisWidth()
+							+ "x" + Emulator.getEmulatedVisHeight());
 		}
 
         if (scaleType == PrefsHelper.PREF_STRETCH)// FILL ALL
