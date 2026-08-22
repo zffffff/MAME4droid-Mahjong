@@ -60,7 +60,8 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn16";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn17";
+	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
 
@@ -104,10 +105,11 @@ public class AssetPackInstaller {
 			return;
 		}
 		scrubBasicBootInis(installDir);
-		if (!hasFullUiIni(installDir)) {
+		if (!isBasicChineseSessionReady() || !hasFullUiIni(installDir)) {
 			deleteIfExists(new File(installDir, "mame.lst"));
 			deleteIfExists(new File(installDir, "arcade.lst"));
-			BasicBootProbe.log(mm, "basic_first_boot", "english_list");
+			String why = !isBasicChineseSessionReady() ? "no_session_marker" : "no_full_ui_ini";
+			BasicBootProbe.log(mm, "basic_first_boot", why);
 			return;
 		}
 		try {
@@ -131,9 +133,39 @@ public class AssetPackInstaller {
 			return;
 		}
 		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
+			if (hasFullUiIni(installDir)) {
+				markBasicClassicSessionComplete(installDir);
+				stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
+			} else {
+				BasicBootProbe.log(mm, "basic_cn_defer", "session_no_full_ui_ini");
+			}
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name post-session failed", e);
+		}
+	}
+
+	/** True after at least one completed classic session (not fooled by stock ui.ini). */
+	public boolean isBasicChineseSessionReady() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return false;
+		}
+		String installDir = resolveInstallDir();
+		return installDir != null && new File(installDir, BASIC_CN_READY).isFile();
+	}
+
+	private void markBasicClassicSessionComplete(String installDir) {
+		File marker = new File(installDir, BASIC_CN_READY);
+		File parent = marker.getParentFile();
+		if (parent != null && !parent.exists() && !parent.mkdirs()) {
+			Log.w(TAG, "Cannot create marker dir for basic Chinese");
+			return;
+		}
+		try (FileOutputStream out = new FileOutputStream(marker)) {
+			out.write("1".getBytes(StandardCharsets.UTF_8));
+			Log.i(TAG, "basic classic session complete; Chinese names enabled next launch");
+			BasicBootProbe.log(mm, "basic_cn_marker", "written");
+		} catch (IOException e) {
+			Log.w(TAG, "markBasicClassicSessionComplete failed", e);
 		}
 	}
 
@@ -274,6 +306,12 @@ public class AssetPackInstaller {
 			return;
 		}
 		if (!allowDuringEmulate && Emulator.isEmulating()) {
+			return;
+		}
+		if (!allowDuringEmulate && !isBasicChineseSessionReady()) {
+			deleteIfExists(new File(installDir, "mame.lst"));
+			deleteIfExists(new File(installDir, "arcade.lst"));
+			BasicBootProbe.log(mm, "basic_cn_defer", "no_session_marker");
 			return;
 		}
 		if (!hasFullUiIni(installDir)) {
