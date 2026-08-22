@@ -53,6 +53,8 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.DisplayCutout;
 import android.view.Gravity;
@@ -99,6 +101,10 @@ public class MAME4droid extends Activity {
 	protected FrontendFolderShortcutsHelper folderShortcutsHelper = null;
 
 	protected InputHandler inputHandler = null;
+
+	private final Handler basicCnHandler = new Handler(Looper.getMainLooper());
+	private Runnable basicClassicPoll;
+	private boolean basicChineseApplied;
 
 	public PrefsHelper getPrefsHelper() {
 		return prefsHelper;
@@ -330,6 +336,7 @@ public class MAME4droid extends Activity {
 			BasicBootProbe.logUiIniState(this, "after_prepareBasicClassicBoot");
 			BasicBootProbe.log(this, "emulate", "start");
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
+			scheduleBasicClassicFollowUp(pack);
 			final MAME4droid app = this;
 			new Thread(() -> {
 				try {
@@ -347,6 +354,50 @@ public class MAME4droid extends Activity {
 				}
 			}, "fj-basic-pack").start();
 		}
+	}
+
+	/**
+	 * Basic: when the classic list is up, write the session marker (first visit)
+	 * or merge Chinese names in-session (later visits). Does not rely on
+	 * {@code runT()} returning — swiping the app away would otherwise skip marker.
+	 */
+	private void scheduleBasicClassicFollowUp(final AssetPackInstaller pack) {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		if (basicClassicPoll != null) {
+			basicCnHandler.removeCallbacks(basicClassicPoll);
+		}
+		basicChineseApplied = false;
+		basicClassicPoll = new Runnable() {
+			private int attempts;
+
+			@Override
+			public void run() {
+				if (!Emulator.isEmulating()) {
+					return;
+				}
+				attempts++;
+				boolean menuUp = Emulator.isInMenu()
+						|| (!Emulator.isInGame() && attempts >= 6);
+				if (!menuUp) {
+					if (attempts < 40) {
+						basicCnHandler.postDelayed(this, 500);
+					}
+					return;
+				}
+				if (!pack.isBasicChineseSessionReady()) {
+					pack.markBasicClassicSessionComplete();
+					BasicBootProbe.log(MAME4droid.this, "basic_cn_marker", "menu_poll");
+				}
+				if (!basicChineseApplied) {
+					pack.applyBasicChineseNamesInSession();
+					basicChineseApplied = true;
+					BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
+				}
+			}
+		};
+		basicCnHandler.postDelayed(basicClassicPoll, 2500);
 	}
 
 	@Override
@@ -483,8 +534,13 @@ public class MAME4droid extends Activity {
 		if (emuView != null)
 			((IEmuView) emuView).setMAME4droid(null);
 
-		if(scraperHelper!=null){
+		if (scraperHelper != null) {
 			scraperHelper.stop();
+		}
+
+		if (basicClassicPoll != null) {
+			basicCnHandler.removeCallbacks(basicClassicPoll);
+			basicClassicPoll = null;
 		}
 
 		/* Never leak the netplay Wi-Fi radio lock past the activity. */

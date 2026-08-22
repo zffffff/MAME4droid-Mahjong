@@ -60,7 +60,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn17";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn18";
 	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
@@ -132,9 +132,9 @@ public class AssetPackInstaller {
 		if (installDir == null) {
 			return;
 		}
+		markBasicClassicSessionComplete();
 		try {
 			if (hasFullUiIni(installDir)) {
-				markBasicClassicSessionComplete(installDir);
 				stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
 			} else {
 				BasicBootProbe.log(mm, "basic_cn_defer", "session_no_full_ui_ini");
@@ -144,16 +144,18 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/** True after at least one completed classic session (not fooled by stock ui.ini). */
-	public boolean isBasicChineseSessionReady() {
+	/** Call when classic list is visible or native {@code runT()} returns. */
+	public void markBasicClassicSessionComplete() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return false;
+			return;
 		}
 		String installDir = resolveInstallDir();
-		return installDir != null && new File(installDir, BASIC_CN_READY).isFile();
-	}
-
-	private void markBasicClassicSessionComplete(String installDir) {
+		if (installDir == null) {
+			return;
+		}
+		if (isBasicChineseSessionReady()) {
+			return;
+		}
 		File marker = new File(installDir, BASIC_CN_READY);
 		File parent = marker.getParentFile();
 		if (parent != null && !parent.exists() && !parent.mkdirs()) {
@@ -167,6 +169,34 @@ public class AssetPackInstaller {
 		} catch (IOException e) {
 			Log.w(TAG, "markBasicClassicSessionComplete failed", e);
 		}
+	}
+
+	/**
+	 * Basic only: merge {@code mame.lst} while the classic list is already on
+	 * screen (never before first menu paint).
+	 */
+	public void applyBasicChineseNamesInSession() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return;
+		}
+		try {
+			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
+		} catch (IOException e) {
+			Log.w(TAG, "basic Chinese name apply failed", e);
+		}
+	}
+
+	/** True after at least one completed classic session (not fooled by stock ui.ini). */
+	public boolean isBasicChineseSessionReady() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return false;
+		}
+		String installDir = resolveInstallDir();
+		return installDir != null && new File(installDir, BASIC_CN_READY).isFile();
 	}
 
 	private String resolveInstallDir() {
