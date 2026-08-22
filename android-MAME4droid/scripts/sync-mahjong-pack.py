@@ -162,6 +162,25 @@ def load_groups() -> dict[str, str]:
     return out
 
 
+def ensure_master_lamps_pcall_close(text: str) -> str:
+    """Close the deferred-load pcall wrapper; Mods source ends with a single end)."""
+    if "local ok, err = pcall(function()" not in text:
+        return text
+    if "if not ok then" in text:
+        return text
+    text = text.rstrip()
+    idx = text.rfind("\nend)")
+    if idx == -1:
+        raise SystemExit("master_lamps: cannot find closing end)")
+    return text[:idx] + (
+        "\n    end)\n"
+        "    if not ok then\n"
+        "        -- swallow so a Lua error cannot blank the classic frontend\n"
+        "    end\n"
+        "end)\n"
+    )
+
+
 def artwork_targets() -> list[str]:
     """
     Whitelist plus clones that have (or can inherit) artwork.
@@ -330,21 +349,13 @@ def main() -> None:
     )
     if top_load in merged:
         merged = merged.replace(top_load, top_safe, 1)
-        if not merged.rstrip().endswith("end)"):
-            # close pcall wrapper before final end of register_frame_done
-            merged = merged.replace(
-                "\nend)\n",
-                "\n    end)\n"
-                "    if not ok then\n"
-                "        -- swallow so a Lua error cannot blank the classic frontend\n"
-                "    end\n"
-                "end)\n",
-                1,
-            )
         print("deferred output_proxy load for classic frontend safety")
+    elif "local ok, err = pcall(function()" in merged:
+        print("note: output_proxy defer pattern already present")
     else:
-        print("note: output_proxy defer pattern not applied (already patched?)")
+        print("note: output_proxy defer pattern not applied (unexpected format)")
 
+    merged = ensure_master_lamps_pcall_close(merged)
     (PACK / "master_lamps.lua").write_text(merged, encoding="utf-8", newline="\n")
     print("wrote merged master_lamps.lua")
 
