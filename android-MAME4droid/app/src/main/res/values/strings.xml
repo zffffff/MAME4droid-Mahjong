@@ -576,7 +576,8 @@
 
     <string name="fj_basic_chinese_names_enable">Chinese names</string>
     <string name="fj_basic_chinese_names_disable">English names</string>
-    <string name="fj_basic_chinese_names_enabled_toast">Chinese names enabled. Go back one menu level or restart the app to refresh the list.</string>
+    <string name="fj_basic_chinese_names_enabled_toast">Chinese names enabled. Fully exit and reopen the app to refresh the list.</string>
+    <string name="fj_basic_chinese_names_deferred_toast">Chinese names are not ready yet. Wait until the game list appears, then try again.</string>
     <string name="fj_basic_chinese_names_disabled_toast">English names restored. Go back one menu level or restart the app to refresh the list.</string>
     <string name="fj_basic_chinese_names_need_list">Use this on the game list screen</string>
 

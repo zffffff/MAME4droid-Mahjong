@@ -58,7 +58,8 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn7";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn8";
+	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
 
@@ -106,15 +107,65 @@ public class AssetPackInstaller {
 
 	private void scrubBasicClassicBoot(String installDir) {
 		scrubBasicToxicPoisons(installDir);
-		if (mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
+		if (mm.getPrefsHelper().isBasicChineseNamesEnabled()
+				&& isBasicClassicMenuReady(installDir)) {
 			try {
 				stageBasicChineseFiles(installDir, mm.getAssets(), null);
 			} catch (IOException e) {
 				Log.w(TAG, "basic Chinese name boot staging failed", e);
 			}
-		} else {
+		} else if (!mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
 			scrubBasicNameLists(installDir);
 		}
+	}
+
+	/** True after the classic frontend menu has been up at least once. */
+	public boolean isBasicClassicMenuReady() {
+		String installDir = resolveInstallDir();
+		return installDir != null && isBasicClassicMenuReady(installDir);
+	}
+
+	private static boolean isBasicClassicMenuReady(String installDir) {
+		return new File(installDir, BASIC_CN_READY).isFile();
+	}
+
+	/** Call when the classic list/menu is visible (not inside a game). */
+	public void markBasicClassicMenuReady() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return;
+		}
+		File marker = new File(installDir, BASIC_CN_READY);
+		if (marker.isFile()) {
+			return;
+		}
+		File parent = marker.getParentFile();
+		if (parent != null && !parent.exists() && !parent.mkdirs()) {
+			Log.w(TAG, "Cannot create basic Chinese ready marker dir");
+			return;
+		}
+		try (FileOutputStream out = new FileOutputStream(marker)) {
+			out.write("1".getBytes(StandardCharsets.UTF_8));
+			Log.i(TAG, "basic classic menu ready; Chinese names may stage on boot");
+		} catch (IOException e) {
+			Log.w(TAG, "Failed to write basic Chinese ready marker", e);
+		}
+	}
+
+	public boolean basicChineseFilesStaged() {
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return false;
+		}
+		return basicChineseFilesStaged(installDir);
+	}
+
+	private static boolean basicChineseFilesStaged(String installDir) {
+		return new File(installDir, "mame.lst").isFile()
+				&& uiIniHasSystemNames(new File(installDir, "ui.ini"));
 	}
 
 	/**
@@ -125,16 +176,48 @@ public class AssetPackInstaller {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			return;
 		}
+		if (!Emulator.isEmulating() || Emulator.isInGame()) {
+			Log.i(TAG, "basic Chinese names need classic list menu");
+			return;
+		}
 		String installDir = resolveInstallDir();
 		if (installDir == null) {
 			return;
 		}
+		markBasicClassicMenuReady();
 		try {
-			stageBasicChineseFiles(installDir, mm.getAssets(), null);
-			mm.getPrefsHelper().setBasicChineseNamesEnabled(true);
-			Log.i(TAG, "basic Chinese names enabled by user");
+			if (stageBasicChineseFiles(installDir, mm.getAssets(), null)) {
+				mm.getPrefsHelper().setBasicChineseNamesEnabled(true);
+				Log.i(TAG, "basic Chinese names enabled by user");
+			} else {
+				Log.w(TAG, "basic Chinese name apply deferred");
+			}
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name apply failed", e);
+		}
+	}
+
+	/**
+	 * Basic only: while the classic frontend is running, ensure lst + system_names.
+	 * Returns true when files are on disk and ui.ini is wired.
+	 */
+	public boolean ensureBasicChineseNamesInSession() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX || !Emulator.isEmulating() || Emulator.isInGame()) {
+			return false;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return false;
+		}
+		if (!mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
+			return false;
+		}
+		markBasicClassicMenuReady();
+		try {
+			return stageBasicChineseFiles(installDir, mm.getAssets(), null);
+		} catch (IOException e) {
+			Log.w(TAG, "basic Chinese name session ensure failed", e);
+			return false;
 		}
 	}
 
@@ -252,21 +335,25 @@ public class AssetPackInstaller {
 		stripSystemNamesFromUiIni(installDir);
 	}
 
-	private void stageBasicChineseFiles(String installDir, AssetManager assets,
+	private boolean stageBasicChineseFiles(String installDir, AssetManager assets,
 			WarnWidget progress) throws IOException {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
+			return false;
 		}
 		if (!hasFullUiIni(installDir)) {
 			Log.i(TAG, "Defer basic Chinese names until MAME ui.ini exists");
-			return;
+			return false;
 		}
 		copyAssetFileIfPresent(assets, "mahjong_pack/mame.lst",
 				new File(installDir, "mame.lst"), progress);
 		copyAssetFileIfPresent(assets, "mahjong_pack/arcade.lst",
 				new File(installDir, "arcade.lst"), progress);
 		ensureSystemNamesInUiIni(installDir);
-		Log.i(TAG, "basic Chinese name files staged");
+		boolean staged = basicChineseFilesStaged(installDir);
+		if (staged) {
+			Log.i(TAG, "basic Chinese name files staged");
+		}
+		return staged;
 	}
 
 	private void stripSystemNamesFromUiIni(String installDir) {
@@ -376,7 +463,8 @@ public class AssetPackInstaller {
 				&& !mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
 			return true;
 		} else if (!fullUx && mm.getPrefsHelper().isBasicChineseNamesEnabled()
-				&& !new File(installDir, "mame.lst").isFile()
+				&& isBasicClassicMenuReady(installDir)
+				&& !basicChineseFilesStaged(installDir)
 				&& assetExists(assets, pack.id + "/mame.lst")) {
 			return true;
 		}

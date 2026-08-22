@@ -882,7 +882,7 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener {
 	}
 
 	public void setBasicChineseNamesEnabled(boolean enabled) {
-		getSharedPreferences().edit().putBoolean(PREF_BASIC_CHINESE_NAMES, enabled).apply();
+		getSharedPreferences().edit().putBoolean(PREF_BASIC_CHINESE_NAMES, enabled).commit();
 	}
 
 }

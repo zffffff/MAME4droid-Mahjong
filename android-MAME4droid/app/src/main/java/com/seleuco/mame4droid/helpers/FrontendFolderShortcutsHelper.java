@@ -153,7 +153,11 @@ public class FrontendFolderShortcutsHelper {
 				return;
 			}
 			installer.applyBasicChineseNamesInSession();
-			Toast.makeText(mm, R.string.fj_basic_chinese_names_enabled_toast, Toast.LENGTH_LONG).show();
+			if (mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
+				Toast.makeText(mm, R.string.fj_basic_chinese_names_enabled_toast, Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(mm, R.string.fj_basic_chinese_names_deferred_toast, Toast.LENGTH_LONG).show();
+			}
 		}
 		refreshChineseLabel();
 	}
