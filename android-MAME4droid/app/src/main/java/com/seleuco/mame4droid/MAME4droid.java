@@ -358,8 +358,8 @@ public class MAME4droid extends Activity {
 	}
 
 	/**
-	 * Basic: mark session when the classic list is up; stage Chinese names only
-	 * after MAME has replaced stock {@code ui.ini} (or on the next cold start).
+	 * Basic: mark session when the classic list is up; merge Chinese names in-session
+	 * (never before emulate). User may need to leave and re-enter the list.
 	 */
 	private void scheduleBasicClassicFollowUp(final AssetPackInstaller pack) {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -379,7 +379,7 @@ public class MAME4droid extends Activity {
 				}
 				attempts++;
 				boolean menuUp = Emulator.isInMenu()
-						|| (!Emulator.isInGame() && attempts >= 6);
+						|| (!Emulator.isInGame() && attempts >= 4);
 				if (!menuUp) {
 					if (attempts < 40) {
 						basicCnHandler.postDelayed(this, 500);
@@ -389,25 +389,26 @@ public class MAME4droid extends Activity {
 				if (!pack.isBasicChineseSessionReady()) {
 					pack.markBasicClassicSessionComplete();
 					BasicBootProbe.log(MAME4droid.this, "basic_cn_marker", "menu_poll");
+					basicCnHandler.postDelayed(this, 500);
+					return;
 				}
 				if (basicChineseApplied) {
 					return;
 				}
-				if (!pack.isUiIniReadyForChineseNames()) {
-					if (attempts < 120) {
-						basicCnHandler.postDelayed(this, 1000);
-					}
+				if (pack.applyBasicChineseNamesInSession()) {
+					basicChineseApplied = true;
+					BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
+					Toast.makeText(MAME4droid.this,
+							R.string.fj_basic_chinese_names_applied_toast,
+							Toast.LENGTH_LONG).show();
 					return;
 				}
-				pack.applyBasicChineseNamesInSession();
-				basicChineseApplied = true;
-				BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
-				Toast.makeText(MAME4droid.this,
-						R.string.fj_basic_chinese_names_enabled_toast,
-						Toast.LENGTH_LONG).show();
+				if (attempts < 60) {
+					basicCnHandler.postDelayed(this, 500);
+				}
 			}
 		};
-		basicCnHandler.postDelayed(basicClassicPoll, 2500);
+		basicCnHandler.postDelayed(basicClassicPoll, 1500);
 	}
 
 	@Override

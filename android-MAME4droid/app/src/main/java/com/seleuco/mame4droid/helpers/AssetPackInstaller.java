@@ -30,9 +30,9 @@ import java.util.List;
  * <p>
  * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
  * game is selected).<br>
- * <b>basic</b>: artwork + per-game lamp ini + deferred Chinese {@code mame.lst}
- * (second cold start). Strips stock empty {@code system_names} only — never
- * global {@code autoboot_script} on the classic frontend boot path.
+ * <b>basic</b>: artwork + per-game lamp ini; Chinese {@code mame.lst} only
+ * <em>after</em> the classic list is on screen (never before {@code emulate}).
+ * Cold boots always start English; user may need to leave and re-enter the list.
  */
 public class AssetPackInstaller {
 
@@ -60,7 +60,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn19";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn20";
 	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
@@ -92,9 +92,9 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Basic only: scrub stub/global ini and empty {@code system_names} before
-	 * {@code emulate}. Merge Chinese lists only when a full {@code ui.ini} from a
-	 * <b>previous</b> session exists (never on first cold start).
+	 * Basic only: always boot the classic frontend in English — strip any
+	 * {@code system_names}/{@code mame.lst} before {@code emulate} (pre-emulate
+	 * Chinese blanks the list on 1.38.3).
 	 */
 	public void prepareBasicClassicBoot() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -105,21 +105,9 @@ public class AssetPackInstaller {
 			return;
 		}
 		scrubBasicBootInis(installDir);
-		if (!isBasicChineseSessionReady()) {
-			deleteIfExists(new File(installDir, "mame.lst"));
-			deleteIfExists(new File(installDir, "arcade.lst"));
-			BasicBootProbe.log(mm, "basic_first_boot", "no_session_marker");
-			return;
-		}
-		if (!shouldStageBasicChineseBeforeBoot(installDir)) {
-			BasicBootProbe.log(mm, "basic_cn_defer", "ui_ini_not_ready");
-			return;
-		}
-		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, false, false);
-		} catch (IOException e) {
-			Log.w(TAG, "basic Chinese name prep failed", e);
-		}
+		scrubBasicChineseBeforeEmulate(installDir);
+		String phase = isBasicChineseSessionReady() ? "english_with_marker" : "english_first";
+		BasicBootProbe.log(mm, "basic_boot_english", phase);
 	}
 
 	/**
@@ -131,16 +119,7 @@ public class AssetPackInstaller {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			return;
 		}
-		String installDir = resolveInstallDir();
-		if (installDir == null) {
-			return;
-		}
 		markBasicClassicSessionComplete();
-		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true, true);
-		} catch (IOException e) {
-			Log.w(TAG, "basic Chinese name post-session failed", e);
-		}
 	}
 
 	/** Call when classic list is visible or native {@code runT()} returns. */
@@ -171,21 +150,25 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Basic only: merge {@code mame.lst} while the classic list is already on
-	 * screen (never before first menu paint).
+	 * Basic only: merge {@code mame.lst} while the classic list menu is up.
+	 * @return true when files are on disk and {@code ui.ini} is wired
 	 */
-	public void applyBasicChineseNamesInSession() {
+	public boolean applyBasicChineseNamesInSession() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
+			return false;
+		}
+		if (!Emulator.isEmulating() || Emulator.isInGame()) {
+			return false;
 		}
 		String installDir = resolveInstallDir();
 		if (installDir == null) {
-			return;
+			return false;
 		}
 		try {
-			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true, false);
+			return stageBasicChineseFiles(installDir, mm.getAssets(), null);
 		} catch (IOException e) {
 			Log.w(TAG, "basic Chinese name apply failed", e);
+			return false;
 		}
 	}
 
@@ -329,76 +312,77 @@ public class AssetPackInstaller {
 		Log.i(TAG, "Wrote " + n + " per-game lamp ini files");
 	}
 
-	private void stageBasicChineseNamesInternal(String installDir, AssetManager assets,
-			WarnWidget progress, boolean allowDuringEmulate, boolean forceReady) throws IOException {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return;
-		}
-		if (!allowDuringEmulate && Emulator.isEmulating()) {
-			return;
-		}
-		if (!allowDuringEmulate && !isBasicChineseSessionReady()) {
-			deleteIfExists(new File(installDir, "mame.lst"));
-			deleteIfExists(new File(installDir, "arcade.lst"));
-			BasicBootProbe.log(mm, "basic_cn_defer", "no_session_marker");
-			return;
-		}
-		if (!forceReady && !allowDuringEmulate && !shouldStageBasicChineseBeforeBoot(installDir)) {
-			BasicBootProbe.log(mm, "basic_cn_defer", "ui_ini_not_ready");
-			return;
-		}
-		if (!forceReady && !isUiIniReadyForChineseNames(installDir)
-				&& !uiIniHasConfiguredSystemNames(new File(installDir, "ui.ini"))) {
-			BasicBootProbe.log(mm, "basic_cn_defer", "stock_ui_ini");
-			return;
+	/** Remove Chinese hooks before every {@code emulate} (classic list poison). */
+	private void scrubBasicChineseBeforeEmulate(String installDir) {
+		deleteIfExists(new File(installDir, "mame.lst"));
+		deleteIfExists(new File(installDir, "arcade.lst"));
+		stripAllSystemNamesFromUiIni(installDir);
+	}
+
+	private boolean stageBasicChineseFiles(String installDir, AssetManager assets,
+			WarnWidget progress) throws IOException {
+		if (!hasFullUiIni(installDir)) {
+			BasicBootProbe.log(mm, "basic_cn_defer", "no_full_ui_ini");
+			return false;
 		}
 		copyAssetFileIfPresent(assets, "mahjong_pack/mame.lst",
 				new File(installDir, "mame.lst"), progress);
 		copyAssetFileIfPresent(assets, "mahjong_pack/arcade.lst",
 				new File(installDir, "arcade.lst"), progress);
 		ensureSystemNamesInUiIni(installDir);
-		BasicBootProbe.log(mm, "basic_cn_ready", "system_names=mame.lst");
-	}
-
-	/**
-	 * True when {@code ui.ini} is no longer the stock {@code files.zip} copy
-	 * (MAME has persisted session prefs), or Chinese names are already configured.
-	 */
-	public boolean isUiIniReadyForChineseNames() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return false;
+		boolean staged = basicChineseFilesStaged(installDir);
+		if (staged) {
+			BasicBootProbe.log(mm, "basic_cn_ready", "system_names=mame.lst");
 		}
-		String installDir = resolveInstallDir();
-		return installDir != null && isUiIniReadyForChineseNames(installDir);
+		return staged;
 	}
 
-	private static boolean shouldStageBasicChineseBeforeBoot(String installDir) {
+	private static boolean basicChineseFilesStaged(String installDir) {
+		return new File(installDir, "mame.lst").isFile()
+				&& uiIniHasConfiguredSystemNames(new File(installDir, "ui.ini"));
+	}
+
+	private static boolean hasFullUiIni(String installDir) {
 		File uiIni = new File(installDir, "ui.ini");
-		if (uiIniHasConfiguredSystemNames(uiIni)) {
-			return true;
-		}
-		return isUiIniReadyForChineseNames(installDir);
+		return uiIni.isFile() && !isStubUiIni(uiIni);
 	}
 
-	private static boolean isUiIniReadyForChineseNames(String installDir) {
+	private void stripAllSystemNamesFromUiIni(String installDir) {
 		File uiIni = new File(installDir, "ui.ini");
-		if (!uiIni.isFile() || isStubUiIni(uiIni)) {
-			return false;
-		}
-		return !isStockShippedUiIni(uiIni);
-	}
-
-	/** Stock {@code files.zip} ui.ini before MAME writes session state. */
-	private static boolean isStockShippedUiIni(File uiIni) {
 		if (!uiIni.isFile()) {
-			return true;
+			return;
 		}
 		try {
+			List<String> lines = new ArrayList<>();
+			boolean changed = false;
 			String text = readFileText(uiIni);
-			// Demo machine baked into upstream files.zip (see ui.ini.bak).
-			return text.contains("last_used_machine         1292apvs");
+			String[] raw = text.split("\n", -1);
+			for (int i = 0; i < raw.length; i++) {
+				String line = raw[i];
+				if (i == raw.length - 1 && line.isEmpty()) {
+					continue;
+				}
+				if (line.trim().regionMatches(true, 0, "system_names", 0,
+						"system_names".length())) {
+					changed = true;
+					continue;
+				}
+				lines.add(line);
+			}
+			if (!changed) {
+				return;
+			}
+			StringBuilder out = new StringBuilder();
+			for (String line : lines) {
+				out.append(line).append('\n');
+			}
+			try (FileOutputStream fos = new FileOutputStream(uiIni)) {
+				fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
+			}
+			Log.i(TAG, "Stripped system_names from ui.ini for classic boot");
+			BasicBootProbe.log(mm, "strip_system_names", "ui.ini");
 		} catch (IOException e) {
-			return true;
+			Log.w(TAG, "stripAllSystemNamesFromUiIni failed", e);
 		}
 	}
 

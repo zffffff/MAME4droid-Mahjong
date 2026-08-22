@@ -560,6 +560,7 @@
     <string name="fj_basic_chinese_names_enable">中文名</string>
     <string name="fj_basic_chinese_names_disable">英文名</string>
     <string name="fj_basic_chinese_names_enabled_toast">已启用中文名。请完全退出应用后再打开生效。</string>
+    <string name="fj_basic_chinese_names_applied_toast">中文名已写入。请返回上一级菜单，再进入游戏列表查看。</string>
     <string name="fj_basic_chinese_names_disabled_toast">已切换为英文名。请完全退出应用后再打开生效。</string>
     <string name="fj_basic_chinese_names_need_list">请在游戏列表界面使用此功能</string>
 
