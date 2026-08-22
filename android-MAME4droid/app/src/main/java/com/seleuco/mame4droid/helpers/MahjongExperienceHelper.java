@@ -344,7 +344,9 @@ public class MahjongExperienceHelper {
 	}
 
 	public void syncOrientationBridge() {
-		// Both editions: master_lamps.lua reads .device_orientation for artwork views.
+		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
 		String dir = mm.getMainHelper().getInstallationDIR();
 		if (dir == null || dir.isEmpty()) {
 			return;

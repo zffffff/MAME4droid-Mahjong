@@ -121,7 +121,6 @@ emu.register_frame_done(function()
 
     -- 只在第一帧运行环境准备好时，加载对应的模块，杜绝性能浪费
     if not module_loaded then
-        ensure_fei_output()
         local is_mjelctrn_family = (rom_name == "mjelctrn" or rom_name == "mjembase" or rom_name == "mjelct3bi" or rom_name == "mjelct3bia" or rom_name == "mjelct3bib" or rom_name == "mjelct3" or rom_name == "mjelct3a" or rom_name == "mjelct3b" or rom_name == "mjelctrb" or rom_name == "qyjdzjp")
         local is_lhzb_1_2 = (rom_name == "lhzb" or string.sub(rom_name, 1, 5) == "lhzb2" or string.sub(rom_name, 1, 6) == "lhzb1")
         local is_lhzb3 = (string.find(rom_name, "lhzb3") or rom_name == "lthyp" or string.find(rom_name, "lhdmg"))
@@ -203,8 +202,4 @@ emu.register_frame_done(function()
     -- local debug_probe = loadfile("fei_mj_lamps/pixel_probe.lua")
     -- if debug_probe then debug_probe()(machine, screen) end
 
-    end)
-    if not ok then
-        -- swallow so a Lua error cannot blank the classic frontend
-    end
 end)
