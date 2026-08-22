@@ -60,6 +60,8 @@ public class AssetPackInstaller {
 
 	private static final String BASIC_MARKER_SUFFIX = "-basic-cn6";
 
+	private final MAME4droid mm;
+
 	public AssetPackInstaller(MAME4droid mm) {
 		this.mm = mm;
 	}
