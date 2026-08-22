@@ -14,6 +14,7 @@ MODS = Path(r"D:\Dev\MAMEmjKey\MAME_Mahjong_Mods")
 PACK = Path(
     r"D:\Dev\MAME4droid-Mahjong\android-MAME4droid\app\src\main\assets\mahjong_pack"
 )
+ROOT = PACK.parents[4]  # .../android-MAME4droid
 ART_SRC = Path(r"I:\GAMEs\EMU\ARCAD\MAME\mame_current\artwork")
 RELEASE = Path(r"D:\Dev\MAMEmjKey\release")
 
@@ -145,6 +146,42 @@ def load_whitelist() -> list[str]:
     ]
 
 
+def load_groups() -> dict[str, str]:
+    """rom -> parent from assets/mahjong_list/groups.txt."""
+    path = ROOT / "app" / "src" / "main" / "assets" / "mahjong_list" / "groups.txt"
+    out: dict[str, str] = {}
+    if not path.is_file():
+        return out
+    for ln in path.read_text(encoding="utf-8").splitlines():
+        ln = ln.strip()
+        if not ln or ln.startswith("#"):
+            continue
+        parts = ln.split()
+        if len(parts) >= 2:
+            out[parts[0]] = parts[1]
+    return out
+
+
+def artwork_targets() -> list[str]:
+    """
+    Whitelist plus clones that have (or can inherit) artwork.
+    Clones listed in groups.txt are required so MAME finds artwork/<rom>/;
+    parent-only folders are not enough for clone short names.
+    """
+    wl = load_whitelist()
+    groups = load_groups()
+    wanted: set[str] = set(wl)
+    for rom, parent in groups.items():
+        if (ART_SRC / rom).is_dir():
+            wanted.add(rom)
+        elif parent in wanted or (ART_SRC / parent).is_dir():
+            wanted.add(rom)
+    # stable order: whitelist first, then extras
+    extra = sorted(wanted - set(wl))
+    return list(wl) + extra
+
+
+
 def lst_keys(name: str) -> set[str]:
     keys: set[str] = set()
     p = PACK / name
@@ -177,17 +214,17 @@ def check() -> int:
             print("STALE: pack date", pack_day, "< release", rel)
             stale = True
 
-    wl = load_whitelist()
+    wl = artwork_targets()
     art_dir = PACK / "artwork"
     art = {p.name for p in art_dir.iterdir() if p.is_dir()} if art_dir.is_dir() else set()
     missing_art = sorted(set(wl) - art)
     extra_art = sorted(art - set(wl))
-    print("whitelist", len(wl), "pack artwork dirs", len(art))
+    print("artwork targets", len(wl), "(whitelist+clones) pack dirs", len(art))
     if missing_art:
         print("STALE: artwork missing from pack", missing_art)
         stale = True
     if extra_art:
-        print("note: pack artwork not in whitelist", extra_art)
+        print("note: pack artwork not in targets", extra_art)
 
     mods_lamps = file_hashes(MODS / "fei_mj_lamps")
     pack_lamps = file_hashes(PACK / "fei_mj_lamps")
@@ -210,7 +247,7 @@ def check() -> int:
         stale = True
 
     lst = lst_keys("mame.lst")
-    missing_lst = sorted(n for n in wl if n.lower() not in lst)
+    missing_lst = sorted(n for n in load_whitelist() if n.lower() not in lst)
     if missing_lst:
         print("WARN: whitelist not in mame.lst (sync script does not copy lst)", missing_lst)
 
@@ -311,11 +348,7 @@ def main() -> None:
     (PACK / "master_lamps.lua").write_text(merged, encoding="utf-8", newline="\n")
     print("wrote merged master_lamps.lua")
 
-    wl = [
-        ln.strip()
-        for ln in (MODS / "白名单.txt").read_text(encoding="utf-8").splitlines()
-        if ln.strip()
-    ]
+    wl = artwork_targets()
     dst_art = PACK / "artwork"
     dst_art.mkdir(parents=True, exist_ok=True)
     existing = {p.name for p in dst_art.iterdir() if p.is_dir()}
@@ -324,13 +357,19 @@ def main() -> None:
         shutil.rmtree(dst_art / name)
         print("removed stale artwork", name)
 
+    groups = load_groups()
     missing = []
     for name in wl:
         src = ART_SRC / name
         dst = dst_art / name
         if not src.is_dir():
-            missing.append(name)
-            continue
+            parent = groups.get(name)
+            if parent and (ART_SRC / parent).is_dir():
+                src = ART_SRC / parent
+                print("artwork inherit", name, "<-", parent)
+            else:
+                missing.append(name)
+                continue
         if dst.exists():
             shutil.rmtree(dst)
         shutil.copytree(
