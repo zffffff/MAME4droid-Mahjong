@@ -21,8 +21,6 @@ import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 
-import java.io.File;
-
 /**
  * Basic edition: collapsible top-right toolbox (ROM / snap / Chinese names).
  * Full edition uses {@link MahjongExperienceHelper} instead.
@@ -161,11 +159,7 @@ public class FrontendFolderShortcutsHelper {
 	}
 
 	private boolean chineseNamesActive() {
-		String dir = mm.getMainHelper().getInstallationDIR();
-		if (dir == null || dir.isEmpty()) {
-			return false;
-		}
-		return new File(dir, "mame.lst").isFile();
+		return mm.getPrefsHelper().isBasicChineseNamesEnabled();
 	}
 
 	private void refreshChineseLabel() {

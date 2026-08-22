@@ -65,6 +65,8 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener {
 	final static public String PREF_SAF_LAZY_NORMAL_BOOT = "PREF_SAF_LAZY_NORMAL_BOOT";
 	final static public String PREF_INSTALLATION_DIR = "PREF_INSTALLATION_DIR";
 	final static public String PREF_OLD_INSTALLATION_DIR = "PREF_OLD_INSTALLATION_DIR";
+	/** Basic classic frontend: user opted into mahjong_pack Chinese name lists. */
+	final static public String PREF_BASIC_CHINESE_NAMES = "PREF_BASIC_CHINESE_NAMES";
 
 	final static public String PREF_GLOBAL_VIDEO_RENDER_MODE = "PREF_GLOBAL_VIDEO_RENDER_MODE";
 
@@ -873,6 +875,14 @@ public class PrefsHelper implements OnSharedPreferenceChangeListener {
 		} catch (Exception e) {
 			return 0;
 		}
+	}
+
+	public boolean isBasicChineseNamesEnabled() {
+		return getSharedPreferences().getBoolean(PREF_BASIC_CHINESE_NAMES, false);
+	}
+
+	public void setBasicChineseNamesEnabled(boolean enabled) {
+		getSharedPreferences().edit().putBoolean(PREF_BASIC_CHINESE_NAMES, enabled).apply();
 	}
 
 }
