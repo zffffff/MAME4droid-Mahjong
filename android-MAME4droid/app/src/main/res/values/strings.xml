@@ -574,6 +574,12 @@
     <string name="fj_snap_import_done">Imported %1$d files into snap</string>
     <string name="fj_snap_import_failed">Snap import failed</string>
 
+    <string name="fj_basic_chinese_names_enable">Chinese names</string>
+    <string name="fj_basic_chinese_names_disable">English names</string>
+    <string name="fj_basic_chinese_names_enabled_toast">Chinese names enabled. Go back one menu level or restart the app to refresh the list.</string>
+    <string name="fj_basic_chinese_names_disabled_toast">English names restored. Go back one menu level or restart the app to refresh the list.</string>
+    <string name="fj_basic_chinese_names_need_list">Use this on the game list screen</string>
+
     <string name="fj_zsxq_wechat_or_file_helper">Link copied. If WeChat did not open the page, paste it to WeChat File Transfer and open it there.</string>
     <string name="fj_zsxq_copy_hint">Link copied. Send it to WeChat File Transfer, then open it in WeChat for the Knowledge Planet coupon.</string>
     <string name="fj_zsxq_no_browser">No app can open this link. Paste it to WeChat File Transfer.</string>

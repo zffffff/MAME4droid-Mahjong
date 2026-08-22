@@ -30,9 +30,8 @@ import java.util.List;
  * <p>
  * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
  * game is selected).<br>
- * <b>basic</b>: artwork always; Chinese {@code mame.lst} only after the classic
- * frontend menu is up (never before {@code emulate} — bundled {@code ui.ini}
- * from first install must not be treated as “ready”).
+ * <b>basic</b>: artwork always; Chinese {@code mame.lst} only when the user
+ * enables it from the classic-frontend toolbox (never before {@code emulate}).
  */
 public class AssetPackInstaller {
 
@@ -59,10 +58,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn5";
-	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
-
-	private final MAME4droid mm;
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn6";
 
 	public AssetPackInstaller(MAME4droid mm) {
 		this.mm = mm;
@@ -108,18 +104,9 @@ public class AssetPackInstaller {
 		stripSystemNamesFromUiIni(installDir);
 	}
 
-	/** True after at least one completed classic session (marker on disk). */
-	public boolean isBasicChineseSessionReady() {
-		if (BuildConfig.FEIJUCHANG_FULL_UX) {
-			return false;
-		}
-		String installDir = resolveInstallDir();
-		return installDir != null && new File(installDir, BASIC_CN_READY).isFile();
-	}
-
 	/**
 	 * Basic only: copy {@code mame.lst} and merge {@code system_names} while the
-	 * classic frontend is already running (menu visible).
+	 * classic frontend is running (user chose from toolbox).
 	 */
 	public void applyBasicChineseNamesInSession() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -136,8 +123,8 @@ public class AssetPackInstaller {
 		}
 	}
 
-	/** Call once when native {@code runT()} returns on basic classic boot. */
-	public void markBasicClassicSessionComplete() {
+	/** Basic only: remove Chinese list files and {@code system_names} hook. */
+	public void removeBasicChineseNames() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			return;
 		}
@@ -145,18 +132,10 @@ public class AssetPackInstaller {
 		if (installDir == null) {
 			return;
 		}
-		File marker = new File(installDir, BASIC_CN_READY);
-		File parent = marker.getParentFile();
-		if (parent != null && !parent.exists() && !parent.mkdirs()) {
-			Log.w(TAG, "Cannot create marker dir for basic Chinese");
-			return;
-		}
-		try (FileOutputStream out = new FileOutputStream(marker)) {
-			out.write("1".getBytes(StandardCharsets.UTF_8));
-			Log.i(TAG, "basic classic session complete; Chinese names enabled next launch");
-		} catch (IOException e) {
-			Log.w(TAG, "Failed to write basic Chinese ready marker", e);
-		}
+		deleteIfExists(new File(installDir, "mame.lst"));
+		deleteIfExists(new File(installDir, "arcade.lst"));
+		stripSystemNamesFromUiIni(installDir);
+		Log.i(TAG, "basic Chinese names removed");
 	}
 
 	private String resolveInstallDir() {
@@ -374,10 +353,8 @@ public class AssetPackInstaller {
 			}
 		} else if (new File(installDir, "master_lamps.lua").isFile()
 				|| isMahjongStubIni(new File(installDir, "mame.ini"))
-				|| isStubUiIni(new File(installDir, "ui.ini"))) {
-			return true;
-		} else if (new File(installDir, "mame.lst").isFile()
-				&& !isBasicChineseSessionReady()) {
+				|| isStubUiIni(new File(installDir, "ui.ini"))
+				|| new File(installDir, "mame.lst").isFile()) {
 			return true;
 		}
 		return false;

@@ -553,6 +553,12 @@
     <string name="fj_snap_import_done">已导入 %1$d 个文件到 snap</string>
     <string name="fj_snap_import_failed">snap 导入失败</string>
 
+    <string name="fj_basic_chinese_names_enable">中文名</string>
+    <string name="fj_basic_chinese_names_disable">英文名</string>
+    <string name="fj_basic_chinese_names_enabled_toast">已启用中文机种名。请返回上一级菜单或重启应用查看。</string>
+    <string name="fj_basic_chinese_names_disabled_toast">已切换为英文机种名。请返回上一级菜单或重启应用查看。</string>
+    <string name="fj_basic_chinese_names_need_list">请在游戏列表界面使用此功能</string>
+
     <string name="fj_zsxq_wechat_or_file_helper">链接已复制。若未直接在微信中打开，请粘贴发送给微信「文件传输助手」后再点开。</string>
     <string name="fj_zsxq_copy_hint">链接已复制。请发送给微信「文件传输助手」，再在微信中打开以使用知识星球优惠券。</string>
     <string name="fj_zsxq_no_browser">无法打开链接。请粘贴发送给微信「文件传输助手」。</string>
