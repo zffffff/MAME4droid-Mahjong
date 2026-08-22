@@ -24,6 +24,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.helpers.PrefsHelper;
@@ -498,11 +499,20 @@ public class GamePickerActivity extends Activity {
 
 	private void launchRom(String rom) {
 		rememberPlayed(rom);
+		// After a forced/stale exit, static isEmulating can still be true and
+		// emulate() would no-op — leaving the previous game on screen.
+		if (Emulator.isEmulating()) {
+			Toast.makeText(this, R.string.picker_exit_game_first, Toast.LENGTH_SHORT).show();
+			Emulator.setValue(Emulator.EXIT_GAME, 1);
+			new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(
+					() -> Emulator.setValue(Emulator.EXIT_GAME, 0), 300);
+			return;
+		}
 		Intent i = new Intent(this, MAME4droid.class);
 		i.putExtra(EXTRA_ROM, rom);
 		i.putExtra(EXTRA_FROM_PICKER, true);
 		i.putExtra("cli_params", "-skip_gameinfo");
-		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		startWithVeil(i);
 	}
 

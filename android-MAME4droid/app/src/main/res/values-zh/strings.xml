@@ -580,5 +580,6 @@
     <string name="picker_section_recent">最近玩过</string>
     <string name="picker_section_all">全部</string>
     <string name="picker_rom_missing">文件夹里没有 %s.zip。请把文件放进去，或在菜单里重选文件夹。</string>
+    <string name="picker_exit_game_first">上一局还在退出，请再点一次退出或稍等，然后再选游戏。</string>
     <string name="picker_rom_absent">%s · 缺 ROM</string>
 </resources>

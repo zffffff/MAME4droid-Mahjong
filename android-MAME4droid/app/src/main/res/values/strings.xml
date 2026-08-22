@@ -601,5 +601,6 @@
     <string name="picker_section_recent">Recently played</string>
     <string name="picker_section_all">All games</string>
     <string name="picker_rom_missing">No %s.zip in the folder. Add the file, or pick another folder from Menu → ROM.</string>
+    <string name="picker_exit_game_first">Still leaving the previous game — tap Exit again or wait, then choose a title.</string>
     <string name="picker_rom_absent">%s · missing ROM</string>
 </resources>

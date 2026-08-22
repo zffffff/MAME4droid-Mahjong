@@ -883,9 +883,10 @@ public class Emulator {
 	}
 
 	/**
-	 * Ask native to exit; if launched from the mahjong picker and the native
-	 * thread never returns (e.g. black-screen stuck), force-return to the
-	 * picker without {@code killProcess}.
+	 * Exit like stock Exit toward the picker: pulse native {@code EXIT_GAME} and
+	 * let {@link #emulate} finish → return to {@code GamePickerActivity}.
+	 * Do not force-finish after a timeout — that delayed the UI and left
+	 * {@code isEmulating} true so the next picker launch reused the old game.
 	 */
 	public static void requestExitToPickerOrFinish() {
 		if (mm == null) {
@@ -895,30 +896,7 @@ public class Emulator {
 				&& mm.getIntent().getBooleanExtra(
 				com.seleuco.mame4droid.mahjong.GamePickerActivity.EXTRA_FROM_PICKER,
 				false);
-		if (!fromPicker) {
-			setValue(EXIT_GAME, 1);
-			mm.getWindow().getDecorView().postDelayed(
-					() -> setValue(EXIT_GAME, 0), 300);
-			return;
-		}
-		if (isEmulating) {
-			setValue(EXIT_GAME, 1);
-			mm.getWindow().getDecorView().postDelayed(
-					() -> setValue(EXIT_GAME, 0), 300);
-			mm.getWindow().getDecorView().postDelayed(() -> {
-				if (!isEmulating || mm == null) {
-					return;
-				}
-				Log.w(TAG, "Native exit stalled; forcing return to GamePicker");
-				Intent home = new Intent(mm,
-						com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
-				home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-						| Intent.FLAG_ACTIVITY_SINGLE_TOP
-						| Intent.FLAG_ACTIVITY_NEW_TASK);
-				mm.startActivity(home);
-				mm.finish();
-			}, 2000);
-		} else {
+		if (fromPicker && !isEmulating) {
 			Intent home = new Intent(mm,
 					com.seleuco.mame4droid.mahjong.GamePickerActivity.class);
 			home.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -926,7 +904,11 @@ public class Emulator {
 					| Intent.FLAG_ACTIVITY_NEW_TASK);
 			mm.startActivity(home);
 			mm.finish();
+			return;
 		}
+		setValue(EXIT_GAME, 1);
+		mm.getWindow().getDecorView().postDelayed(
+				() -> setValue(EXIT_GAME, 0), 300);
 	}
 
 	//EMULATOR
