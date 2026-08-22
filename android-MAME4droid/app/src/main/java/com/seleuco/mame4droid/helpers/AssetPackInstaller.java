@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.Log;
 
 import com.seleuco.mame4droid.BuildConfig;
+import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 import com.seleuco.mame4droid.R;
 import com.seleuco.mame4droid.widgets.WarnWidget;
@@ -29,8 +30,9 @@ import java.util.List;
  * <p>
  * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
  * game is selected).<br>
- * <b>basic</b>: artwork only — no Lua / stub ini / name-list churn on the
- * classic frontend boot path (those historically blanked the system list).
+ * <b>basic</b>: artwork always; Chinese {@code mame.lst} only after MAME has
+ * written a full {@code ui.ini} (typically second cold start). Never install
+ * lamp Lua / stub ini on the classic frontend boot path.
  */
 public class AssetPackInstaller {
 
@@ -56,6 +58,8 @@ public class AssetPackInstaller {
 					}
 			),
 	};
+
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn4";
 
 	private final MAME4droid mm;
 
@@ -86,9 +90,9 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Basic only: delete leftover lua / stub ini / name lists <b>before</b>
-	 * {@code Emulator.emulate} so classic UI is not blanked by older installs.
-	 * Artwork copy can still run later via {@link #installAllIfNeeded()}.
+	 * Basic only: scrub lamp/stub poison before {@code Emulator.emulate}. Stage
+	 * Chinese name lists only when a full {@code ui.ini} exists from a previous
+	 * session (never on a clean first install).
 	 */
 	public void prepareBasicClassicBoot() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -99,6 +103,31 @@ public class AssetPackInstaller {
 			return;
 		}
 		scrubBasicClassicPoisons(installDir);
+		try {
+			stageBasicChineseNamesIfReady(installDir, mm.getAssets(), null);
+		} catch (IOException e) {
+			Log.w(TAG, "basic Chinese name prep failed", e);
+		}
+	}
+
+	/**
+	 * Basic only: after the native emulator thread returns, MAME should have
+	 * written a full {@code ui.ini}. Merge {@code mame.lst} then so the next
+	 * cold start shows Chinese titles without touching the first-boot list.
+	 */
+	public void stageBasicChineseNamesAfterSession() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return;
+		}
+		try {
+			stageBasicChineseNamesInternal(installDir, mm.getAssets(), null, true);
+		} catch (IOException e) {
+			Log.w(TAG, "basic Chinese name post-session failed", e);
+		}
 	}
 
 	private String resolveInstallDir() {
@@ -133,9 +162,12 @@ public class AssetPackInstaller {
 		boolean fullUx = BuildConfig.FEIJUCHANG_FULL_UX;
 		if (!needsInstall(pack, installDir, assetVersion, assets, fullUx)) {
 			Log.i(TAG, "Pack up to date: " + pack.id + " @" + assetVersion
-					+ (fullUx ? " (full)" : " (basic artwork)"));
+					+ (fullUx ? " (full)" : " (basic)"));
 			if (!fullUx) {
-				scrubBasicClassicPoisons(installDir);
+				if (!Emulator.isEmulating()) {
+					scrubBasicClassicPoisons(installDir);
+					stageBasicChineseNamesIfReady(installDir, assets, null);
+				}
 			}
 			return;
 		}
@@ -161,16 +193,19 @@ public class AssetPackInstaller {
 				scrubStubUiIni(installDir);
 				ensureSystemNamesInUiIni(installDir);
 			} else {
-				// Classic home: only merge artwork. Skip lua / lst / ini so the
-				// stock MAME list can paint; lamps stay a full-edition concern.
+				// Classic home: artwork only. Chinese lists are staged separately
+				// once a full ui.ini exists; never during an active emulate session.
 				copyAssetTree(assets, pack.id + "/artwork",
 						new File(installDir, "artwork"), pack.id, progress);
-				scrubBasicClassicPoisons(installDir);
+				if (!Emulator.isEmulating()) {
+					scrubBasicClassicPoisons(installDir);
+					stageBasicChineseNamesIfReady(installDir, assets, progress);
+				}
 			}
 
-			writeMarker(installDir, pack.id, assetVersion + (fullUx ? "" : "-basic"));
+			writeMarker(installDir, pack.id, assetVersion + (fullUx ? "" : BASIC_MARKER_SUFFIX));
 			Log.i(TAG, "Installed pack " + pack.id + " @" + assetVersion
-					+ (fullUx ? " (full)" : " (basic artwork)"));
+					+ (fullUx ? " (full)" : " (basic)"));
 		} finally {
 			if (progress != null) {
 				progress.end();
@@ -179,8 +214,8 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Leftovers from older basic builds (lua / stub ini / name lists) can blank
-	 * the classic system list. Artwork layouts stay; lamps are full-only.
+	 * Leftovers that blank classic UI: lamp Lua and stub ini. Drop name lists
+	 * only while {@code ui.ini} is not ready yet (first cold start).
 	 */
 	private void scrubBasicClassicPoisons(String installDir) {
 		scrubMahjongStubRootIni(installDir);
@@ -188,8 +223,42 @@ public class AssetPackInstaller {
 		deleteIfExists(new File(installDir, "ini/mame.ini"));
 		deleteIfExists(new File(installDir, "master_lamps.lua"));
 		deleteTree(new File(installDir, "fei_mj_lamps"));
-		deleteIfExists(new File(installDir, "mame.lst"));
-		deleteIfExists(new File(installDir, "arcade.lst"));
+		if (!hasFullUiIni(installDir)) {
+			deleteIfExists(new File(installDir, "mame.lst"));
+			deleteIfExists(new File(installDir, "arcade.lst"));
+		}
+	}
+
+	private void stageBasicChineseNamesIfReady(String installDir, AssetManager assets,
+			WarnWidget progress) throws IOException {
+		stageBasicChineseNamesInternal(installDir, assets, progress, false);
+	}
+
+	private void stageBasicChineseNamesInternal(String installDir, AssetManager assets,
+			WarnWidget progress, boolean allowDuringEmulate) throws IOException {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		if (!allowDuringEmulate && Emulator.isEmulating()) {
+			return;
+		}
+		if (!hasFullUiIni(installDir)) {
+			deleteIfExists(new File(installDir, "mame.lst"));
+			deleteIfExists(new File(installDir, "arcade.lst"));
+			Log.i(TAG, "Defer basic Chinese names until full ui.ini exists");
+			return;
+		}
+		copyAssetFileIfPresent(assets, "mahjong_pack/mame.lst",
+				new File(installDir, "mame.lst"), progress);
+		copyAssetFileIfPresent(assets, "mahjong_pack/arcade.lst",
+				new File(installDir, "arcade.lst"), progress);
+		ensureSystemNamesInUiIni(installDir);
+		Log.i(TAG, "basic Chinese names ready");
+	}
+
+	private static boolean hasFullUiIni(String installDir) {
+		File uiIni = new File(installDir, "ui.ini");
+		return uiIni.isFile() && !isStubUiIni(uiIni);
 	}
 
 	private static void deleteIfExists(File f) {
@@ -218,7 +287,7 @@ public class AssetPackInstaller {
 	private boolean needsInstall(PackSpec pack, String installDir, String assetVersion,
 			AssetManager assets, boolean fullUx) {
 		File marker = markerFile(installDir, pack.id);
-		String wantMarker = assetVersion + (fullUx ? "" : "-basic");
+		String wantMarker = assetVersion + (fullUx ? "" : BASIC_MARKER_SUFFIX);
 		if (!marker.isFile()) {
 			return true;
 		}
@@ -255,10 +324,18 @@ public class AssetPackInstaller {
 				return true;
 			}
 		} else if (new File(installDir, "master_lamps.lua").isFile()
-				|| new File(installDir, "mame.lst").isFile()
 				|| isMahjongStubIni(new File(installDir, "mame.ini"))
 				|| isStubUiIni(new File(installDir, "ui.ini"))) {
-			// Force a scrub pass.
+			return true;
+		} else if (new File(installDir, "mame.lst").isFile()
+				&& !hasFullUiIni(installDir)) {
+			return true;
+		} else if (hasFullUiIni(installDir)
+				&& new File(installDir, "mame.lst").isFile()
+				&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
+			return true;
+		} else if (hasFullUiIni(installDir) && !new File(installDir, "mame.lst").isFile()
+				&& assetExists(assets, pack.id + "/mame.lst")) {
 			return true;
 		}
 		return false;
@@ -467,6 +544,14 @@ public class AssetPackInstaller {
 				}
 			}
 		}
+	}
+
+	private void copyAssetFileIfPresent(AssetManager assets, String assetPath, File destFile,
+			WarnWidget progress) throws IOException {
+		if (!assetExists(assets, assetPath)) {
+			return;
+		}
+		copyAssetFile(assets, assetPath, destFile, progress);
 	}
 
 	private void copyAssetFile(AssetManager assets, String assetPath, File destFile,
