@@ -60,7 +60,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn20";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn21";
 	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
@@ -110,8 +110,24 @@ public class AssetPackInstaller {
 		BasicBootProbe.log(mm, "basic_boot_english", phase);
 	}
 
+	public void prepareBasicChineseReloadBoot() {
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			return;
+		}
+		String installDir = resolveInstallDir();
+		if (installDir == null) {
+			return;
+		}
+		scrubBasicBootInis(installDir);
+		try {
+			stageBasicChineseFiles(installDir, mm.getAssets(), null);
+			BasicBootProbe.log(mm, "basic_cn_reload_boot", "ready");
+		} catch (IOException e) {
+			Log.w(TAG, "basic Chinese reload boot failed", e);
+		}
+	}
+
 	/**
-	 * Basic only: after the native emulator thread returns, MAME should have
 	 * written a full {@code ui.ini}. Merge {@code mame.lst} then so the next
 	 * cold start shows Chinese titles without touching the first-boot list.
 	 */

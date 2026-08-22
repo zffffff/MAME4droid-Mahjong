@@ -106,6 +106,19 @@ public class MAME4droid extends Activity {
 	private final Handler basicCnHandler = new Handler(Looper.getMainLooper());
 	private Runnable basicClassicPoll;
 	private boolean basicChineseApplied;
+	private volatile boolean basicChineseReloadPending;
+
+	public void requestBasicChineseReload() {
+		basicChineseReloadPending = true;
+	}
+
+	public boolean consumeBasicChineseReloadPending() {
+		if (!basicChineseReloadPending) {
+			return false;
+		}
+		basicChineseReloadPending = false;
+		return true;
+	}
 
 	public PrefsHelper getPrefsHelper() {
 		return prefsHelper;
@@ -398,9 +411,14 @@ public class MAME4droid extends Activity {
 				if (pack.applyBasicChineseNamesInSession()) {
 					basicChineseApplied = true;
 					BasicBootProbe.logUiIniState(MAME4droid.this, "after_in_session_cn");
+					requestBasicChineseReload();
+					BasicBootProbe.log(MAME4droid.this, "basic_cn_reload", "request");
 					Toast.makeText(MAME4droid.this,
-							R.string.fj_basic_chinese_names_applied_toast,
-							Toast.LENGTH_LONG).show();
+							R.string.fj_basic_chinese_names_reloading_toast,
+							Toast.LENGTH_SHORT).show();
+					Emulator.setValue(Emulator.EXIT_GAME, 1);
+					getWindow().getDecorView().postDelayed(
+							() -> Emulator.setValue(Emulator.EXIT_GAME, 0), 300);
 					return;
 				}
 				if (attempts < 60) {
