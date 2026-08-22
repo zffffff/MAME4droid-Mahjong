@@ -30,8 +30,9 @@ import java.util.List;
  * <p>
  * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
  * game is selected).<br>
- * <b>basic</b>: artwork always; Chinese {@code mame.lst} only when the user
- * enables it from the classic-frontend toolbox (never before {@code emulate}).
+ * <b>basic</b>: artwork always; Chinese {@code mame.lst} only after the classic
+ * list is up (never before {@code Emulator.emulate} — lst at emulate entry
+ * blanks the system list on this port).
  */
 public class AssetPackInstaller {
 
@@ -58,7 +59,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic-cn8";
+	private static final String BASIC_MARKER_SUFFIX = "-basic-cn9";
 	private static final String BASIC_CN_READY = MARKER_DIR + "/mahjong_pack-basic-cn-ready";
 
 	private final MAME4droid mm;
@@ -90,9 +91,8 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Basic only: scrub poison before {@code Emulator.emulate}. When the user has
-	 * opted into Chinese names, stage {@code mame.lst} for this boot; otherwise
-	 * keep the classic list English-safe.
+	 * Basic only: scrub poison and name lists before {@code Emulator.emulate}.
+	 * {@code mame.lst} must never exist at emulate entry (classic list blacks out).
 	 */
 	public void prepareBasicClassicBoot() {
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
@@ -102,19 +102,14 @@ public class AssetPackInstaller {
 		if (installDir == null) {
 			return;
 		}
-		scrubBasicClassicBoot(installDir);
+		scrubBasicToxicPoisons(installDir);
+		scrubBasicNameLists(installDir);
 	}
 
+	/** Basic: scrub poison; drop lst only when the native thread is not running. */
 	private void scrubBasicClassicBoot(String installDir) {
 		scrubBasicToxicPoisons(installDir);
-		if (mm.getPrefsHelper().isBasicChineseNamesEnabled()
-				&& isBasicClassicMenuReady(installDir)) {
-			try {
-				stageBasicChineseFiles(installDir, mm.getAssets(), null);
-			} catch (IOException e) {
-				Log.w(TAG, "basic Chinese name boot staging failed", e);
-			}
-		} else if (!mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
+		if (!Emulator.isEmulating()) {
 			scrubBasicNameLists(installDir);
 		}
 	}
@@ -461,11 +456,6 @@ public class AssetPackInstaller {
 			return true;
 		} else if (new File(installDir, "mame.lst").isFile()
 				&& !mm.getPrefsHelper().isBasicChineseNamesEnabled()) {
-			return true;
-		} else if (!fullUx && mm.getPrefsHelper().isBasicChineseNamesEnabled()
-				&& isBasicClassicMenuReady(installDir)
-				&& !basicChineseFilesStaged(installDir)
-				&& assetExists(assets, pack.id + "/mame.lst")) {
 			return true;
 		}
 		return false;

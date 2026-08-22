@@ -63,6 +63,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.seleuco.mame4droid.helpers.AdpfHelper;
 import com.seleuco.mame4droid.helpers.AssetPackInstaller;
@@ -394,7 +395,11 @@ public class MAME4droid extends Activity {
 					return;
 				}
 				if (!Emulator.isInGame()) {
-					installer.ensureBasicChineseNamesInSession();
+					if (installer.ensureBasicChineseNamesInSession()) {
+						Toast.makeText(MAME4droid.this,
+								R.string.fj_basic_chinese_names_applied_toast,
+								Toast.LENGTH_LONG).show();
+					}
 					return;
 				}
 				attempts++;
