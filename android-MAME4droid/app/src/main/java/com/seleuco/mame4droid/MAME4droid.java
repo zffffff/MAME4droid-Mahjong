@@ -322,24 +322,11 @@ public class MAME4droid extends Activity {
 		getMainHelper().removeFiles();
 
 		Intent intent = getIntent();
-		boolean classicUi = intent != null
-				&& intent.getBooleanExtra(GamePickerActivity.EXTRA_CLASSIC_UI, false);
 		String pickerRom = intent != null
 				? intent.getStringExtra(GamePickerActivity.EXTRA_ROM) : null;
 		boolean pickerRomLaunch = pickerRom != null && !pickerRom.isEmpty();
 
 		AssetPackInstaller pack = new AssetPackInstaller(this);
-
-		if (classicUi) {
-			BasicBootProbe.log(this, "boot", "classic_frontend");
-			pack.prepareClassicFrontendBoot();
-			BasicBootProbe.logUiIniState(this, "after_prepareClassicBoot");
-			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
-			if (!BuildConfig.FEIJUCHANG_FULL_UX) {
-				scheduleBasicBackgroundPackInstall();
-			}
-			return;
-		}
 
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			pack.installAllIfNeeded();

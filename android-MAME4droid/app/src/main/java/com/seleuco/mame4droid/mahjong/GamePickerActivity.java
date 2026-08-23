@@ -38,21 +38,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Mahjong game picker (LAUNCHER for full and basic). Classic MAME frontend is
- * optional via overflow menu ({@link #EXTRA_CLASSIC_UI}).
+ * Mahjong game picker (LAUNCHER for full and basic).
  */
 public class GamePickerActivity extends Activity {
 
 	public static final String EXTRA_ROM = "feijuchang_rom";
 	public static final String EXTRA_FROM_PICKER = "feijuchang_from_picker";
+	/** Reserved; classic entry disabled (re-launch bugs). */
 	public static final String EXTRA_CLASSIC_UI = "feijuchang_classic_ui";
 
 	private static final int MENU_ROM = 1;
 	private static final int MENU_SNAP = 2;
-	private static final int MENU_CLASSIC = 3;
-	private static final int MENU_COMPACT = 4;
-	private static final int MENU_SETTINGS = 5;
-	private static final int MENU_HELP = 6;
+	private static final int MENU_COMPACT = 3;
+	private static final int MENU_SETTINGS = 4;
+	private static final int MENU_HELP = 5;
 	private static final int REQ_ROMS = 33;
 	private static final int REQ_SNAP = 34;
 	private static final int SETUP_HIDDEN = 0;
@@ -181,12 +180,11 @@ public class GamePickerActivity extends Activity {
 		PopupMenu pm = new PopupMenu(this, anchor);
 		pm.getMenu().add(0, MENU_ROM, 0, R.string.picker_btn_rom);
 		pm.getMenu().add(0, MENU_SNAP, 1, R.string.picker_btn_snap);
-		pm.getMenu().add(0, MENU_CLASSIC, 2, R.string.picker_btn_classic);
-		MenuItem compact = pm.getMenu().add(0, MENU_COMPACT, 3, R.string.picker_btn_compact);
+		MenuItem compact = pm.getMenu().add(0, MENU_COMPACT, 2, R.string.picker_btn_compact);
 		compact.setCheckable(true);
 		compact.setChecked(isCompact());
-		pm.getMenu().add(0, MENU_SETTINGS, 4, R.string.picker_btn_settings);
-		pm.getMenu().add(0, MENU_HELP, 5, R.string.picker_btn_help);
+		pm.getMenu().add(0, MENU_SETTINGS, 3, R.string.picker_btn_settings);
+		pm.getMenu().add(0, MENU_HELP, 4, R.string.picker_btn_help);
 		pm.setOnMenuItemClickListener(item -> {
 			int id = item.getItemId();
 			if (id == MENU_ROM) {
@@ -195,10 +193,6 @@ public class GamePickerActivity extends Activity {
 			}
 			if (id == MENU_SNAP) {
 				openTree(REQ_SNAP);
-				return true;
-			}
-			if (id == MENU_CLASSIC) {
-				launchClassicUi();
 				return true;
 			}
 			if (id == MENU_COMPACT) {
@@ -507,24 +501,6 @@ public class GamePickerActivity extends Activity {
 		i.putExtra(EXTRA_ROM, rom);
 		i.putExtra(EXTRA_FROM_PICKER, true);
 		i.putExtra("cli_params", "-skip_gameinfo");
-		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		startWithVeil(i);
-	}
-
-	private void launchClassicUi() {
-		if (!hasRomFolder()) {
-			Toast.makeText(this, R.string.picker_need_rom_folder, Toast.LENGTH_SHORT).show();
-			if (setupStep == SETUP_HIDDEN) {
-				setupStep = SETUP_ROM;
-				applySetupUi();
-			} else {
-				openTree(REQ_ROMS);
-			}
-			return;
-		}
-		Intent i = new Intent(this, MAME4droid.class);
-		i.putExtra(EXTRA_CLASSIC_UI, true);
-		i.putExtra(EXTRA_FROM_PICKER, true);
 		i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startWithVeil(i);
 	}

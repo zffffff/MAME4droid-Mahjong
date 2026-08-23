@@ -27,8 +27,8 @@ import java.util.List;
  * ({@link MainHelper#getInstallationDIR()}, typically
  * {@code /storage/emulated/0/Android/data/.../files/}).
  * <p>
- * <b>full</b>: artwork + lamp Lua + Chinese name lists (lamps via CLI when a
- * game is selected).<br>
+ * <b>full</b>: artwork + lamp Lua + Chinese name lists; per-game {@code ini/<rom>.ini}
+ * autoboot (same as basic — CLI autoboot blanks picker launches).<br>
  * <b>basic</b>: artwork + per-game lamp ini; classic list stays English on
  * MAME 1.38.3 ({@code system_names} does not refresh the native list). Chinese
  * titles are on the full picker ({@link com.seleuco.mame4droid.mahjong.MahjongCatalog}).
@@ -81,6 +81,9 @@ public class AssetPackInstaller {
 				Log.e(TAG, "Failed to install pack: " + pack.id, e);
 				showError(mm.getString(R.string.asset_pack_install_failed, pack.id, e.getMessage()));
 			}
+		}
+		if (BuildConfig.FEIJUCHANG_FULL_UX) {
+			ensureMahjongLampInis(installDir);
 		}
 		scrubMahjongStubRootIni(installDir);
 		scrubStubUiIni(installDir);
@@ -172,6 +175,7 @@ public class AssetPackInstaller {
 				}
 				scrubStubUiIni(installDir);
 				ensureSystemNamesInUiIni(installDir);
+				writePerGameLampInis(installDir, assets);
 			} else {
 				installBasicLampPack(assets, pack, installDir, progress);
 				scrubBasicBootInis(installDir);
@@ -213,8 +217,8 @@ public class AssetPackInstaller {
 	}
 
 	/**
-	 * Per-game {@code ini/<rom>.ini} with autoboot — lamps in-game only, not on
-	 * the classic system list ({@code ___empty}).
+	 * Per-game {@code ini/<rom>.ini} autoboot — lamps + orientation bridge in-game
+	 * only, not on the classic system list ({@code ___empty}).
 	 */
 	private void writePerGameLampInis(String installDir, AssetManager assets) throws IOException {
 		String[] roms = assets.list("mahjong_pack/artwork");
@@ -242,6 +246,15 @@ public class AssetPackInstaller {
 			}
 		}
 		Log.i(TAG, "Wrote " + n + " per-game lamp ini files");
+	}
+
+	/** Full: (re)write per-game lamp ini even when the pack marker is up to date. */
+	private void ensureMahjongLampInis(String installDir) {
+		try {
+			writePerGameLampInis(installDir, mm.getAssets());
+		} catch (IOException e) {
+			Log.w(TAG, "ensureMahjongLampInis failed", e);
+		}
 	}
 
 	/** Remove Chinese hooks before every {@code emulate} (classic list poison). */

@@ -829,13 +829,12 @@ public class Emulator {
 	}
 
 	/**
-	 * Lamp Lua via CLI is disabled on this line: the same
-	 * {@code -autoboot_script} that blanks the classic frontend also blanks
-	 * picker direct-launches (black GL + OSC/toolbox still visible). Artwork
-	 * and Lua files still install; lamps need a later in-game deferred load.
+	 * Lamp Lua runs via per-game {@code ini/<rom>.ini} autoboot (see
+	 * {@link AssetPackInstaller#writePerGameLampInis}). Global CLI autoboot stays
+	 * off — it blanks picker direct-launches.
 	 */
 	private static void ensureMahjongAutobootCli() {
-		// Intentionally no-op (line-full / mj17-full diagnosis).
+		// Intentionally no-op.
 	}
 
 	/**
