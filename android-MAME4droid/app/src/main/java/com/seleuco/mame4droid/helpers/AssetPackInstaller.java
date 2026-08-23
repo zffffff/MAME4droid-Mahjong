@@ -27,8 +27,8 @@ import java.util.List;
  * ({@link MainHelper#getInstallationDIR()}, typically
  * {@code /storage/emulated/0/Android/data/.../files/}).
  * <p>
- * <b>full</b>: artwork + lamp Lua + Chinese name lists; per-game {@code ini/<rom>.ini}
- * autoboot (same as basic — CLI autoboot blanks picker launches).<br>
+ * <b>full</b>: artwork + lamp Lua; **不**写 install-dir {@code system_names}
+ *（会话内「选择新系统」须与 basic 一样剥毒；中文名仅选台 assets）。<br>
  * <b>basic</b>: artwork + per-game lamp ini; classic list stays English on
  * MAME 1.38.3 ({@code system_names} does not refresh the native list). Chinese
  * titles are on the full picker ({@link com.seleuco.mame4droid.mahjong.MahjongCatalog}).
@@ -84,6 +84,7 @@ public class AssetPackInstaller {
 		}
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			ensureMahjongLampInis(installDir);
+			scrubClassicListPoison(installDir);
 		}
 		scrubMahjongStubRootIni(installDir);
 		scrubStubUiIni(installDir);
@@ -102,8 +103,16 @@ public class AssetPackInstaller {
 			return;
 		}
 		scrubBasicBootInis(installDir);
-		scrubBasicChineseBeforeEmulate(installDir);
+		scrubClassicListPoison(installDir);
 		BasicBootProbe.log(mm, "classic_boot_english", "frontend");
+	}
+
+	/** Strip {@code system_names} / install-dir lst before classic UI (in-game 选择新系统). */
+	public void scrubClassicListPoison(String installDir) {
+		if (installDir == null || installDir.isEmpty()) {
+			return;
+		}
+		scrubBasicChineseBeforeEmulate(installDir);
 	}
 
 	/**
@@ -174,7 +183,6 @@ public class AssetPackInstaller {
 					Log.i(TAG, "Removed stub ini/mame.ini");
 				}
 				scrubStubUiIni(installDir);
-				ensureSystemNamesInUiIni(installDir);
 				writePerGameLampInis(installDir, assets);
 			} else {
 				installBasicLampPack(assets, pack, installDir, progress);
@@ -400,12 +408,6 @@ public class AssetPackInstaller {
 				return true;
 			}
 			if (isStubUiIni(new File(installDir, "ui.ini"))) {
-				return true;
-			}
-			if (new File(installDir, "mame.lst").isFile()
-					&& new File(installDir, "ui.ini").isFile()
-					&& !isStubUiIni(new File(installDir, "ui.ini"))
-					&& !uiIniHasSystemNames(new File(installDir, "ui.ini"))) {
 				return true;
 			}
 		} else if (isMahjongStubIni(new File(installDir, "mame.ini"))

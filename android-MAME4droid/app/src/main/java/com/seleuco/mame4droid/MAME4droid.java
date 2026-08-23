@@ -330,6 +330,7 @@ public class MAME4droid extends Activity {
 
 		if (BuildConfig.FEIJUCHANG_FULL_UX) {
 			pack.installAllIfNeeded();
+			pack.prepareClassicFrontendBoot();
 			Emulator.emulate(mainHelper.getLibDir(), mainHelper.getInstallationDIR());
 		} else {
 			BasicBootProbe.log(this, "basic_boot",
