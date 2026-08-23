@@ -14,6 +14,7 @@ alwaysApply: true
 - 完整版 `full`：飞剧场怀旧麻将 · `com.feijuchang.mahjong` · `FEIJUCHANG_FULL_UX=true` · **LAUNCHER=选台**；麻将体验锦上添花（**经典界面入口暂关**）
 - 基础版 `basic`：基础飞剧场 · `com.feijuchang.mahjong.basic` · **LAUNCHER=选台**（中文机种名）；**经典界面入口暂关**；进阶麻将键盘等仍仅 full
 - Manifest：`src/full` / `src/basic` 分别挂 LAUNCHER；勿在 `main` 写死共用 LAUNCHER
+- Git：**单线 `main`** + flavors（`line-basic` / `line-full` 已合回 mj20，勿再分线开发）
 - Java 包可保持 `com.seleuco.mame4droid`；勿冒充官方；GPL + `NOTICE`
 - 不内置 ROM；按键包在 `assets/mahjong_pack/`（已开源，见该目录 LICENSE.txt）
 
