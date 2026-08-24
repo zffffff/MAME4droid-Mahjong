@@ -4,11 +4,17 @@
 local force_controls = loadfile("fei_mj_lamps/force_controls.lua")
 local force = force_controls and force_controls() or nil
 local controls_forced = false
+local wall_hunt = loadfile("fei_mj_lamps/rbmk_wall.lua")
+local hunt = wall_hunt and wall_hunt() or nil
 
 return function(machine, screen, blink_state)
     if force and not controls_forced then
         controls_forced = true
         force(machine, { port = ":DSW2", mahjong_value = 0, mask = 0x80 })
+    end
+
+    if hunt then
+        hunt(machine)
     end
 
     local out = fei_output(machine)

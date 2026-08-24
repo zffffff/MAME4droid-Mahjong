@@ -5,7 +5,7 @@ alwaysApply: true
 
 # 飞剧场怀旧麻将
 
-详见 `docs/知识库.md`、`docs/更新日志.md`、`docs/开源与合规.md`、`docs/宣传要点.md`。
+详见 `docs/知识库.md`、`docs/整合勿丢内容.md`、`docs/更新日志.md`、`docs/开源与合规.md`、`docs/宣传要点.md`。
 
 本仓是**公开**产品源码。若本机存在 `ops/`（私有运营仓），写星球帖 / 网盘说明 / 定价相关文案时读那里；**不要**把 `ops/` 写入本仓的 `docs/`、README、App 帮助或任何公开分支。
 
@@ -28,6 +28,7 @@ alwaysApply: true
 - 本仓：`D:\Dev\MAME4droid-Mahjong`
 - 按键包开发源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（对外以本仓 mahjong_pack 为准）
 - Mods 的 bat/路径问题在仓库 A 改；本仓用 `scripts/sync-mahjong-pack.py` 同步（合并横竖屏桥接，勿裸拷 `master_lamps.lua`）
+- 透视在 `D:\Dev\arcade-mj-enhance`。同步会先整目录覆盖灯控，再叠回透视文件；**禁止**用手拷整目录互盖。见 `docs/整合勿丢内容.md`
 - **打包前**先跑 `python android-MAME4droid/scripts/sync-mahjong-pack.py --check`。落后则同步后再打（用户明确说这次先不动按键包时除外）
 - 同步**不会**删/挪 `MAMEmjKey/release/`；与一键发布文件夹核对见 `docs/知识库.md` §2.2（允许 `master_lamps` 桥接差异）
 

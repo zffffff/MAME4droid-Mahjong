@@ -61,6 +61,20 @@
     <element name="hint_bibei_m"> <image file="hint_bibei_m.png" /> </element>
     <element name="hint_bibei_n"> <image file="hint_bibei_n.png" /> </element>
 
+    <!-- 透视套件：不绑 inputtag，避免占麻将键（退币/海底/吃）；点按由 Lua 处理 -->
+    <element name="btn_peek">
+        <image file="peek_up.png" state="0" />
+        <image file="peek_down.png" state="1" />
+    </element>
+    <element name="btn_mark">
+        <image file="mark_up.png" state="0" />
+        <image file="mark_down.png" state="1" />
+    </element>
+    <element name="btn_pause">
+        <image file="pause_up.png" state="0" />
+        <image file="continue_up.png" state="1" />
+    </element>
+
     <view name="Portrait_2_Rows">
         <screen index="0"> <bounds x="0" y="0" width="1000" height="970" /> </screen>
         <element ref="bg_panel"> <bounds x="0" y="970" width="1000" height="670" /> </element>
@@ -77,6 +91,10 @@
         <element ref="button_kan" inputtag="KEY0" inputmask="4"> <bounds x="287" y="1110" width="142" height="130" /> </element>
         <element ref="button_reach" inputtag="KEY1" inputmask="4"> <bounds x="571" y="1110" width="142" height="130" /> </element>
         <element ref="button_ron" inputtag="KEY2" inputmask="4"> <bounds x="713" y="1110" width="142" height="130" /> </element>
+        <!-- 透视/暂停：不绑麻将键（点按由 Lua 指针处理，避免退币/洗分） -->
+        <element ref="btn_peek" id="btn_peek"> <bounds x="3" y="1110" width="142" height="130" /> </element>
+        <element ref="btn_pause" id="btn_pause"> <bounds x="855" y="1110" width="142" height="130" /> </element>
+        <element ref="btn_mark" id="btn_mark"> <bounds x="2000" y="0" width="142" height="130" /> </element>
 
         <element ref="lamp_pon_glow" id="lamp_pon">
             <bounds x="145" y="1110" width="142" height="130" /> 
@@ -141,7 +159,6 @@
         <bounds x="0" y="0" width="1600" height="900" />
         <screen index="0"> <bounds x="200" y="0" width="1200" height="900" /> </screen>
 
-        <!-- 左栏：与右栏同顶同底 y=250..900（总高650）；上三项130，下三项均分剩余 -->
         <element ref="button_start_donden" inputtag="KEY0" inputmask="2"> <bounds x="58" y="250" width="142" height="130" /> </element>
         <element ref="button_bet" inputtag="KEY1" inputmask="2"> <bounds x="58" y="380" width="142" height="130" /> </element>
         <element ref="button_keyin" inputtag="IN1" inputmask="512"> <bounds x="58" y="510" width="142" height="130" /> </element>
@@ -149,7 +166,10 @@
         <element ref="button_big" inputtag="KEY4" inputmask="4"> <bounds x="58" y="727" width="142" height="87" /> </element>
         <element ref="button_small" inputtag="KEY4" inputmask="2"> <bounds x="58" y="814" width="142" height="86" /> </element>
 
-        <!-- 右栏：无吃；得分占原吃位；碰/杠/听/胡 -->
+        <!-- 右栏：无吃；得分占原吃位；碰/杠/听/胡。上方透视/暂停（不绑麻将键） -->
+        <element ref="btn_peek" id="btn_peek"> <bounds x="1400" y="10" width="142" height="115" /> </element>
+        <element ref="btn_pause" id="btn_pause"> <bounds x="1400" y="130" width="142" height="115" /> </element>
+        <element ref="btn_mark" id="btn_mark"> <bounds x="2000" y="0" width="142" height="115" /> </element>
         <element ref="button_take" inputtag="KEY4" inputmask="32"> <bounds x="1400" y="250" width="142" height="130" /> </element>
         <element ref="button_pon" inputtag="KEY3" inputmask="8"> <bounds x="1400" y="380" width="142" height="130" /> </element>
         <element ref="button_kan" inputtag="KEY0" inputmask="4"> <bounds x="1400" y="510" width="142" height="130" /> </element>

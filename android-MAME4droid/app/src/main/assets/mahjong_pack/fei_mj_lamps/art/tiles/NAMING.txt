@@ -1,0 +1,26 @@
+牌面图 — 把 PNG 放在本文件夹（开发仓，与本文件同级）
+
+完整规格与 deploy 方法见仓库根目录：牌图需求.md
+测的时候用根目录 deploy.bat，不要手拷到 mame_current。
+
+格式：PNG，透明底，竖牌，3:4。推荐 90×120，一套同尺寸。
+文件名必须全小写英文。
+
+必做 32 张（rbmk 无字牌）：
+  man1.png … man9.png     一万…九万
+  pin1.png … pin9.png     一筒…九筒
+  sou1.png … sou9.png     一条…九条
+  man5-aka.png            赤五万
+  pin5-aka.png            赤五筒
+  sou5-aka.png            赤五条
+  blank.png               空槽（13 张时第 14 格）
+  back.png                牌背（以后盖牌/未知用）
+
+以后其它机再补字牌即可，现在不必做：
+  honor-e/s/w/n.png、honor-c/f/p.png
+
+运行时路径（deploy 会拷过去）：
+  MAME 工作目录 / fei_mj_lamps/art/tiles/
+
+进游戏点右上「透视」按钮（或 F9 / Ctrl+9）。开透视后左上「牌图 n/32」并显示 PNG。
+改图后重新 deploy 并重开游戏。

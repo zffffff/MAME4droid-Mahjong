@@ -19,6 +19,6 @@
 
   python android-MAME4droid/scripts/sync-mahjong-pack.py
 
-脚本不改 mame.lst / arcade.lst / ini；详见 docs/知识库.md §2.1。
-手动覆盖时：勿裸拷 Mods 的 master_lamps.lua（会丢 .device_orientation 切 View）；bump VERSION.txt 后重打 APK。
+脚本不改 mame.lst / arcade.lst / ini；详见 docs/知识库.md §2.1、docs/整合勿丢内容.md。
+手动覆盖时：勿整目录盖 fei_mj_lamps（会丢灯控或透视）；勿裸拷 Mods 的 master_lamps.lua（会丢 .device_orientation 切 View）；bump VERSION.txt 后重打 APK。
 补中文名：编辑 mame.lst（UTF-8，romset 与中文名用 Tab 分隔），同步 arcade.lst，bump VERSION.txt。

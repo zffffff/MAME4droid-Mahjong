@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Sync mahjong_pack from MAME_Mahjong_Mods + mame_current artwork."""
+"""Sync mahjong_pack from MAME_Mahjong_Mods + mame_current artwork.
+
+整目录覆盖 fei_mj_lamps 会丢掉透视；master_lamps 裸拷会丢掉横竖屏桥接。
+叠回规则见 docs/整合勿丢内容.md（以及透视仓 飞剧场整合注意.md）。
+"""
 from __future__ import annotations
 
 import argparse
@@ -17,6 +21,19 @@ PACK = Path(
 ROOT = PACK.parents[4]  # .../android-MAME4droid
 ART_SRC = Path(r"I:\GAMEs\EMU\ARCAD\MAME\mame_current\artwork")
 RELEASE = Path(r"D:\Dev\MAMEmjKey\release")
+PEEK = Path(r"D:\Dev\arcade-mj-enhance")
+# 灯控以 Mods 为准；这些文件只存在于透视仓，同步删目录后必须叠回。
+PEEK_FILES = (
+    "fei_mj_lamps/rbmk_wall.lua",
+    "fei_mj_lamps/ui_tiles.lua",
+)
+PEEK_DIRS = ("fei_mj_lamps/art/tiles", "fei_mj_lamps/art/buttons")
+PEEK_LUA_REL = frozenset(
+    {
+        "rbmk_wall.lua",
+        "ui_tiles.lua",
+    }
+)
 
 ORIENT_BLOCK = r'''
 local last_orient = nil
@@ -216,6 +233,104 @@ def lst_keys(name: str) -> set[str]:
     return keys
 
 
+def is_peek_rel(rel: str) -> bool:
+    if rel in PEEK_LUA_REL:
+        return True
+    return rel.startswith("art/tiles/")
+
+
+def overlay_peek(dst_lamps: Path) -> None:
+    """Mods 整目录覆盖之后，把透视文件叠回去，避免丢掉 HUD。"""
+    if not PEEK.is_dir():
+        print("note: arcade-mj-enhance not found, skip peek overlay:", PEEK)
+        return
+    for rel in PEEK_FILES:
+        src = PEEK / rel
+        dst = PACK / rel
+        if not src.is_file():
+            print("WARN: peek source missing", src)
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        print("peek overlay file", rel)
+    for rel in PEEK_DIRS:
+        src = PEEK / rel
+        dst = PACK / rel
+        if not src.is_dir():
+            print("note: peek tiles dir missing", src)
+            continue
+        n = 0
+        for p in src.rglob("*"):
+            if p.is_file():
+                target = dst / p.relative_to(src)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(p, target)
+                n += 1
+        print("peek overlay tiles", n, "files")
+    ensure_rbmk_hunt(dst_lamps)
+
+
+def overlay_rbmk_peek_artwork(dst_art: Path) -> None:
+    """artwork 从 mame_current 拷完后，再叠透视按钮 + Mods 的 rbmk lay（无 inputtag）。"""
+    rbmk = dst_art / "rbmk"
+    rbmk.mkdir(parents=True, exist_ok=True)
+    lay = MODS / "rbmk" / "default.lay"
+    if lay.is_file():
+        shutil.copy2(lay, rbmk / "default.lay")
+        print("peek overlay artwork default.lay")
+    btn = PEEK / "fei_mj_lamps" / "art" / "buttons"
+    if btn.is_dir():
+        n = 0
+        for p in btn.glob("*.png"):
+            shutil.copy2(p, rbmk / p.name)
+            n += 1
+        print("peek overlay artwork buttons", n, "png")
+    elif not PEEK.is_dir():
+        print("note: skip rbmk peek artwork, no arcade-mj-enhance")
+
+
+def ensure_rbmk_hunt(dst_lamps: Path) -> None:
+    """Mods 的 rbmk.lua 没有透视钩子；叠回 hunt(machine)，不要整文件覆盖灯控。"""
+    dst = dst_lamps / "rbmk.lua"
+    peek_rbmk = PEEK / "fei_mj_lamps" / "rbmk.lua"
+    if not dst.is_file():
+        if peek_rbmk.is_file():
+            shutil.copy2(peek_rbmk, dst)
+            print("peek overlay rbmk.lua (Mods had none)")
+        else:
+            print("WARN: rbmk.lua missing in Mods and peek")
+        return
+    text = dst.read_text(encoding="utf-8")
+    if "rbmk_wall.lua" in text and "hunt(machine)" in text:
+        print("rbmk.lua already has peek hunt")
+        return
+    if "local hunt =" not in text:
+        needle = "local controls_forced = false\n"
+        if needle not in text:
+            raise SystemExit("rbmk.lua: cannot insert hunt load (controls_forced missing)")
+        text = text.replace(
+            needle,
+            needle
+            + "local wall_hunt = loadfile(\"fei_mj_lamps/rbmk_wall.lua\")\n"
+            + "local hunt = wall_hunt and wall_hunt() or nil\n",
+            1,
+        )
+    if "hunt(machine)" not in text:
+        needle2 = (
+            '        force(machine, { port = ":DSW2", mahjong_value = 0, mask = 0x80 })\n'
+            "    end\n"
+        )
+        if needle2 not in text:
+            raise SystemExit("rbmk.lua: cannot insert hunt(machine)")
+        text = text.replace(
+            needle2,
+            needle2 + "\n    if hunt then\n        hunt(machine)\n    end\n",
+            1,
+        )
+    dst.write_text(text, encoding="utf-8", newline="\n")
+    print("peek overlay rbmk.lua merged hunt(machine)")
+
+
 def check() -> int:
     """Read-only. Exit 0 if pack matches Mods; 1 if stale; 2 if Mods missing."""
     if not MODS.is_dir():
@@ -253,11 +368,52 @@ def check() -> int:
     if only_mods:
         print("STALE: lua only in Mods", only_mods)
         stale = True
-    if only_pack:
-        print("note: lua only in pack", only_pack)
-    if changed:
-        print("STALE: lua changed", changed)
+    peek_only_pack = [k for k in only_pack if is_peek_rel(k)]
+    other_only_pack = [k for k in only_pack if not is_peek_rel(k)]
+    if other_only_pack:
+        print("note: lua only in pack", other_only_pack)
+    if peek_only_pack:
+        print("note: peek overlay in pack", peek_only_pack)
+    lamp_changed = []
+    peek_changed = []
+    for k in changed:
+        if k == "rbmk.lua":
+            pack_rbmk = (PACK / "fei_mj_lamps" / "rbmk.lua").read_text(encoding="utf-8")
+            if "hunt(machine)" in pack_rbmk:
+                peek_changed.append(k)
+                continue
+        lamp_changed.append(k)
+    if lamp_changed:
+        print("STALE: lua changed", lamp_changed)
         stale = True
+    if peek_changed:
+        print("note: rbmk.lua differs from Mods (expected peek hunt merge)")
+
+    if PEEK.is_dir():
+        for rel in PEEK_FILES:
+            src = PEEK / rel
+            dst = PACK / rel
+            if src.is_file() and not dst.is_file():
+                print("STALE: peek file missing from pack", rel)
+                stale = True
+        wall = PEEK / "fei_mj_lamps" / "rbmk_wall.lua"
+        rbmk = PACK / "fei_mj_lamps" / "rbmk.lua"
+        rbmk_text = rbmk.read_text(encoding="utf-8") if rbmk.is_file() else ""
+        if wall.is_file() and "hunt(machine)" not in rbmk_text:
+            print("STALE: pack rbmk.lua missing hunt(machine)")
+            stale = True
+        peek_png = PACK / "artwork" / "rbmk" / "peek_up.png"
+        if not peek_png.is_file():
+            print("STALE: artwork/rbmk/peek_up.png missing")
+            stale = True
+        lay = PACK / "artwork" / "rbmk" / "default.lay"
+        if lay.is_file():
+            lay_text = lay.read_text(encoding="utf-8", errors="replace")
+            if "btn_peek" in lay_text and 'inputtag="KEY4" inputmask="1"' in lay_text:
+                print("STALE: rbmk default.lay peek still bound to KEY4/1 (payout)")
+                stale = True
+    else:
+        print("note: arcade-mj-enhance not found, skip peek check:", PEEK)
 
     master = PACK / "master_lamps.lua"
     text = master.read_text(encoding="utf-8") if master.is_file() else ""
@@ -273,7 +429,7 @@ def check() -> int:
     if stale:
         print("RESULT stale — run this script without --check before the next APK")
         return 1
-    print("RESULT ok — pack matches Mods lamps + whitelist")
+    print("RESULT ok — pack matches Mods lamps + whitelist (+ peek overlay if present)")
     return 0
 
 
@@ -283,6 +439,7 @@ def main() -> None:
         shutil.rmtree(dst_lamps)
     shutil.copytree(MODS / "fei_mj_lamps", dst_lamps)
     print("synced fei_mj_lamps", len(list(dst_lamps.rglob("*"))))
+    overlay_peek(dst_lamps)
 
     mods_master = (MODS / "master_lamps.lua").read_text(encoding="utf-8")
     needle = "local module_loaded = false\n"
@@ -389,6 +546,7 @@ def main() -> None:
             ignore=shutil.ignore_patterns("*.bak*", "*.bak_diag"),
         )
     print("artwork synced", len(wl) - len(missing), "missing", missing)
+    overlay_rbmk_peek_artwork(dst_art)
 
     version = next_version()
     (PACK / "VERSION.txt").write_text(version + "\n", encoding="utf-8")
@@ -398,6 +556,11 @@ def main() -> None:
     assert (dst_lamps / "output_proxy.lua").is_file()
     assert "apply_device_orientation_view" in text
     assert "output_proxy" in text
+    if PEEK.is_dir() and (PEEK / "fei_mj_lamps" / "rbmk_wall.lua").is_file():
+        assert (dst_lamps / "rbmk_wall.lua").is_file(), "peek overlay lost rbmk_wall.lua"
+        rbmk_text = (dst_lamps / "rbmk.lua").read_text(encoding="utf-8")
+        assert "hunt(machine)" in rbmk_text, "peek overlay lost hunt(machine)"
+        assert (PACK / "artwork" / "rbmk" / "peek_up.png").is_file(), "peek overlay lost peek_up.png"
     print("OK")
 
 
