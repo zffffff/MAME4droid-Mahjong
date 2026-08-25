@@ -128,6 +128,8 @@
     <string name="mj_hide_controller">🕹️</string>
     <string name="mj_show_controller">🎮</string>
     <string name="mj_menu_button">☰</string>
+    <string name="mj_mame_ui_menu_button">🎛</string>
+    <string name="mj_mame_ui_menu_button_desc">MAME 游戏内菜单（DIP 开关等）</string>
     <string name="mj_show_keyboard">🀄</string>
     <string name="mj_hide_keyboard">🀆</string>
     <string name="mj_chrome_open">🧰</string>
@@ -140,7 +142,7 @@
     <string name="mj_show_controller_desc">显示手柄</string>
     <string name="mj_show_keyboard_desc">麻将键</string>
     <string name="mj_hide_keyboard_desc">隐藏麻将键</string>
-    <string name="mj_menu_button_desc">菜单</string>
+    <string name="mj_menu_button_desc">应用设置菜单</string>
     <string name="mj_chrome_open_desc">打开工具菜单</string>
     <string name="mj_chrome_close_desc">收起工具菜单</string>
     <string name="created_updated_msg">已创建或更新：\'%1$s\'，用于存放存档状态、cfg 文件和 MAME 资源。\n\n注意，请将您的压缩 ROM 复制或移动到 \'%2$s\' 目录！\n\n重要：飞剧场怀旧麻将 仅使用 MAME %3$s 的 ROM 集，而非 0.139。</string>

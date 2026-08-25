@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -42,6 +43,7 @@ public class MahjongExperienceHelper {
 	private static final String PREF_SEEDED_V3 = "mahjong_defaults_v3";
 	private static final String ORIENT_FILE = ".device_orientation";
 	private static final int FLOAT_BAR_ID = 0x6D6A6261; // 'mjba'
+	private static final long VKEY_MIN_HOLD_MS = 45L;
 
 	private static final String[] PORTRAIT_FORCED_ROMS = {
 			"jantouki",
@@ -54,6 +56,7 @@ public class MahjongExperienceHelper {
 	private TextView chromeToggle = null;
 	private TextView toggleBtn = null;
 	private TextView mjKbBtn = null;
+	private TextView mameUiMenuBtn = null;
 	private TextView menuBtn = null;
 	private TextView romBtn = null;
 	private TextView snapBtn = null;
@@ -179,6 +182,13 @@ public class MahjongExperienceHelper {
 			collapseMenu();
 		});
 
+		mameUiMenuBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
+			pulseVirtualKey(KeyEvent.KEYCODE_TAB, '\t');
+		});
+		mameUiMenuBtn.setText(mm.getString(R.string.mj_mame_ui_menu_button));
+		mameUiMenuBtn.setContentDescription(mm.getString(R.string.mj_mame_ui_menu_button_desc));
+
 		menuBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
 			collapseMenu();
 			if (Emulator.isInOptions()) {
@@ -256,6 +266,16 @@ public class MahjongExperienceHelper {
 	private void collapseMenu() {
 		menuExpanded = false;
 		applyMenuExpanded();
+	}
+
+	private void pulseVirtualKey(int keyCode, char unicode) {
+		if (!Emulator.isEmulating()) {
+			return;
+		}
+		Emulator.setKeyData(keyCode, Emulator.KEY_DOWN, unicode);
+		new Handler(Looper.getMainLooper()).postDelayed(
+				() -> Emulator.setKeyData(keyCode, Emulator.KEY_UP, unicode),
+				VKEY_MIN_HOLD_MS);
 	}
 
 	private void applyMenuExpanded() {
