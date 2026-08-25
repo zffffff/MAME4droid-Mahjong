@@ -73,8 +73,8 @@
 --   能在第二张捞到二筒，说明海底可能就是后续牌山，不是另起的死牌区。
 --   图18 电脑判定玩家没听牌，因此没有海底。已确认：无独立番就不算听，不会先发
 --   海底当番。听二筒若只有海底这一役，流局仍判没听。
---   Overlay 只读、不写 RAM。但每帧扫 0x504800–0x505800 会极卡，68K 与 MCU 时序
---   被拖慢时偶发怪结果不能完全排除。手牌扫描改为剩余张数变化或每 8 帧才扫一次。
+--   Overlay 只读、不写 RAM。常开透视时不要每帧扫 0x504800–0x505800（会拖慢 68K）。
+--   只读 vis@5051F8 / cpu@504F86；SHOW_TEXT_HUD 打开时才走全段扫描。
 --   手牌槽（已对上画面，HUD 暂不改标签逻辑）：
 --     0x5051F8 vis：手A，底栏玩家手，带赤。刚摸时可能还是 13 张。
 --     0x504F86 cpu：手B，电脑手，带赤。电脑打出的牌会从这里消失。这两行目前较稳。
@@ -130,6 +130,11 @@ local HAND_VIS_LO, HAND_VIS_HI = 0x5051F0, 0x505300
 local HAND_SORT_LO, HAND_SORT_HI = 0x504EE0, 0x504F80
 local HAND_CPU_LO, HAND_CPU_HI = 0x504F80, 0x5051F0
 local HAND_LIVE_LO, HAND_LIVE_HI = 0x505600, 0x505800
+local HAND_A_ADDR = 0x5051F8
+local HAND_B_ADDR = 0x504F86
+local hunt_fail_age = 0
+local hook_tick = 0
+local hand_refresh_age = 8
 
 local input, seq0, seq1, seq2, seq3, seq9, seq_f9
 local prev = { false, false, false, false, false, false }
@@ -1112,6 +1117,22 @@ local function is_hole(v)
     return v == 0xFD or v == 0x00 or v == 0xA0
 end
 
+local function is_clean_tile(v)
+    v = v & 0xFF
+    if v == 0 or v == 0xFD or v == 0x2D or v == 0xA0 or v == 0xFF then
+        return false
+    end
+    if v == 0x85 or v == 0x95 or v == 0xA5 then
+        return true
+    end
+    if v >= 0x80 then
+        v = v - 0x80
+    end
+    local lo = v & 0x0F
+    local hi = v >> 4
+    return lo >= 1 and lo <= 9 and hi <= 2
+end
+
 -- 已摸的牌会变成 FD，堆在数组前部。第二局常在 FD 之前残留一张旧牌（整局不变），
 -- 真正的牌山从第一段 FD 空洞之后开始。
 local function read_wall(space)
@@ -1144,22 +1165,14 @@ local function read_wall(space)
         start_i = j
     end
     local tiles = {}
+    local want_name = SHOW_TEXT_HUD
     for i = start_i, #words do
-        local name = tile_name(words[i])
-        if name then
-            tiles[#tiles + 1] = { raw = words[i], name = name }
+        local v = words[i]
+        if is_clean_tile(v) then
+            tiles[#tiles + 1] = { raw = v, name = want_name and tile_name(v) or nil }
         end
     end
     return tiles, words, start_i
-end
-
-local function is_clean_tile(v)
-    v = v & 0xFF
-    if v == 0 or v == 0xFD or v == 0x2D or v == 0xA0 or v == 0xFF then
-        return false
-    end
-    local n = tile_name(v)
-    return n ~= nil and n:sub(1, 1) ~= "["
 end
 
 -- 手牌槽常见 16 字对齐；画面上最多 14 张（13 待机 + 1 摸牌/天听）。
@@ -1185,38 +1198,31 @@ end
 -- 跳过前导非牌后固定读 14 格；中间的空槽显示占位，不再截断。
 local function read_hand_slot(space, addr)
     local list = {}
-    local i = 0
-    while i < 6 do
-        local ok, w = pcall(function()
-            return space:read_u16(addr + i * 2)
-        end)
-        if not ok then
-            list.filled = 0
-            return list
+    local ok = pcall(function()
+        local i = 0
+        while i < 6 do
+            local w = space:read_u16(addr + i * 2)
+            if is_clean_tile(w & 0xFF) then
+                break
+            end
+            i = i + 1
         end
-        if is_clean_tile(w & 0xFF) then
-            break
-        end
-        i = i + 1
-    end
-    local filled = 0
-    for k = 0, HAND_SHOW - 1 do
-        local ok, w = pcall(function()
-            return space:read_u16(addr + (i + k) * 2)
-        end)
-        if not ok then
-            list[#list + 1] = { raw = 0, name = HAND_EMPTY, empty = true }
-        else
-            local v = w & 0xFF
+        local filled = 0
+        local want_name = SHOW_TEXT_HUD
+        for k = 0, HAND_SHOW - 1 do
+            local v = space:read_u16(addr + (i + k) * 2) & 0xFF
             if is_clean_tile(v) then
-                list[#list + 1] = { raw = v, name = tile_name(v), empty = false }
+                list[#list + 1] = { raw = v, name = want_name and tile_name(v) or nil, empty = false }
                 filled = filled + 1
             else
                 list[#list + 1] = { raw = 0, name = HAND_EMPTY, empty = true }
             end
         end
+        list.filled = filled
+    end)
+    if not ok then
+        list.filled = 0
     end
-    list.filled = filled
     return list
 end
 
@@ -1599,16 +1605,62 @@ local function assign_hands(space, slots)
     return hand_a, addr_a, hand_b, addr_b, b_held
 end
 
-local function hand_has_tile(space, raw)
+-- 常开透视：只读 vis/cpu 定点。整段 0x504800–0x505800 扫描会拖慢 68K。
+local function read_fixed_hands(space)
+    local addr_a = hand_id.p_addr or HAND_A_ADDR
+    local addr_b = hand_id.c_addr or HAND_B_ADDR
+    local hand_a = read_hand_slot(space, addr_a)
+    local hand_b = read_hand_slot(space, addr_b)
+    local na, nb = filled_count(hand_a), filled_count(hand_b)
+    if na < 10 then
+        local list, a = snap_hand(space, HAND_A_ADDR)
+        if list then
+            hand_a, addr_a, na = list, a, filled_count(list)
+        end
+    end
+    if nb < 7 or is_same_hand(hand_b, hand_a) then
+        local list, a = snap_hand(space, HAND_B_ADDR)
+        if list and not is_same_hand(list, hand_a) then
+            hand_b, addr_b, nb = list, a, filled_count(list)
+        elseif is_same_hand(hand_b, hand_a) then
+            hand_b, addr_b, nb = nil, nil, 0
+        end
+    end
+    if na < 10 or not hand_b or nb < 7 then
+        hunt_fail_age = hunt_fail_age + 1
+        if hunt_fail_age >= 24 then
+            hunt_fail_age = 0
+            local slots = hunt_clean_hands(space)
+            local vis = best_of_kind(slots, "vis")
+            local cpu = best_of_kind(slots, "cpu")
+            if vis then
+                hand_a, addr_a = vis.list, vis.addr
+            end
+            if cpu and not is_same_hand(cpu.list, hand_a) then
+                hand_b, addr_b = cpu.list, cpu.addr
+            end
+        end
+    else
+        hunt_fail_age = 0
+    end
+    if hand_a then
+        hand_id.p_list, hand_id.p_addr = hand_a, addr_a
+    end
+    if hand_b then
+        hand_id.c_list, hand_id.c_addr = hand_b, addr_b
+    end
+    return hand_a, addr_a, hand_b, addr_b, false
+end
+
+local function vis_has_tile(space, raw)
     raw = raw & 0xFF
     if raw == 0 then
         return false
     end
-    for _, s in ipairs(get_hand_slots(space, last_remain_n)) do
-        for _, t in ipairs(s.list) do
-            if not t.empty and t.raw == raw then
-                return true
-            end
+    local list = read_hand_slot(space, hand_id.p_addr or HAND_A_ADDR)
+    for _, t in ipairs(list) do
+        if not t.empty and t.raw == raw then
+            return true
         end
     end
     return false
@@ -1718,13 +1770,14 @@ local function live_preview(machine)
     end
     if pending_rinshan then
         pending_rinshan.frames = pending_rinshan.frames - 1
-        if pending_rinshan.from_cpu and hand_has_tile(space, pending_rinshan.raw) then
+        if pending_rinshan.from_cpu and vis_has_tile(space, pending_rinshan.raw) then
             player_side = (player_side == "A") and "B" or "A"
             pending_rinshan = nil
         elseif pending_rinshan.frames <= 0 then
             pending_rinshan = nil
         end
     end
+    local remain_changed = n ~= last_remain_n
     last_remain_n = n
     last_first_raw = tiles[1].raw
     prev_wall_raws = curr_raws
@@ -1741,16 +1794,6 @@ local function live_preview(machine)
         else
             seq_b[#seq_b + 1] = tiles[i]
         end
-    end
-    local function join_seq(list)
-        if #list == 0 then
-            return "（无）"
-        end
-        local t = {}
-        for i = 1, math.min(13, #list) do
-            t[#t + 1] = list[i].name
-        end
-        return table.concat(t, " ")
     end
     local next_side = ((consumed % 2) == 0) and "A" or "B"
     if seq0 and edge(4, seq0) then
@@ -1771,43 +1814,80 @@ local function live_preview(machine)
     if player_side then
         who = (next_side == player_side) and "玩家" or "电脑"
     end
+    local next_name = tiles[1].name or tile_name(tiles[1].raw) or "?"
     live_hud.ok = true
-    live_hud.line1 = string.format("下摸 %s（%s）  剩余 %d", tiles[1].name, who, n)
-    live_hud.line2 = string.format("%s%s %s", next_side == "A" and "●" or " ", name_a, join_seq(seq_a))
-    live_hud.line3 = string.format("%s%s %s", next_side == "B" and "●" or " ", name_b, join_seq(seq_b))
-    local slots = get_hand_slots(space, n)
-    local hand_a, addr_a, hand_b, addr_b, b_held = assign_hands(space, slots)
-    if hand_b then
-        hand_b = sanitize_cpu_hand(hand_b, b_held)
-    end
-    if not cpu_recon and #dealt_raws >= 26 and hand_a and filled_count(hand_a) >= 12 then
-        local recon = bag_minus(dealt_raws, hand_a)
-        if #recon >= 10 and #recon <= 16 then
-            cpu_recon = recon
+    live_hud.line1 = string.format("下摸 %s（%s）  剩余 %d", next_name, who, n)
+    local hand_a, addr_a, hand_b, addr_b, b_held
+    local slots
+    if SHOW_TEXT_HUD then
+        local function join_seq(list)
+            if #list == 0 then
+                return "（无）"
+            end
+            local t = {}
+            for i = 1, math.min(13, #list) do
+                t[#t + 1] = list[i].name
+            end
+            return table.concat(t, " ")
+        end
+        live_hud.line2 = string.format("%s%s %s", next_side == "A" and "●" or " ", name_a, join_seq(seq_a))
+        live_hud.line3 = string.format("%s%s %s", next_side == "B" and "●" or " ", name_b, join_seq(seq_b))
+        slots = get_hand_slots(space, n)
+        hand_a, addr_a, hand_b, addr_b, b_held = assign_hands(space, slots)
+        if hand_b then
+            hand_b = sanitize_cpu_hand(hand_b, b_held)
+        end
+        if not cpu_recon and #dealt_raws >= 26 and hand_a and filled_count(hand_a) >= 12 then
+            local recon = bag_minus(dealt_raws, hand_a)
+            if #recon >= 10 and #recon <= 16 then
+                cpu_recon = recon
+            end
+        end
+        live_hud.line4 = string.format("手A@%s(%d) %s", addr_a and string.format("%06X", addr_a) or "------", filled_count(hand_a), join_hand(hand_a))
+        if hand_b then
+            local mark = b_held and "听留" or ""
+            live_hud.line5 = string.format("手B%s@%06X(%d) %s", mark, addr_b, filled_count(hand_b), join_hand(hand_b))
+        elseif cpu_recon then
+            live_hud.line5 = string.format("手B推(%d) %s", filled_count(cpu_recon), join_hand(cpu_recon))
+        else
+            live_hud.line5 = "手B （电脑听后常要等你摸牌才写回）"
+        end
+        local extra_addrs = {}
+        for addr in pairs(extra_hold) do
+            extra_addrs[#extra_addrs + 1] = addr
+        end
+        table.sort(extra_addrs)
+        local extra_lines = {}
+        for i = 1, math.min(2, #extra_addrs) do
+            local addr = extra_addrs[i]
+            local e = extra_hold[addr]
+            extra_lines[#extra_lines + 1] = string.format("另 @%06X%s(%d) %s", addr, (e.tag ~= "" and e.tag) or "", filled_count(e.list), join_hand(e.list))
+        end
+        live_hud.line6 = extra_lines[1] or ""
+        live_hud.line7 = extra_lines[2] or ""
+    else
+        live_hud.line2, live_hud.line3, live_hud.line4, live_hud.line5 = "", "", "", ""
+        live_hud.line6, live_hud.line7 = "", ""
+        hand_refresh_age = hand_refresh_age + 1
+        if remain_changed or pending_rinshan or hand_refresh_age >= 3 or not live_hud.peek then
+            hand_refresh_age = 0
+            hand_a, addr_a, hand_b, addr_b, b_held = read_fixed_hands(space)
+            if hand_b then
+                hand_b = sanitize_cpu_hand(hand_b, b_held)
+            end
+        else
+            hand_a, addr_a = hand_id.p_list, hand_id.p_addr
+            hand_b, addr_b = hand_id.c_list, hand_id.c_addr
+        end
+        if not hand_b and cpu_recon then
+            hand_b = cpu_recon
+        elseif not cpu_recon and #dealt_raws >= 26 and hand_a and filled_count(hand_a) >= 12 then
+            local recon = bag_minus(dealt_raws, hand_a)
+            if #recon >= 10 and #recon <= 16 then
+                cpu_recon = recon
+            end
         end
     end
-    live_hud.line4 = string.format("手A@%s(%d) %s", addr_a and string.format("%06X", addr_a) or "------", filled_count(hand_a), join_hand(hand_a))
-    if hand_b then
-        local mark = b_held and "听留" or ""
-        live_hud.line5 = string.format("手B%s@%06X(%d) %s", mark, addr_b, filled_count(hand_b), join_hand(hand_b))
-    elseif cpu_recon then
-        live_hud.line5 = string.format("手B推(%d) %s", filled_count(cpu_recon), join_hand(cpu_recon))
-    else
-        live_hud.line5 = "手B （电脑听后常要等你摸牌才写回）"
-    end
-    local extra_addrs = {}
-    for addr in pairs(extra_hold) do
-        extra_addrs[#extra_addrs + 1] = addr
-    end
-    table.sort(extra_addrs)
-    local extra_lines = {}
-    for i = 1, math.min(2, #extra_addrs) do
-        local addr = extra_addrs[i]
-        local e = extra_hold[addr]
-        extra_lines[#extra_lines + 1] = string.format("另 @%06X%s(%d) %s", addr, (e.tag ~= "" and e.tag) or "", filled_count(e.list), join_hand(e.list))
-    end
-    live_hud.line6 = extra_lines[1] or ""
-    live_hud.line7 = extra_lines[2] or ""
     -- 半透明从「发完牌、开始摸打」起算，发牌那 26 张不算。
     if wall_dim_base == 0 and n >= 40 then
         if round_remain0 - n >= 20 or round_remain0 <= 92 then
@@ -1907,6 +1987,9 @@ local function live_preview(machine)
             end
         end
     end
+    if not SHOW_TEXT_HUD then
+        return
+    end
     local sig = { next_side, live_hud.line4, live_hud.line5, live_hud.line6, live_hud.line7 }
     for i = 1, math.min(12, n) do
         sig[#sig + 1] = string.format("%02X", tiles[i].raw)
@@ -1916,9 +1999,6 @@ local function live_preview(machine)
         return
     end
     last_wall_sig = sig
-    if not SHOW_TEXT_HUD then
-        return
-    end
     print("[rbmk_wall] " .. live_hud.line1 .. " | " .. live_hud.line4 .. " | " .. live_hud.line5)
     local lines = {
         string.format("=== LIVE WALL %s remain=%d start_i=%s consumed=%d dealt=%d A/B ===\n", now(), n, tostring(start_i), consumed, #dealt_raws),
@@ -1999,7 +2079,11 @@ return function(machine)
     elseif seq_f9 and edge(6, seq_f9) then
         toggle_peek(machine)
     end
-    hook_peek_pointer(machine)
+    hook_tick = hook_tick + 1
+    if hook_tick >= 24 or not next(hooked_views) then
+        hook_tick = 0
+        hook_peek_pointer(machine)
+    end
     live_preview(machine)
 
     if edge(1, seq1) then

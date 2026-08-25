@@ -18,6 +18,7 @@ local DIM_ARGB = 0x80ffffff
 local ntex_cached = 0
 local art_note_cached = "  （尚无牌图，色块占位）"
 local layout_cache = { key = "", land = true }
+local view_cache = { age = 99, view = nil, land = true }
 
 local LAY_LAND = { vx = 1600, vy = 900, sx = 200, sy = 0, sw = 1200, sh = 900 }
 local LAY_PORT = { vx = 1000, vy = 1640, sx = 0, sy = 0, sw = 1000, sh = 970 }
@@ -25,6 +26,10 @@ local PEEK_LAND = { x0 = 1400 / 1600, y0 = 10 / 900, x1 = 1542 / 1600, y1 = 125 
 local PEEK_PORT = { x0 = 3 / 1000, y0 = 1110 / 1640, x1 = 145 / 1000, y1 = 1240 / 1640 }
 
 local function current_view()
+    view_cache.age = view_cache.age + 1
+    if view_cache.view and view_cache.age < 12 then
+        return view_cache.view
+    end
     local v
     pcall(function()
         local r = manager.machine.render
@@ -44,6 +49,8 @@ local function current_view()
             v = r.ui_target.current_view
         end
     end)
+    view_cache.age = 0
+    view_cache.view = v
     return v
 end
 
@@ -55,13 +62,15 @@ local function is_landscape()
             name = tostring(v.name or "")
         end)
         if name:find("Landscape", 1, true) then
+            view_cache.land = true
             return true
         end
         if name:find("Portrait", 1, true) then
+            view_cache.land = false
             return false
         end
     end
-    return true
+    return view_cache.land
 end
 
 local function view_is_land(view)
@@ -85,16 +94,24 @@ local function lay_screen(land)
     return land and LAY_LAND or LAY_PORT
 end
 
+local game_ui_cache = { ui = nil, on_game = false }
+
 local function game_container(machine)
+    if game_ui_cache.ui then
+        return game_ui_cache.ui, game_ui_cache.on_game
+    end
     local c
     pcall(function()
         local s = machine and machine.screens and machine.screens[":screen"]
         c = s and s.container
     end)
     if c then
+        game_ui_cache.ui, game_ui_cache.on_game = c, true
         return c, true
     end
-    return machine and machine.render and machine.render.ui_container, false
+    local ui = machine and machine.render and machine.render.ui_container
+    game_ui_cache.ui, game_ui_cache.on_game = ui, false
+    return ui, false
 end
 
 local function item_xy(item)
@@ -472,14 +489,11 @@ local function draw_tile(ui, x, y, w, h, tile, hi, dim)
     local tint = dim and DIM_ARGB or 0xffffffff
     if hi then
         ui:draw_box(x - 0.0015, y - 0.002, x + w + 0.0015, y + h + 0.002, 0xFFFFFF40, 0x60FFFF00)
-    elseif aka then
+    elseif aka and not dim then
         ui:draw_box(x - 0.001, y - 0.0015, x + w + 0.0015, y + h + 0.0015, 0xFFC09020, 0x00000000)
     end
     if tex then
         ui:draw_quad(tex, x, y, x + w, y + h, tint)
-        if dim then
-            ui:draw_box(x, y, x + w, y + h, 0x00000000, 0x68000000)
-        end
         return
     end
     local fill = SUIT_FILL[suit_of(tile.raw)]
@@ -513,7 +527,6 @@ end
 
 local function draw_panel(ui, st)
     local g = panel_geom()
-    current_mark()
     ui:draw_box(g.gx0, g.gy0, g.gx1, g.gy1, 0x00000000, 0xC0101420)
     ui:draw_text(g.x0, g.title_y, (st.title or "透视") .. art_note_cached, 0xffffff40)
     ui:draw_text(g.x0, g.line1_y, st.line1 or "", 0xffffffff)
@@ -527,26 +540,32 @@ local function draw_panel(ui, st)
     draw_row(ui, g.x0, g.a_y, g.tw, g.th, g.gap, st.seq_a, ROW_N, a_hi, st.dim_a)
     ui:draw_text(g.x0, g.b_lab_y, (b_hi and "●" or " ") .. (st.name_b or "B"), 0xffb0b0b0)
     draw_row(ui, g.x0, g.b_y, g.tw, g.th, g.gap, st.seq_b, ROW_N, b_hi, st.dim_b)
-    local function draw_note(container, x, y, text, fg)
-        if text and text ~= "" then
-            container:draw_text(x, y, text, fg)
-        end
-    end
     if st.note1 and st.note1 ~= "" then
         local uic, nx, ny, ny2
         if g.land then
             pcall(function()
                 uic = manager.machine.render.ui_container
             end)
-            nx, ny = screen_to_window_xy(g.x0, g.note_y)
-            _, ny2 = screen_to_window_xy(g.x0, g.note2_y)
+            if g.note_wx then
+                nx, ny, ny2 = g.note_wx, g.note_wy, g.note2_wy
+            else
+                nx, ny = screen_to_window_xy(g.x0, g.note_y)
+                _, ny2 = screen_to_window_xy(g.x0, g.note2_y)
+                if nx then
+                    g.note_wx, g.note_wy, g.note2_wy = nx, ny, ny2
+                end
+            end
         end
         if g.land and uic and ny then
-            draw_note(uic, nx, ny, st.note1, 0xffffe090)
-            draw_note(uic, nx, ny2, st.note2, 0xffffc070)
+            uic:draw_text(nx, ny, st.note1, 0xffffe090)
+            if st.note2 and ny2 then
+                uic:draw_text(nx, ny2, st.note2, 0xffffc070)
+            end
         else
-            draw_note(ui, g.x0, g.note_y, st.note1, 0xffffe090)
-            draw_note(ui, g.x0, g.note2_y, st.note2, 0xffffc070)
+            ui:draw_text(g.x0, g.note_y, st.note1, 0xffffe090)
+            if st.note2 then
+                ui:draw_text(g.x0, g.note2_y, st.note2, 0xffffc070)
+            end
         end
     end
 end
