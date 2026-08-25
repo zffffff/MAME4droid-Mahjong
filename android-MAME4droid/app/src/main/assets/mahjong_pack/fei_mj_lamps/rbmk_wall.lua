@@ -10,7 +10,7 @@
 --   本游戏没有字牌（东、南、西、北、中、发、白从未出现），只有万/筒/条
 --   各 36 张，外加赤五万/筒/条（85/95/A5，替换普通五，不是额外牌）。
 --   本游戏不能吃。每局玩家、电脑各最多打出约 13 张，外加碰/杠补张，所以
---   预览每行 15 张通常够看完本局摸牌；HUD 仍先显示 23 张，暂不改。
+--   预览每行 13 张（各方最多摸打约 13 张）；竖屏按游戏区宽度缩放。
 -- 待查（暂不改 HUD）：
 --   玩家听牌后 0x504150 整段会换成另一套。例：听四五筒时，听前玩家行是
 --   七筒 二条 五筒 …，前两张摸对了，第三张本该五筒时牌山已重排（剩余 67→58），
@@ -42,7 +42,7 @@
 --
 -- 手牌（暂不改 HUD，继续测）：
 --   0x5042D0 不是屏幕手牌。HUD 目前扫 0x504800–0x505800 里干净牌码槽。
---   每个槽按 14 格显示：摸牌前 / 打出后第 14 格常是空的，用 ＿ 占位，不再碰到
+--   每个槽按 14 格读取（天听/刚摸可能 14 张），画面只画前 13 张、不画空槽。
 --   FD/00 就停（否则天听/庄家 14 张会被截成 13）。括号里仍是实际张数。
 --   本游戏赤牌只有赤五万/筒/条（85/95/A5）。「赤三万/赤九万/赤六筒」是普通牌被 +0x80
 --   误译，那种槽不是手牌。
@@ -111,6 +111,7 @@ local SHOW_TEXT_HUD = false
 local live_hud = { ok = false, line1 = "", line2 = "", line3 = "", line4 = "", line5 = "", line6 = "", line7 = "" }
 local round_remain0 = 0
 local last_remain_n = 0
+local wall_dim_base = 0
 local last_first_raw = nil
 local player_side = nil -- "A" or "B", 本局用 Ctrl+0 锁定
 local prev_wall_raws = nil
@@ -122,6 +123,7 @@ local hand_cache = { slots = {}, n = nil, age = 8 }
 -- 手A=画面玩家 vis（0x5051xx，带赤），手B=电脑 cpu（0x504F8x）；去赤/工作槽只进「另」
 local hand_id = { p_addr = nil, p_list = nil, c_addr = nil, c_list = nil }
 local extra_hold = {}
+local cpu_hand_prev = nil
 local EXTRA_TTL = 150
 local OVERLAP_SAME = 10
 local HAND_VIS_LO, HAND_VIS_HI = 0x5051F0, 0x505300
@@ -137,6 +139,9 @@ local mark_click = false
 local hooked_views = {}
 local pause_poll_hooked = false
 local pause_guard = 0
+local ptr_held = {}
+local ptr_lock_until = 0
+local ptr_lock_frames = 0
 
 local MASK_PEEK, MASK_PAUSE, MASK_MARK = 1, 8, 64
 local key4_idle = nil
@@ -681,21 +686,48 @@ local function refresh_pause_visual()
     end)
 end
 
-local function toggle_pause()
-    local now = 0
+local function osd_now()
+    local t, hz = 0, 0
     pcall(function()
-        now = emu.osd_ticks()
+        t = emu.osd_ticks()
+        hz = emu.osd_ticks_per_second()
     end)
-    if now > 0 and pause_guard > 0 then
-        local hz = 0
-        pcall(function()
-            hz = emu.osd_ticks_per_second()
-        end)
-        if hz and hz > 0 and (now - pause_guard) < (hz * 0.28) then
-            return
-        end
+    return t, hz
+end
+
+local function ptr_busy()
+    local t, hz = osd_now()
+    if t > 0 and hz and hz > 0 then
+        return ptr_lock_until > 0 and t < ptr_lock_until
     end
-    pause_guard = now
+    return ptr_lock_frames > 0
+end
+
+local function ptr_mark_busy()
+    local t, hz = osd_now()
+    if t > 0 and hz and hz > 0 then
+        ptr_lock_until = t + hz * 0.22
+    end
+    ptr_lock_frames = 14
+    pause_guard = t
+end
+
+local function ptr_tick()
+    if ptr_lock_frames > 0 then
+        ptr_lock_frames = ptr_lock_frames - 1
+    end
+    local t, hz = osd_now()
+    if t > 0 and hz and hz > 0 and ptr_lock_until > 0 and t >= ptr_lock_until then
+        ptr_lock_until = 0
+        ptr_lock_frames = 0
+    end
+end
+
+local function toggle_pause()
+    if ptr_busy() then
+        return
+    end
+    ptr_mark_busy()
     pcall(function()
         if manager.machine.paused then
             emu.unpause()
@@ -776,7 +808,59 @@ local function ptr_norm(view, x, y)
     return x / 1000, y / 1640
 end
 
+local function item_bounds(item)
+    if not item then
+        return nil
+    end
+    local b
+    pcall(function()
+        b = item.bounds
+        if type(b) == "function" then
+            b = item:bounds()
+        end
+    end)
+    if b and b.x0 and b.y0 then
+        return b.x0, b.y0, b.x1, b.y1
+    end
+    return nil
+end
+
+local function hit_rect(x, y, x0, y0, x1, y1)
+    if not x or not y or not x0 then
+        return false
+    end
+    if x0 > x1 then
+        x0, x1 = x1, x0
+    end
+    if y0 > y1 then
+        y0, y1 = y1, y0
+    end
+    local mx, my = (x1 - x0) * 0.10, (y1 - y0) * 0.10
+    return x >= (x0 - mx) and x <= (x1 + mx) and y >= (y0 - my) and y <= (y1 + my)
+end
+
+local function hit_item_xy(view, id, x, y)
+    if type(x) ~= "number" or type(y) ~= "number" then
+        return false
+    end
+    local item = view and view.items and view.items[id]
+    local x0, y0, x1, y1 = item_bounds(item)
+    if not x0 then
+        return false
+    end
+    if hit_rect(x, y, x0, y0, x1, y1) then
+        return true
+    end
+    local nx, ny = ptr_norm(view, x, y)
+    local bx0, by0 = ptr_norm(view, x0, y0)
+    local bx1, by1 = ptr_norm(view, x1, y1)
+    return hit_rect(nx, ny, bx0, by0, bx1, by1)
+end
+
 local function hit_pause_xy(view, x, y)
+    if hit_item_xy(view, "btn_pause", x, y) then
+        return true
+    end
     if type(x) ~= "number" or type(y) ~= "number" then
         return false
     end
@@ -794,6 +878,9 @@ local function hit_pause_xy(view, x, y)
 end
 
 local function hit_peek_xy(view, x, y)
+    if hit_item_xy(view, "btn_peek", x, y) then
+        return true
+    end
     if type(x) ~= "number" or type(y) ~= "number" then
         return false
     end
@@ -814,15 +901,16 @@ local function hit_mark_xy(view, x, y)
     if not peek_open then
         return false
     end
-    local nx, ny = ptr_norm(view, x, y)
-    if not nx then
-        return false
+    if hit_item_xy(view, "btn_mark", x, y) then
+        return true
     end
-    local m = tiles_ui and (tiles_ui.mark_rect and tiles_ui.mark_rect() or tiles_ui.mark_btn)
-    if not m then
-        return false
+    if tiles_ui and tiles_ui.view_to_screen and tiles_ui.hit_mark then
+        local sx, sy = tiles_ui.view_to_screen(view, x, y)
+        if sx then
+            return tiles_ui.hit_mark(sx, sy)
+        end
     end
-    return nx >= m.x0 and nx <= m.x1 and ny >= m.y0 and ny <= m.y1
+    return false
 end
 
 local function apply_mark(machine)
@@ -844,6 +932,13 @@ local function hook_peek_pointer(machine)
     end
     local function bind_view(view)
         if not view or hooked_views[view] then
+            return
+        end
+        local has_btn = false
+        pcall(function()
+            has_btn = view.items and view.items["btn_peek"] ~= nil
+        end)
+        if not has_btn then
             return
         end
         hooked_views[view] = true
@@ -873,20 +968,38 @@ local function hook_peek_pointer(machine)
                 end)
                 if mark_item.set_bounds_callback and emu.render_bounds then
                     mark_item:set_bounds_callback(function()
-                        if not peek_open then
+                        local ok, b = pcall(function()
+                            if not peek_open then
+                                return rt_bounds(-0.40, -0.20, -0.22, -0.08)
+                            end
+                            local m = tiles_ui and tiles_ui.mark_target_rect and tiles_ui.mark_target_rect(view)
+                            if m and m.x0 and m.x1 > m.x0 then
+                                return rt_bounds(m.x0, m.y0, m.x1, m.y1)
+                            end
                             return rt_bounds(-0.40, -0.20, -0.22, -0.08)
-                        end
-                        local m = tiles_ui and (tiles_ui.mark_rect and tiles_ui.mark_rect() or tiles_ui.mark_btn)
-                        if m then
-                            return rt_bounds(m.x0, m.y0, m.x1, m.y1)
+                        end)
+                        if ok and b then
+                            return b
                         end
                         return rt_bounds(-0.40, -0.20, -0.22, -0.08)
                     end)
                 end
             end
             if view.set_pointer_updated_callback then
-                view:set_pointer_updated_callback(function(_, _, _, x, y, _, pressed)
-                    if type(pressed) ~= "number" or (pressed & 1) == 0 then
+                view:set_pointer_updated_callback(function(_, pid, _, x, y, _, pressed)
+                    local down = type(pressed) == "number" and (pressed & 1) ~= 0
+                    local key = tostring(pid or 0)
+                    local was = ptr_held[key]
+                    ptr_held[key] = down
+                    if not down or was then
+                        return
+                    end
+                    if ptr_busy() then
+                        return
+                    end
+                    if peek_open and hit_mark_xy(view, x, y) then
+                        apply_mark(manager.machine)
+                        ptr_mark_busy()
                         return
                     end
                     if hit_pause_xy(view, x, y) then
@@ -895,10 +1008,8 @@ local function hook_peek_pointer(machine)
                     end
                     if hit_peek_xy(view, x, y) then
                         peek_click = true
+                        ptr_mark_busy()
                         return
-                    end
-                    if hit_mark_xy(view, x, y) then
-                        apply_mark(manager.machine)
                     end
                 end)
             end
@@ -943,6 +1054,7 @@ local function ensure_pause_poll()
             end
             poll_skin_buttons(m)
             apply_peek_click(m)
+            ptr_tick()
         end)
     end)
 end
@@ -1004,14 +1116,17 @@ end
 -- 真正的牌山从第一段 FD 空洞之后开始。
 local function read_wall(space)
     local words = {}
-    for i = 0, WALL_WORDS - 1 do
-        local ok, w = pcall(function()
-            return space:read_u16(WALL_BASE + i * 2)
-        end)
-        if not ok then
-            break
+    local ok_all, data = pcall(function()
+        local w = {}
+        for i = 0, WALL_WORDS - 1 do
+            w[i + 1] = space:read_u16(WALL_BASE + i * 2) & 0xFF
         end
-        words[#words + 1] = w & 0xFF
+        return w
+    end)
+    if ok_all and data then
+        words = data
+    else
+        return {}, nil, 1
     end
     local first_fd
     for i = 1, #words do
@@ -1157,7 +1272,7 @@ local function is_real_aka(v)
     return v == 0x85 or v == 0x95 or v == 0xA5
 end
 
-local function slot_legal(list)
+local function slot_legal(list, addr)
     local c = {}
     for _, t in ipairs(list) do
         if not t.empty and t.raw and t.raw ~= 0 then
@@ -1175,7 +1290,12 @@ local function slot_legal(list)
             end
         end
     end
-    return filled_count(list) >= 13
+    local n = filled_count(list)
+    -- 电脑碰杠后暗手只有 10/7 张，槽尾常残留刚打出的牌
+    if addr and addr >= HAND_CPU_LO and addr < HAND_CPU_HI then
+        return n >= 7
+    end
+    return n >= 13
 end
 
 local function addr_kind(addr)
@@ -1211,7 +1331,7 @@ local function hunt_clean_hands(space)
         else
             local list = read_hand_slot(space, addr)
             local first_ok = list[1] and not list[1].empty
-            if first_ok and slot_legal(list) and not cluster_taken(slots, addr) then
+            if first_ok and slot_legal(list, addr) and not cluster_taken(slots, addr) then
                 slots[#slots + 1] = { addr = addr, list = list, kind = addr_kind(addr) }
                 addr = addr + math.max(2, HAND_SHOW * 2)
             else
@@ -1224,7 +1344,7 @@ end
 
 local function get_hand_slots(space, n)
     hand_cache.age = hand_cache.age + 1
-    if hand_cache.slots and hand_cache.n == n and hand_cache.age < 8 then
+    if hand_cache.slots and hand_cache.n == n and hand_cache.age < 16 then
         return hand_cache.slots
     end
     hand_cache.age = 0
@@ -1243,7 +1363,8 @@ local function snap_hand(space, addr)
         if a >= 0x504800 and a <= 0x5057F0 then
             local list = read_hand_slot(space, a)
             local n = filled_count(list)
-            if list[1] and not list[1].empty and slot_legal(list) and n >= 12 then
+            local minn = (a >= HAND_CPU_LO and a < HAND_CPU_HI) and 7 or 12
+            if list[1] and not list[1].empty and slot_legal(list, a) and n >= minn then
                 local d = math.abs(off)
                 if n > best_n or (n == best_n and d < best_d) then
                     best, best_a, best_n, best_d = list, a, n, d
@@ -1292,6 +1413,31 @@ end
 
 local function is_same_hand(a, b)
     return a and b and overlap_plain(a, b) >= OVERLAP_SAME
+end
+
+local function compact_tiles(list)
+    local out = {}
+    if not list then
+        return out
+    end
+    for _, t in ipairs(list) do
+        if not t.empty and t.raw and t.raw ~= 0 then
+            out[#out + 1] = t
+        end
+    end
+    out.filled = #out
+    return out
+end
+
+-- 碰杠后 cpu 槽尾可能残留刚打出的牌。顺序匹配会把正常 13 张裁成 10，先停用。
+-- 目前不能可靠判断电脑何时碰/杠（没有独立副露表，只靠手牌槽长度/内容启发式）。
+local function sanitize_cpu_hand(curr, held)
+    if not curr then
+        cpu_hand_prev = nil
+        return curr
+    end
+    cpu_hand_prev = compact_tiles(curr)
+    return curr
 end
 
 local KIND_RANK = { vis = 5, sort = 3, cpu = 2, other = 1, early = 0, live = 0 }
@@ -1515,6 +1661,9 @@ local function suffix_consumed(prev, curr)
 end
 
 local function live_preview(machine)
+    if not peek_open and not SHOW_TEXT_HUD then
+        return
+    end
     local cpu = machine.devices[":maincpu"]
     local space = cpu and cpu.spaces and cpu.spaces["program"]
     if not space then
@@ -1543,6 +1692,8 @@ local function live_preview(machine)
         hand_cache = { slots = {}, n = nil, age = 8 }
         hand_id = { p_addr = nil, p_list = nil, c_addr = nil, c_list = nil }
         extra_hold = {}
+        cpu_hand_prev = nil
+        wall_dim_base = 0
     end
     if prev_wall_raws then
         local ok, k = suffix_consumed(prev_wall_raws, curr_raws)
@@ -1596,7 +1747,7 @@ local function live_preview(machine)
             return "（无）"
         end
         local t = {}
-        for i = 1, math.min(23, #list) do
+        for i = 1, math.min(13, #list) do
             t[#t + 1] = list[i].name
         end
         return table.concat(t, " ")
@@ -1626,6 +1777,9 @@ local function live_preview(machine)
     live_hud.line3 = string.format("%s%s %s", next_side == "B" and "●" or " ", name_b, join_seq(seq_b))
     local slots = get_hand_slots(space, n)
     local hand_a, addr_a, hand_b, addr_b, b_held = assign_hands(space, slots)
+    if hand_b then
+        hand_b = sanitize_cpu_hand(hand_b, b_held)
+    end
     if not cpu_recon and #dealt_raws >= 26 and hand_a and filled_count(hand_a) >= 12 then
         local recon = bag_minus(dealt_raws, hand_a)
         if #recon >= 10 and #recon <= 16 then
@@ -1654,6 +1808,20 @@ local function live_preview(machine)
     end
     live_hud.line6 = extra_lines[1] or ""
     live_hud.line7 = extra_lines[2] or ""
+    -- 半透明从「发完牌、开始摸打」起算，发牌那 26 张不算。
+    if wall_dim_base == 0 and n >= 40 then
+        if round_remain0 - n >= 20 or round_remain0 <= 92 then
+            wall_dim_base = n
+        end
+    end
+    local play_taken = 0
+    if wall_dim_base > 0 then
+        play_taken = wall_dim_base - n
+        if play_taken < 0 then
+            play_taken = 0
+            wall_dim_base = n
+        end
+    end
     live_hud.peek = {
         title = "实战麻将王 透视",
         line1 = live_hud.line1,
@@ -1665,11 +1833,21 @@ local function live_preview(machine)
         name_b = name_b,
         next_side = next_side,
         marked = player_side ~= nil,
+        dim_a = math.max(0, 13 - math.ceil(play_taken / 2)),
+        dim_b = math.max(0, 13 - math.floor(play_taken / 2)),
+        note1 = "听牌时电脑可能换山，下摸会突然对不上。",
+        note2 = "电脑碰杠后，电脑手后半可能错乱（含刚打出的牌）。",
     }
     if tiles_ui then
         tiles_ui.ensure_art(machine)
     end
-    local ui = machine.render and machine.render.ui_container
+    local ui = nil
+    local on_game = false
+    if tiles_ui and tiles_ui.game_container then
+        ui, on_game = tiles_ui.game_container(machine)
+    else
+        ui = machine.render and machine.render.ui_container
+    end
     if ui then
         local function paint()
             if peek_open and tiles_ui then
@@ -1692,7 +1870,7 @@ local function live_preview(machine)
             if live_hud.line7 ~= "" then
                 extra = extra + 1
             end
-            local rows = 6.3 + extra
+            local rows = 7.3 + extra
             ui:draw_box(0.0, y0 - 0.008, 1.0, y0 + lh * rows, 0x00000000, 0xB0101020)
             ui:draw_text(0.015, y0, live_hud.line1, 0xffffff40)
             ui:draw_text(0.015, y0 + lh, live_hud.line2, 0xffffffff)
@@ -1709,6 +1887,7 @@ local function live_preview(machine)
                 row = row + 1
             end
             ui:draw_text(0.015, y0 + lh * row, "听牌时电脑可能换山，下摸会突然对不上。", 0xffffa060)
+            ui:draw_text(0.015, y0 + lh * (row + 1), "电脑碰杠后，电脑手后半可能错乱。", 0xffff8060)
         end
         if not pcall(paint) then
             if SHOW_TEXT_HUD then
@@ -1809,6 +1988,7 @@ return function(machine)
     end
     bind_keys(machine)
     ensure_pause_poll()
+    ptr_tick()
     poll_skin_buttons(machine)
     apply_peek_click(machine)
     if mark_click then

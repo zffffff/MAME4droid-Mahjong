@@ -76,6 +76,8 @@
     </element>
 
     <view name="Portrait_2_Rows">
+        <!-- 必须写死画幅，否则屏外的 btn_mark(x=2000) 会把 View 撑宽，竖屏窗口右边一大块黑 -->
+        <bounds x="0" y="0" width="1000" height="1640" />
         <screen index="0"> <bounds x="0" y="0" width="1000" height="970" /> </screen>
         <element ref="bg_panel"> <bounds x="0" y="970" width="1000" height="670" /> </element>
         

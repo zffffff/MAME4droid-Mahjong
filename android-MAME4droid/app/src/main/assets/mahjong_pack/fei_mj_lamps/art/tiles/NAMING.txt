@@ -13,7 +13,7 @@
   man5-aka.png            赤五万
   pin5-aka.png            赤五筒
   sou5-aka.png            赤五条
-  blank.png               空槽（13 张时第 14 格）
+  blank.png               空槽（调试用；画面不再画第 14 张占位）
   back.png                牌背（以后盖牌/未知用）
 
 以后其它机再补字牌即可，现在不必做：
