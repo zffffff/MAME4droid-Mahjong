@@ -347,6 +347,216 @@ local textures = {}
 local btn_bitmaps = {}
 local btn_tex = {}
 local art_tried = false
+local panel_cache = { sig = "", key = "", w = 0, h = 0, bmp = nil, tex = nil, enabled = true }
+local COLOR_DIM = nil
+local COLOR_FULL = nil
+
+local function panel_pixel_size(g)
+    local L = lay_screen(g.land)
+    return math.max(64, math.floor((g.gx1 - g.gx0) * L.sw)), math.max(64, math.floor((g.gy1 - g.gy0) * L.sh))
+end
+
+local function panel_sig(st, g)
+    local parts = {
+        g.key,
+        st.name_a or "",
+        st.name_b or "",
+        st.next_side or "",
+        tostring(st.dim_a or 0),
+        tostring(st.dim_b or 0),
+    }
+    local function row_sig(list)
+        if not list then
+            return "-"
+        end
+        local t = {}
+        for i = 1, math.min(ROW_N, #list) do
+            t[#t + 1] = string.format("%02X", list[i].raw or 0)
+        end
+        return table.concat(t, ",")
+    end
+    parts[#parts + 1] = row_sig(st.cpu)
+    parts[#parts + 1] = row_sig(st.seq_a)
+    parts[#parts + 1] = row_sig(st.seq_b)
+    return table.concat(parts, "|")
+end
+
+local function ensure_panel_colors()
+    if COLOR_FULL then
+        return true
+    end
+    if not emu.render_color then
+        return false
+    end
+    local ok
+    ok, COLOR_FULL = pcall(emu.render_color, 1, 1, 1, 1)
+    if not ok then
+        return false
+    end
+    ok, COLOR_DIM = pcall(emu.render_color, 0.5, 1, 1, 1)
+    return ok
+end
+
+local function free_panel_texture()
+    local render = manager and manager.machine and manager.machine.render
+    if render and panel_cache.tex and render.texture_free then
+        pcall(function()
+            render:texture_free(panel_cache.tex)
+        end)
+    end
+    panel_cache.tex = nil
+    panel_cache.bmp = nil
+end
+
+local function screen_rect_to_panel_px(g, pw, ph, x, y, w, h)
+    local px = math.floor((x - g.gx0) / (g.gx1 - g.gx0) * pw)
+    local py = math.floor((y - g.gy0) / (g.gy1 - g.gy0) * ph)
+    local tw = math.max(1, math.floor(w / (g.gx1 - g.gx0) * pw))
+    local th = math.max(1, math.floor(h / (g.gy1 - g.gy0) * ph))
+    return px, py, tw, th
+end
+
+local function blit_tile_bmp(panel, g, pw, ph, x, y, w, h, tile, hi, dim)
+    if (not tile) or tile.empty or not tile.raw or tile.raw == 0 then
+        return
+    end
+    local px, py, tw, th = screen_rect_to_panel_px(g, pw, ph, x, y, w, h)
+    if px + tw > pw or py + th > ph then
+        return
+    end
+    local key = art_key(tile.raw)
+    local src = bitmaps[key]
+    local aka = (tile.raw & 0xFF) >= 0x80
+    if src then
+        local ok = pcall(function()
+            local slot = emu.bitmap_argb32(panel, px, py, px + tw - 1, py + th - 1)
+            src:resample(slot, dim and COLOR_DIM or COLOR_FULL)
+        end)
+        if ok then
+            if hi then
+                pcall(function()
+                    panel:plot_box(px - 1, py - 1, tw + 2, th + 2, 0x60FFFF00)
+                end)
+            elseif aka and not dim then
+                pcall(function()
+                    panel:plot_box(px - 1, py - 1, tw + 2, th + 2, 0xFFC09020)
+                end)
+            end
+            return
+        end
+    end
+    local fill = SUIT_FILL[suit_of(tile.raw)]
+    if dim then
+        fill = with_alpha(fill, 0x80)
+    end
+    pcall(function()
+        panel:plot_box(px, py, tw, th, fill)
+    end)
+end
+
+local function blit_row_bmp(panel, g, pw, ph, x, y, w, h, gap, list, maxn, hi_first, dim_after)
+    if not list then
+        return
+    end
+    local n = math.min(maxn or ROW_N, #list)
+    if dim_after == nil then
+        dim_after = 99
+    end
+    for i = 1, n do
+        blit_tile_bmp(panel, g, pw, ph, x + (i - 1) * (w + gap), y, w, h, list[i], hi_first and i == 1, i > dim_after)
+    end
+end
+
+local function ensure_panel_bitmap(render, g)
+    local pw, ph = panel_pixel_size(g)
+    if panel_cache.bmp and panel_cache.key == g.key and panel_cache.w == pw and panel_cache.h == ph then
+        return panel_cache.bmp, pw, ph
+    end
+    free_panel_texture()
+    local bmp
+    local ok = pcall(function()
+        bmp = emu.bitmap_argb32(pw, ph)
+    end)
+    if not ok or not bmp then
+        return nil
+    end
+    local tex
+    ok = pcall(function()
+        tex = render:texture_alloc(bmp)
+    end)
+    if not ok or not tex then
+        return nil
+    end
+    panel_cache.bmp = bmp
+    panel_cache.tex = tex
+    panel_cache.key = g.key
+    panel_cache.w = pw
+    panel_cache.h = ph
+    panel_cache.sig = ""
+    return bmp, pw, ph
+end
+
+local function rebuild_panel_cache(machine, st, g)
+    if not ensure_panel_colors() then
+        return false
+    end
+    local render = machine and machine.render
+    if not render or not render.texture_alloc then
+        return false
+    end
+    load_textures(machine)
+    local panel, pw, ph = ensure_panel_bitmap(render, g)
+    if not panel then
+        return false
+    end
+    pcall(function()
+        panel:fill(0xC0101420)
+    end)
+    blit_row_bmp(panel, g, pw, ph, g.x0, g.cpu_y, g.tw, g.th, g.gap, st.cpu, ROW_N, false)
+    local a_hi = st.next_side == "A"
+    local b_hi = st.next_side == "B"
+    blit_row_bmp(panel, g, pw, ph, g.x0, g.a_y, g.tw, g.th, g.gap, st.seq_a, ROW_N, a_hi, st.dim_a)
+    blit_row_bmp(panel, g, pw, ph, g.x0, g.b_y, g.tw, g.th, g.gap, st.seq_b, ROW_N, b_hi, st.dim_b)
+    return true
+end
+
+local function draw_panel_labels(ui, st, g)
+    ui:draw_text(g.x0, g.title_y, (st.title or "透视") .. art_note_cached, 0xffffff40)
+    ui:draw_text(g.x0, g.line1_y, st.line1 or "", 0xffffffff)
+    ui:draw_text(g.x0, g.cpu_lab_y, st.cpu_label or "电脑手", 0xffffd0a0)
+    local a_hi = st.next_side == "A"
+    local b_hi = st.next_side == "B"
+    ui:draw_text(g.x0, g.a_lab_y, (a_hi and "●" or " ") .. (st.name_a or "A"), 0xffffffff)
+    ui:draw_text(g.x0, g.b_lab_y, (b_hi and "●" or " ") .. (st.name_b or "B"), 0xffb0b0b0)
+    if st.note1 and st.note1 ~= "" then
+        local uic, nx, ny, ny2
+        if g.land then
+            pcall(function()
+                uic = manager.machine.render.ui_container
+            end)
+            if g.note_wx then
+                nx, ny, ny2 = g.note_wx, g.note_wy, g.note2_wy
+            else
+                nx, ny = screen_to_window_xy(g.x0, g.note_y)
+                _, ny2 = screen_to_window_xy(g.x0, g.note2_y)
+                if nx then
+                    g.note_wx, g.note_wy, g.note2_wy = nx, ny, ny2
+                end
+            end
+        end
+        if g.land and uic and ny then
+            uic:draw_text(nx, ny, st.note1, 0xffffe090)
+            if st.note2 and ny2 then
+                uic:draw_text(nx, ny2, st.note2, 0xffffc070)
+            end
+        else
+            ui:draw_text(g.x0, g.note_y, st.note1, 0xffffe090)
+            if st.note2 then
+                ui:draw_text(g.x0, g.note2_y, st.note2, 0xffffc070)
+            end
+        end
+    end
+end
 
 local function art_key(raw)
     if not raw or raw == 0 then
@@ -525,49 +735,37 @@ local function draw_row(ui, x, y, w, h, gap, list, maxn, hi_first, dim_after)
     end
 end
 
-local function draw_panel(ui, st)
+local function draw_panel_legacy(ui, st)
     local g = panel_geom()
     ui:draw_box(g.gx0, g.gy0, g.gx1, g.gy1, 0x00000000, 0xC0101420)
-    ui:draw_text(g.x0, g.title_y, (st.title or "透视") .. art_note_cached, 0xffffff40)
-    ui:draw_text(g.x0, g.line1_y, st.line1 or "", 0xffffffff)
-
     ui:draw_text(g.x0, g.cpu_lab_y, st.cpu_label or "电脑手", 0xffffd0a0)
     draw_row(ui, g.x0, g.cpu_y, g.tw, g.th, g.gap, st.cpu, ROW_N, false)
-
     local a_hi = st.next_side == "A"
     local b_hi = st.next_side == "B"
-    ui:draw_text(g.x0, g.a_lab_y, (a_hi and "●" or " ") .. (st.name_a or "A"), 0xffffffff)
     draw_row(ui, g.x0, g.a_y, g.tw, g.th, g.gap, st.seq_a, ROW_N, a_hi, st.dim_a)
-    ui:draw_text(g.x0, g.b_lab_y, (b_hi and "●" or " ") .. (st.name_b or "B"), 0xffb0b0b0)
     draw_row(ui, g.x0, g.b_y, g.tw, g.th, g.gap, st.seq_b, ROW_N, b_hi, st.dim_b)
-    if st.note1 and st.note1 ~= "" then
-        local uic, nx, ny, ny2
-        if g.land then
-            pcall(function()
-                uic = manager.machine.render.ui_container
-            end)
-            if g.note_wx then
-                nx, ny, ny2 = g.note_wx, g.note_wy, g.note2_wy
+    draw_panel_labels(ui, st, g)
+end
+
+local function draw_panel(ui, st)
+    local g = panel_geom()
+    if panel_cache.enabled and emu.bitmap_argb32 and manager and manager.machine then
+        local sig = panel_sig(st, g)
+        if sig ~= panel_cache.sig then
+            local ok = rebuild_panel_cache(manager.machine, st, g)
+            if ok and panel_cache.tex then
+                panel_cache.sig = sig
             else
-                nx, ny = screen_to_window_xy(g.x0, g.note_y)
-                _, ny2 = screen_to_window_xy(g.x0, g.note2_y)
-                if nx then
-                    g.note_wx, g.note_wy, g.note2_wy = nx, ny, ny2
-                end
+                panel_cache.enabled = false
             end
         end
-        if g.land and uic and ny then
-            uic:draw_text(nx, ny, st.note1, 0xffffe090)
-            if st.note2 and ny2 then
-                uic:draw_text(nx, ny2, st.note2, 0xffffc070)
-            end
-        else
-            ui:draw_text(g.x0, g.note_y, st.note1, 0xffffe090)
-            if st.note2 then
-                ui:draw_text(g.x0, g.note2_y, st.note2, 0xffffc070)
-            end
+        if panel_cache.enabled and panel_cache.tex then
+            ui:draw_quad(panel_cache.tex, g.gx0, g.gy0, g.gx1, g.gy1)
+            draw_panel_labels(ui, st, g)
+            return
         end
     end
+    draw_panel_legacy(ui, st)
 end
 
 local function draw_toggle(_ui, _open)
