@@ -1930,7 +1930,7 @@ local function live_preview(machine)
     end
     if ui then
         local function paint()
-            if peek_open and tiles_ui then
+            if peek_open and tiles_ui and live_hud.peek then
                 tiles_ui.draw_panel(ui, live_hud.peek)
                 return
             end

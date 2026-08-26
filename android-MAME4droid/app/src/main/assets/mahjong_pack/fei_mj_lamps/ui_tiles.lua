@@ -735,6 +735,22 @@ local function draw_row(ui, x, y, w, h, gap, list, maxn, hi_first, dim_after)
     end
 end
 
+local function draw_panel_cached(ui, st, g)
+    if not panel_cache.tex then
+        return false
+    end
+    local drew = false
+    pcall(function()
+        ui:draw_quad(panel_cache.tex, g.gx0, g.gy0, g.gx1, g.gy1, 0xffffffff)
+        drew = true
+    end)
+    if drew then
+        draw_panel_labels(ui, st, g)
+        return true
+    end
+    return false
+end
+
 local function draw_panel_legacy(ui, st)
     local g = panel_geom()
     ui:draw_box(g.gx0, g.gy0, g.gx1, g.gy1, 0x00000000, 0xC0101420)
@@ -748,21 +764,27 @@ local function draw_panel_legacy(ui, st)
 end
 
 local function draw_panel(ui, st)
+    if not st then
+        return
+    end
     local g = panel_geom()
     if panel_cache.enabled and emu.bitmap_argb32 and manager and manager.machine then
         local sig = panel_sig(st, g)
         if sig ~= panel_cache.sig then
-            local ok = rebuild_panel_cache(manager.machine, st, g)
+            local ok = pcall(rebuild_panel_cache, manager.machine, st, g)
             if ok and panel_cache.tex then
                 panel_cache.sig = sig
             else
                 panel_cache.enabled = false
+                panel_cache.sig = ""
             end
         end
-        if panel_cache.enabled and panel_cache.tex then
-            ui:draw_quad(panel_cache.tex, g.gx0, g.gy0, g.gx1, g.gy1)
-            draw_panel_labels(ui, st, g)
+        if panel_cache.enabled and draw_panel_cached(ui, st, g) then
             return
+        end
+        if panel_cache.tex then
+            panel_cache.enabled = false
+            panel_cache.sig = ""
         end
     end
     draw_panel_legacy(ui, st)
