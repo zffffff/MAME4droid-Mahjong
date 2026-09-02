@@ -448,23 +448,6 @@ public class AssetPackInstaller {
 		}
 	}
 
-	private static void deleteTree(File root) {
-		if (root == null || !root.exists()) {
-			return;
-		}
-		if (root.isDirectory()) {
-			File[] kids = root.listFiles();
-			if (kids != null) {
-				for (File kid : kids) {
-					deleteTree(kid);
-				}
-			}
-		}
-		if (!root.delete()) {
-			Log.w(TAG, "Could not delete " + root.getAbsolutePath());
-		}
-	}
-
 	/**
 	 * Per-game {@code ini/<rom>.ini} autoboot — lamps + orientation bridge in-game
 	 * only, not on the classic system list ({@code ___empty}).
