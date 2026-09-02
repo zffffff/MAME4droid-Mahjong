@@ -27,11 +27,14 @@ import java.util.List;
  * ({@link MainHelper#getInstallationDIR()}, typically
  * {@code /storage/emulated/0/Android/data/.../files/}).
  * <p>
- * <b>full</b>: artwork + lamp Lua; **不**写 install-dir {@code system_names}
+ * <b>full</b>: artwork + lamp Lua + enhance overlay (peek HUD buttons/scripts);
+ * **不**写 install-dir {@code system_names}
  *（会话内「选择新系统」须与 basic 一样剥毒；中文名仅选台 assets）。<br>
- * <b>basic</b>: artwork + per-game lamp ini; classic list stays English on
- * MAME 1.38.3 ({@code system_names} does not refresh the native list). Chinese
- * titles are on the full picker ({@link com.seleuco.mame4droid.mahjong.MahjongCatalog}).
+ * <b>basic</b>: artwork + per-game lamp ini only — strips peek / pause / sangen /
+ * accept / bleed (and related Lua) so only the normal key pack remains.
+ * Classic list stays English on MAME 1.38.3 ({@code system_names} does not refresh
+ * the native list). Chinese titles are on the picker
+ * ({@link com.seleuco.mame4droid.mahjong.MahjongCatalog}).
  */
 public class AssetPackInstaller {
 
@@ -40,6 +43,74 @@ public class AssetPackInstaller {
 	private static final String README_FILE = "README.txt";
 	private static final String MARKER_DIR = ".asset_packs";
 	private static final int BUFFER_SIZE = 8192;
+
+	/** Enhance skin / HUD assets — not for basic edition. */
+	private static final String[] ENHANCE_PNG_PREFIXES = {
+			"peek_", "mark_", "pause_", "continue_", "force_",
+			"sangen_", "accept_", "bleed_",
+	};
+	private static final String[] ENHANCE_LAY_IDS = {
+			"btn_peek", "btn_mark", "btn_pause", "btn_sangen", "btn_accept", "btn_bleed",
+	};
+	private static final String[] ENHANCE_LUA_FILES = {
+			"rbmk_wall.lua", "mjelctrn_wall.lua", "ui_tiles.lua",
+	};
+
+	/** Mods lamp-only rbmk.lua (no wall hunt). */
+	private static final String RBMK_LUA_BASIC =
+			"-- rbmk（实战麻将王）：GMS 平台。默认 Controls=Joystick 时麻将矩阵失效。\n"
+					+ "-- 启动后强制 DSW2 Controls → Mahjong（user_value=0）。闪灯探针可后续再校。\n"
+					+ "\n"
+					+ "local force_controls = loadfile(\"fei_mj_lamps/force_controls.lua\")\n"
+					+ "local force = force_controls and force_controls() or nil\n"
+					+ "local controls_forced = false\n"
+					+ "\n"
+					+ "return function(machine, screen, blink_state)\n"
+					+ "    if force and not controls_forced then\n"
+					+ "        controls_forced = true\n"
+					+ "        force(machine, { port = \":DSW2\", mahjong_value = 0, mask = 0x80 })\n"
+					+ "    end\n"
+					+ "\n"
+					+ "    local out = fei_output(machine)\n"
+					+ "    -- 占位：暂无像素闪灯；保留接口避免 master 报错\n"
+					+ "    out:set_value(\"lamp_hint_bibei\", 0)\n"
+					+ "    out:set_value(\"lamp_hint_haidi\", 0)\n"
+					+ "    out:set_value(\"lamp_hint_duihua\", 0)\n"
+					+ "end\n";
+
+	/** Mods lamp-only mjelctrn.lua (no wall boot). */
+	private static final String MJELCTRN_LUA_BASIC =
+			"return function(machine, screen, blink_state)\n"
+					+ "    local out = fei_output(machine)\n"
+					+ "    local w, h = screen.width, screen.height\n"
+					+ "    \n"
+					+ "    local function is_red(vx, vy)\n"
+					+ "        local color = screen:pixel(w - vx - 1, h - vy - 1)\n"
+					+ "        return ((color >> 16) & 0xFF) > 200 and ((color >> 8) & 0xFF) < 50 and (color & 0xFF) < 50\n"
+					+ "    end\n"
+					+ "    if is_red(286, 92) then out:set_value(\"lamp_pon\", blink_state) else out:set_value(\"lamp_pon\", 0) end\n"
+					+ "    if is_red(324, 92) then out:set_value(\"lamp_chi\", blink_state) else out:set_value(\"lamp_chi\", 0) end\n"
+					+ "    if is_red(286, 104) then out:set_value(\"lamp_ron\", blink_state) else out:set_value(\"lamp_ron\", 0) end\n"
+					+ "    if is_red(324, 104) then out:set_value(\"lamp_kan\", blink_state) else out:set_value(\"lamp_kan\", 0) end\n"
+					+ "\n"
+					+ "    local function check_select_screen()\n"
+					+ "        local c1 = screen:pixel(w - 16 - 1, h - 10 - 1)\n"
+					+ "        local r1, g1, b1 = (c1 >> 16) & 0xFF, (c1 >> 8) & 0xFF, (c1 & 0xFF)\n"
+					+ "        local is_char_select = (r1 > 200 and r1 < 255 and g1 > 80 and g1 < 130 and b1 > 80 and b1 < 130)\n"
+					+ "\n"
+					+ "        local c2 = screen:pixel(w - 0 - 1, h - 0 - 1)\n"
+					+ "        local r2, g2, b2 = (c2 >> 16) & 0xFF, (c2 >> 8) & 0xFF, (c2 & 0xFF)\n"
+					+ "        local is_bonus_game = (r2 > 160 and r2 < 200 and g2 > 170 and g2 < 220 and b2 > 150 and b2 < 190)\n"
+					+ "\n"
+					+ "        return is_char_select or is_bonus_game\n"
+					+ "    end\n"
+					+ "\n"
+					+ "    local is_sel = check_select_screen()\n"
+					+ "    out:set_value(\"lamp_hint_select_a\", is_sel and blink_state or 0)\n"
+					+ "    out:set_value(\"lamp_hint_select_b\", is_sel and blink_state or 0)\n"
+					+ "    out:set_value(\"lamp_hint_select_c\", is_sel and blink_state or 0)\n"
+					+ "    out:set_value(\"lamp_hint_select_d\", is_sel and blink_state or 0)\n"
+					+ "end\n";
 
 	private static final PackSpec[] PACKS = {
 			new PackSpec(
@@ -59,7 +130,7 @@ public class AssetPackInstaller {
 			),
 	};
 
-	private static final String BASIC_MARKER_SUFFIX = "-basic22";
+	private static final String BASIC_MARKER_SUFFIX = "-basic25-nopeek";
 
 	private final MAME4droid mm;
 
@@ -90,6 +161,7 @@ public class AssetPackInstaller {
 		scrubStubUiIni(installDir);
 		if (!BuildConfig.FEIJUCHANG_FULL_UX) {
 			scrubBasicBootInis(installDir);
+			stripEnhanceExtrasForBasic(installDir);
 		}
 	}
 
@@ -160,6 +232,7 @@ public class AssetPackInstaller {
 					+ (fullUx ? " (full)" : " (basic)"));
 			if (!fullUx) {
 				scrubBasicBootInis(installDir);
+				stripEnhanceExtrasForBasic(installDir);
 			}
 			return;
 		}
@@ -187,6 +260,7 @@ public class AssetPackInstaller {
 			} else {
 				installBasicLampPack(assets, pack, installDir, progress);
 				scrubBasicBootInis(installDir);
+				stripEnhanceExtrasForBasic(installDir);
 			}
 
 			writeMarker(installDir, pack.id, assetVersion + (fullUx ? "" : BASIC_MARKER_SUFFIX));
@@ -222,6 +296,173 @@ public class AssetPackInstaller {
 		}
 		writePerGameLampInis(installDir, assets);
 		BasicBootProbe.log(mm, "basic_lamp_pack", "installed");
+	}
+
+	/**
+	 * Basic edition: keep normal key-pack artwork + lamp scripts only.
+	 * Removes peek / pause / sangen / accept / bleed skin buttons and wall HUD Lua
+	 * (rbmk + mjelctrn family). Full edition skips this.
+	 */
+	private void stripEnhanceExtrasForBasic(String installDir) {
+		if (installDir == null || installDir.isEmpty()) {
+			return;
+		}
+		File artwork = new File(installDir, "artwork");
+		if (artwork.isDirectory()) {
+			File[] romDirs = artwork.listFiles();
+			if (romDirs != null) {
+				for (File romDir : romDirs) {
+					if (romDir == null || !romDir.isDirectory()) {
+						continue;
+					}
+					deleteEnhancePngs(romDir);
+					stripEnhanceFromLay(new File(romDir, "default.lay"));
+				}
+			}
+		}
+
+		File lamps = new File(installDir, "fei_mj_lamps");
+		if (lamps.isDirectory()) {
+			for (String name : ENHANCE_LUA_FILES) {
+				deleteIfExists(new File(lamps, name));
+			}
+			deleteTree(new File(lamps, "art"));
+			writeTextFile(new File(lamps, "rbmk.lua"), RBMK_LUA_BASIC);
+			writeTextFile(new File(lamps, "mjelctrn.lua"), MJELCTRN_LUA_BASIC);
+		}
+		Log.i(TAG, "Stripped enhance extras for basic key pack");
+		BasicBootProbe.log(mm, "basic_strip_enhance", "done");
+	}
+
+	private static void deleteEnhancePngs(File romDir) {
+		File[] files = romDir.listFiles();
+		if (files == null) {
+			return;
+		}
+		for (File f : files) {
+			if (f == null || !f.isFile()) {
+				continue;
+			}
+			String name = f.getName().toLowerCase(java.util.Locale.ROOT);
+			if (!name.endsWith(".png")) {
+				continue;
+			}
+			for (String prefix : ENHANCE_PNG_PREFIXES) {
+				if (name.startsWith(prefix)) {
+					if (f.delete()) {
+						Log.i(TAG, "Removed enhance png: " + romDir.getName() + "/" + f.getName());
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	private static void stripEnhanceFromLay(File lay) {
+		if (lay == null || !lay.isFile()) {
+			return;
+		}
+		String text;
+		try {
+			text = readFileText(lay);
+		} catch (IOException e) {
+			return;
+		}
+		if (!layMentionsEnhance(text)) {
+			return;
+		}
+		String[] lines = text.split("\n", -1);
+		StringBuilder out = new StringBuilder(text.length());
+		boolean skippingElement = false;
+		boolean changed = false;
+		for (String line : lines) {
+			String trim = line.trim();
+			if (skippingElement) {
+				changed = true;
+				if (trim.startsWith("</element>")) {
+					skippingElement = false;
+				}
+				continue;
+			}
+			if (isEnhanceElementOpen(trim)) {
+				skippingElement = true;
+				changed = true;
+				continue;
+			}
+			if (lineMentionsEnhanceId(line)) {
+				changed = true;
+				continue;
+			}
+			out.append(line).append('\n');
+		}
+		if (!changed) {
+			return;
+		}
+		try (FileOutputStream fos = new FileOutputStream(lay)) {
+			fos.write(out.toString().getBytes(StandardCharsets.UTF_8));
+			Log.i(TAG, "Stripped enhance buttons from " + lay.getParentFile().getName() + "/default.lay");
+		} catch (IOException e) {
+			Log.w(TAG, "Failed rewriting " + lay.getAbsolutePath(), e);
+		}
+	}
+
+	private static boolean layMentionsEnhance(String text) {
+		for (String id : ENHANCE_LAY_IDS) {
+			if (text.contains(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean isEnhanceElementOpen(String trim) {
+		for (String id : ENHANCE_LAY_IDS) {
+			if (trim.startsWith("<element name=\"" + id + "\"")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean lineMentionsEnhanceId(String line) {
+		for (String id : ENHANCE_LAY_IDS) {
+			if (line.contains(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static void writeTextFile(File f, String body) {
+		try {
+			File parent = f.getParentFile();
+			if (parent != null && !parent.exists() && !parent.mkdirs()) {
+				Log.w(TAG, "Cannot create " + parent);
+				return;
+			}
+			try (FileOutputStream out = new FileOutputStream(f)) {
+				out.write(body.getBytes(StandardCharsets.UTF_8));
+			}
+		} catch (IOException e) {
+			Log.w(TAG, "Failed writing " + f.getAbsolutePath(), e);
+		}
+	}
+
+	private static void deleteTree(File root) {
+		if (root == null || !root.exists()) {
+			return;
+		}
+		if (root.isDirectory()) {
+			File[] kids = root.listFiles();
+			if (kids != null) {
+				for (File kid : kids) {
+					deleteTree(kid);
+				}
+			}
+		}
+		if (!root.delete()) {
+			Log.w(TAG, "Could not delete " + root.getAbsolutePath());
+		}
 	}
 
 	/**
