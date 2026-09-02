@@ -26,12 +26,16 @@ PEEK = Path(r"D:\Dev\arcade-mj-enhance")
 PEEK_FILES = (
     "fei_mj_lamps/rbmk_wall.lua",
     "fei_mj_lamps/ui_tiles.lua",
+    "fei_mj_lamps/mjelctrn_wall.lua",
+    "fei_mj_lamps/mjelctrn.lua",  # Mods 仅灯控；透视仓含 wall 入口
 )
 PEEK_DIRS = ("fei_mj_lamps/art/tiles", "fei_mj_lamps/art/buttons")
 PEEK_LUA_REL = frozenset(
     {
         "rbmk_wall.lua",
         "ui_tiles.lua",
+        "mjelctrn_wall.lua",
+        "mjelctrn.lua",
     }
 )
 
@@ -236,7 +240,7 @@ def lst_keys(name: str) -> set[str]:
 def is_peek_rel(rel: str) -> bool:
     if rel in PEEK_LUA_REL:
         return True
-    return rel.startswith("art/tiles/")
+    return rel.startswith("art/tiles/") or rel.startswith("art/buttons/")
 
 
 def overlay_peek(dst_lamps: Path) -> None:
@@ -287,6 +291,30 @@ def overlay_rbmk_peek_artwork(dst_art: Path) -> None:
         print("peek overlay artwork buttons", n, "png")
     elif not PEEK.is_dir():
         print("note: skip rbmk peek artwork, no arcade-mj-enhance")
+
+
+def overlay_mjelctrn_peek_artwork(dst_art: Path) -> None:
+    """电子基盘：叠透视仓 default.lay + 皮肤钮 PNG（含 bleed/sangen/accept）。"""
+    if not PEEK.is_dir():
+        print("note: skip mjelctrn peek artwork, no arcade-mj-enhance")
+        return
+    dst = dst_art / "mjelctrn"
+    dst.mkdir(parents=True, exist_ok=True)
+    lay = PEEK / "fei_mj_lamps" / "art" / "mjelctrn" / "default.lay"
+    if not lay.is_file():
+        lay = MODS / "mjelctrn" / "default.lay"
+    if lay.is_file():
+        shutil.copy2(lay, dst / "default.lay")
+        print("peek overlay mjelctrn default.lay")
+    else:
+        print("WARN: mjelctrn default.lay missing")
+    btn = PEEK / "fei_mj_lamps" / "art" / "buttons"
+    if btn.is_dir():
+        n = 0
+        for p in btn.glob("*.png"):
+            shutil.copy2(p, dst / p.name)
+            n += 1
+        print("peek overlay mjelctrn buttons", n, "png")
 
 
 def ensure_rbmk_hunt(dst_lamps: Path) -> None:
@@ -382,12 +410,17 @@ def check() -> int:
             if "hunt(machine)" in pack_rbmk:
                 peek_changed.append(k)
                 continue
+        if k == "mjelctrn.lua":
+            pack_mj = (PACK / "fei_mj_lamps" / "mjelctrn.lua").read_text(encoding="utf-8")
+            if "mjelctrn_wall.lua" in pack_mj:
+                peek_changed.append(k)
+                continue
         lamp_changed.append(k)
     if lamp_changed:
         print("STALE: lua changed", lamp_changed)
         stale = True
     if peek_changed:
-        print("note: rbmk.lua differs from Mods (expected peek hunt merge)")
+        print("note: peek-merged lua differs from Mods (expected)", peek_changed)
 
     if PEEK.is_dir():
         for rel in PEEK_FILES:
@@ -412,6 +445,25 @@ def check() -> int:
             if "btn_peek" in lay_text and 'inputtag="KEY4" inputmask="1"' in lay_text:
                 print("STALE: rbmk default.lay peek still bound to KEY4/1 (payout)")
                 stale = True
+        mj_wall = PEEK / "fei_mj_lamps" / "mjelctrn_wall.lua"
+        mj_lua = PACK / "fei_mj_lamps" / "mjelctrn.lua"
+        if mj_wall.is_file():
+            if not (PACK / "fei_mj_lamps" / "mjelctrn_wall.lua").is_file():
+                print("STALE: pack mjelctrn_wall.lua missing")
+                stale = True
+            mj_text = mj_lua.read_text(encoding="utf-8") if mj_lua.is_file() else ""
+            if "mjelctrn_wall.lua" not in mj_text:
+                print("STALE: pack mjelctrn.lua missing wall load")
+                stale = True
+            if not (PACK / "artwork" / "mjelctrn" / "peek_up.png").is_file():
+                print("STALE: artwork/mjelctrn/peek_up.png missing")
+                stale = True
+            mj_lay = PACK / "artwork" / "mjelctrn" / "default.lay"
+            if mj_lay.is_file():
+                mj_lay_text = mj_lay.read_text(encoding="utf-8", errors="replace")
+                if "btn_bleed" not in mj_lay_text or "btn_sangen" not in mj_lay_text:
+                    print("STALE: mjelctrn default.lay missing bleed/sangen btns")
+                    stale = True
     else:
         print("note: arcade-mj-enhance not found, skip peek check:", PEEK)
 
@@ -547,6 +599,7 @@ def main() -> None:
         )
     print("artwork synced", len(wl) - len(missing), "missing", missing)
     overlay_rbmk_peek_artwork(dst_art)
+    overlay_mjelctrn_peek_artwork(dst_art)
 
     version = next_version()
     (PACK / "VERSION.txt").write_text(version + "\n", encoding="utf-8")
@@ -561,6 +614,12 @@ def main() -> None:
         rbmk_text = (dst_lamps / "rbmk.lua").read_text(encoding="utf-8")
         assert "hunt(machine)" in rbmk_text, "peek overlay lost hunt(machine)"
         assert (PACK / "artwork" / "rbmk" / "peek_up.png").is_file(), "peek overlay lost peek_up.png"
+    if PEEK.is_dir() and (PEEK / "fei_mj_lamps" / "mjelctrn_wall.lua").is_file():
+        assert (dst_lamps / "mjelctrn_wall.lua").is_file(), "peek overlay lost mjelctrn_wall.lua"
+        mj_text = (dst_lamps / "mjelctrn.lua").read_text(encoding="utf-8")
+        assert "mjelctrn_wall.lua" in mj_text, "peek overlay lost mjelctrn wall load"
+        assert (PACK / "artwork" / "mjelctrn" / "peek_up.png").is_file(), "peek overlay lost mjelctrn peek png"
+        assert (PACK / "artwork" / "mjelctrn" / "bleed_up.png").is_file(), "peek overlay lost mjelctrn bleed png"
     print("OK")
 
 

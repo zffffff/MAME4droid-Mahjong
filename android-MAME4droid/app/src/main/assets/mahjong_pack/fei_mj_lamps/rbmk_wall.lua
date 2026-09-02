@@ -137,6 +137,7 @@ local hook_tick = 0
 local hand_refresh_age = 8
 
 local input, seq0, seq1, seq2, seq3, seq9, seq_f9
+local bound_machine = nil
 local prev = { false, false, false, false, false, false }
 local peek_open = false
 local peek_click = false
@@ -642,8 +643,12 @@ local function log_map(machine)
 end
 
 local function bind_keys(machine)
-    if seq1 then
+    if bound_machine == machine and input then
         return
+    end
+    bound_machine = machine
+    for i = 1, #prev do
+        prev[i] = false
     end
     input = machine.input
     seq1 = input:seq_from_tokens("KEYCODE_LCONTROL KEYCODE_1")

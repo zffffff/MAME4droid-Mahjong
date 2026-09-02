@@ -55,12 +55,37 @@
     <element name="hint_select_c"> <image file="hint_select_c.png" /> </element>
     <element name="hint_select_d"> <image file="hint_select_d.png" /> </element>
 
+    <!-- 透视套件：不绑 inputtag，点按由 Lua 指针处理 -->
+    <element name="btn_peek">
+        <image file="peek_up.png" state="0" />
+        <image file="peek_down.png" state="1" />
+    </element>
+    <element name="btn_pause">
+        <image file="pause_up.png" state="0" />
+        <image file="continue_up.png" state="1" />
+    </element>
+    <element name="btn_sangen">
+        <image file="sangen_up.png" state="0" />
+        <image file="sangen_down.png" state="1" />
+    </element>
+    <element name="btn_accept">
+        <image file="accept_up.png" state="0" />
+        <image file="accept_down.png" state="1" />
+    </element>
+    <element name="btn_bleed">
+        <image file="bleed_up.png" state="0" />
+        <image file="bleed_down.png" state="1" />
+    </element>
+
     <view name="Portrait_2_Rows">
         <screen index="0"> <bounds x="0" y="0" width="1000" height="970" /> </screen>
         <bezel element="bg_panel"> <bounds x="0" y="970" width="1000" height="670" /> </bezel>
         
         <bezel element="button_start" inputtag="KEY0" inputmask="32"> <bounds x="3" y="980" width="142" height="130" /> </bezel>
         <bezel element="button_donden" inputtag="KEY4" inputmask="8"> <bounds x="145" y="980" width="142" height="130" /> </bezel>
+        <bezel element="btn_sangen" id="btn_sangen"> <bounds x="287" y="980" width="142" height="130" /> </bezel>
+        <bezel element="btn_accept" id="btn_accept"> <bounds x="429" y="980" width="142" height="130" /> </bezel>
+        <bezel element="btn_bleed" id="btn_bleed"> <bounds x="571" y="980" width="142" height="130" /> </bezel>
         <bezel element="button_keyin" inputtag="COINS" inputmask="32"> <bounds x="713" y="980" width="142" height="130" /> </bezel>
         <bezel element="button_bet" inputtag="KEY1" inputmask="32"> <bounds x="855" y="980" width="142" height="130" /> </bezel>
         <bezel element="button_chi" inputtag="KEY2" inputmask="8"> <bounds x="145" y="1110" width="142" height="130" /> </bezel>
@@ -68,6 +93,8 @@
         <bezel element="button_kan" inputtag="KEY0" inputmask="16"> <bounds x="429" y="1110" width="142" height="130" /> </bezel>
         <bezel element="button_reach" inputtag="KEY1" inputmask="16"> <bounds x="571" y="1110" width="142" height="130" /> </bezel>
         <bezel element="button_ron" inputtag="KEY2" inputmask="16"> <bounds x="713" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="btn_peek" id="btn_peek"> <bounds x="3" y="1110" width="142" height="130" /> </bezel>
+        <bezel element="btn_pause" id="btn_pause"> <bounds x="855" y="1110" width="142" height="130" /> </bezel>
         
         <bezel element="button_a" inputtag="KEY0" inputmask="1"> <bounds x="3" y="1240" width="142" height="200" /> </bezel>
         <bezel element="button_b" inputtag="KEY1" inputmask="1"> <bounds x="145" y="1240" width="142" height="200" /> </bezel>
@@ -98,6 +125,12 @@
     <view name="Landscape_Touch_Screen">
         <bounds x="0" y="0" width="1600" height="900" />
         <screen index="0"> <bounds x="200" y="0" width="1200" height="900" /> </screen>
+
+        <bezel element="btn_peek" id="btn_peek"> <bounds x="1400" y="10" width="142" height="115" /> </bezel>
+        <bezel element="btn_pause" id="btn_pause"> <bounds x="1400" y="130" width="142" height="115" /> </bezel>
+        <bezel element="btn_sangen" id="btn_sangen"> <bounds x="58" y="10" width="142" height="115" /> </bezel>
+        <bezel element="btn_accept" id="btn_accept"> <bounds x="58" y="130" width="142" height="115" /> </bezel>
+        <bezel element="btn_bleed" id="btn_bleed"> <bounds x="58" y="250" width="142" height="115" /> </bezel>
 
         <bezel element="button_keyin" inputtag="COINS" inputmask="32"> <bounds x="58" y="770" width="142" height="130" /> </bezel>
         <bezel element="button_bet" inputtag="KEY1" inputmask="32"> <bounds x="58" y="640" width="142" height="130" /> </bezel>

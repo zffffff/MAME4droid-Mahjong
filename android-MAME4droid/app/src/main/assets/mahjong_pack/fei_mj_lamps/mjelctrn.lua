@@ -1,7 +1,49 @@
+local function wall_boot_log(msg)
+    local f = io.open("smoke_logs/mjelctrn_wall.log", "a")
+    if not f then
+        f = io.open("mjelctrn_wall.log", "a")
+    end
+    if f then
+        f:write(string.format("[wall-boot] %s %s\n", os.date("%H:%M:%S"), msg))
+        f:close()
+    end
+end
+
+local hunt = nil
+do
+    local chunk, err = loadfile("fei_mj_lamps/mjelctrn_wall.lua")
+    if not chunk then
+        wall_boot_log("LOADFILE FAIL: " .. tostring(err))
+    else
+        local ok, res = pcall(chunk)
+        if not ok then
+            wall_boot_log("EXEC FAIL: " .. tostring(res))
+        elseif type(res) ~= "function" then
+            wall_boot_log("EXEC OK but return type=" .. type(res))
+        else
+            hunt = res
+            wall_boot_log("OK hunt ready")
+        end
+    end
+end
+
 return function(machine, screen, blink_state)
+    if hunt then
+        hunt(machine)
+    end
+
+    -- DIP/F3 软复位宽限期内禁止 screen:pixel（与 wall boot_grace 同步）
+    local grace = _G.__fei_mjelctrn_boot_grace
+    if type(grace) == "number" and grace > 0 then
+        return
+    end
+    if not screen then
+        return
+    end
+
     local out = fei_output(machine)
     local w, h = screen.width, screen.height
-    
+
     local function is_red(vx, vy)
         local color = screen:pixel(w - vx - 1, h - vy - 1)
         return ((color >> 16) & 0xFF) > 200 and ((color >> 8) & 0xFF) < 50 and (color & 0xFF) < 50
