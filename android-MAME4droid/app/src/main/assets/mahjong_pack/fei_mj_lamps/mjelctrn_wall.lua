@@ -9,13 +9,13 @@
 -- 右Ctrl+2 另写 [draw-slot]：用手数 multiset 推断刚摸，对照 @7502/@712D（摸牌验证）
 -- 右Ctrl+6  dump 当前 bank 下 A24D/A215/AA5E 等（追摸牌生成/过滤；冷启动 bank 无效）
 -- 右Ctrl+7  控摸：切换目标牌（万/筒/索/字循环）
--- 右Ctrl+8  控摸：开/关（开=整池填目标；摸入手数+1后自动关并恢复备份）
+-- 右Ctrl+8  控摸：开/关（开=整池填目标；**单次**：玩家摸写 @7502/A24D 即时恢复；手数兜底）
 --         听牌被拒时：跳过「归还池+重抽」(A274 call AA5E / A277 jr)，改 jr A279 接受
 -- 右Ctrl+0  一键三元：武装 @7CB0 并装弹白/发/中×3（官方表），弹出换牌 UI
 -- 右Ctrl+-  / 皮肤 btn_bleed  下一局配牌出血：写 @7CC1=0（押注界面开局兑现）
 -- 皮肤 btn_accept  听牌可胡：A260 读拦截；关/复位清零 @7424
 -- F8      三元换牌监视开/关（注意：MAME 默认 F8=减跳帧，可能需在 UI 里改绑）
--- F9 牌池：34 种常显（0 张半透明）；点牌图 = 控摸下一张；角标=真实剩余
+-- F9 牌池：34 种常显（0 张半透明）；点牌图 = 控摸下一张（单次，摸完/局间自动关）；角标=真实剩余
 --         （注意：MAME 默认 F9=加跳帧；本仓沿用 F9 透视，冲突时改 UI 键）
 
 local LOG_PATH = "smoke_logs/mjelctrn_wall.log"
@@ -228,8 +228,22 @@ local force_draw = {
     backup = nil,
     sticky_backup = nil, -- 首次开控摸时的真牌池；换种/bank 闪断不得覆盖
     armed_pl_n = nil,
+    armed_zeros = 0,
     tick = 0,
+    tap = nil,
+    tap_cpu = nil,
+    tap_dead = false,
+    pending_msg = nil,
+    pending_log = nil,
+    prev_n = nil,
+    prev_pl_rn = nil,
+    prev_7502 = nil,
+    -- ld ($7502),a @A24D 共 3 字节；写监视触发时 PC 常已到 A250，须放宽
+    pc_lo = 0xA24D,
+    pc_hi = 0xA25F,
 }
+-- 控摸提示画在画面顶部（popmessage 居中会挡手牌）
+local ui_toast = { lines = nil, frames = 0 }
 local listen_accept = {
     on = false,
     tap = nil,
@@ -395,6 +409,157 @@ function force_draw.target_bcd()
     return FORCE_TILES[force_draw.tile_i] or 0x05
 end
 
+function ui_toast.show(msg, frames)
+    if not msg or msg == "" then
+        return
+    end
+    local lines = {}
+    for line in string.gmatch(msg, "[^\n]+") do
+        lines[#lines + 1] = line
+    end
+    if #lines == 0 then
+        return
+    end
+    ui_toast.lines = lines
+    ui_toast.frames = frames or 150
+end
+
+function ui_toast.draw(machine)
+    if not ui_toast.lines or (ui_toast.frames or 0) <= 0 then
+        ui_toast.lines = nil
+        return
+    end
+    ui_toast.frames = ui_toast.frames - 1
+    local ui = nil
+    pcall(function()
+        ui = machine.render.ui_container
+    end)
+    if not ui then
+        return
+    end
+    local n = #ui_toast.lines
+    local y0 = 0.010
+    local line_h = 0.026
+    local h = line_h * n + 0.014
+    pcall(function()
+        ui:draw_box(0.10, y0, 0.90, y0 + h, 0x60ffffff, 0xD0101828)
+        for i, line in ipairs(ui_toast.lines) do
+            ui:draw_text(0.12, y0 + 0.006 + (i - 1) * line_h, line, 0xffffffff)
+        end
+    end)
+end
+
+function force_draw.pc_player_draw(cpu)
+    if not cpu or not cpu.state then
+        return false
+    end
+    local pc = nil
+    pcall(function()
+        local r = cpu.state["PC"]
+        if r then
+            pc = r.value
+        end
+    end)
+    return pc and pc >= force_draw.pc_lo and pc <= force_draw.pc_hi
+end
+
+function force_draw.pool_zero_count(machine)
+    local z = 0
+    for i = 0, WALL_POOL_LEN - 1 do
+        if (mem.read_u8(machine, WALL_POOL_ADDR + i) or 0) == 0 then
+            z = z + 1
+        end
+    end
+    return z
+end
+
+function force_draw.tap_rm()
+    if force_draw.tap then
+        pcall(function()
+            force_draw.tap:remove()
+        end)
+        force_draw.tap = nil
+    end
+    force_draw.tap_cpu = nil
+    force_draw.tap_dead = false
+end
+
+-- 玩家摸写 @7502 当下立刻恢复牌池（须在电脑下一摸之前），避免「你我各摸一张同牌才解除」
+function force_draw.tap_fire_restore()
+    if not force_draw.armed then
+        return
+    end
+    local bak = force_draw.sticky_backup or force_draw.backup
+    local bcd = force_draw.target_bcd()
+    local name = tile_name(bcd)
+    local m = nil
+    pcall(function()
+        m = manager.machine
+    end)
+    if m and bak then
+        pcall(function()
+            force_draw.restore_pool(m, bak)
+        end)
+    end
+    force_draw.armed = false
+    force_draw.backup = nil
+    force_draw.armed_pl_n = nil
+    force_draw.armed_zeros = 0
+    force_draw.tick = 0
+    force_draw.prev_n = nil
+    force_draw.prev_pl_rn = nil
+    force_draw.prev_7502 = nil
+    force_draw.tap_dead = true
+    force_draw.pending_log = string.format(
+        "=== [force-draw] DISARM (tap_A24D) %s ===\n",
+        now()
+    )
+    force_draw.pending_msg = string.format("控摸已摸入 · 曾锁 %s · 牌池已恢复", name)
+end
+
+function force_draw.tap_install(machine)
+    force_draw.tap_rm()
+    local cpu = machine and machine.devices and machine.devices[":maincpu"]
+    local space = cpu and cpu.spaces and cpu.spaces["program"]
+    if not space or not space.install_write_tap then
+        return false
+    end
+    force_draw.tap_cpu = cpu
+    local ok, tap = pcall(function()
+        return space:install_write_tap(
+            TABLE_TILE_ADDR,
+            TABLE_TILE_ADDR,
+            "fei_force7502",
+            function(_offset, _data, _mask)
+                if force_draw.armed and force_draw.pc_player_draw(force_draw.tap_cpu) then
+                    force_draw.tap_fire_restore()
+                end
+            end
+        )
+    end)
+    if ok and tap then
+        force_draw.tap = tap
+        return true
+    end
+    force_draw.tap_cpu = nil
+    return false
+end
+
+function force_draw.consume_pending(machine)
+    if force_draw.tap_dead then
+        force_draw.tap_rm()
+    end
+    if force_draw.pending_log then
+        write_log(force_draw.pending_log, "a")
+        force_draw.pending_log = nil
+    end
+    if force_draw.pending_msg then
+        local msg = force_draw.pending_msg
+        force_draw.pending_msg = nil
+        ui_toast.show(msg, 150)
+    end
+end
+
 function force_draw.backup_pool(machine)
     local t = {}
     for i = 0, WALL_POOL_LEN - 1 do
@@ -422,12 +587,19 @@ function force_draw.clear_armed()
     force_draw.armed = false
     force_draw.backup = nil
     force_draw.armed_pl_n = nil
+    force_draw.armed_zeros = 0
     force_draw.tick = 0
+    force_draw.prev_n = nil
+    force_draw.prev_pl_rn = nil
+    force_draw.prev_7502 = nil
 end
 
 function force_draw.clear_session()
+    force_draw.tap_rm()
     force_draw.clear_armed()
     force_draw.sticky_backup = nil
+    force_draw.pending_msg = nil
+    force_draw.pending_log = nil
 end
 
 function listen_accept.toggle(machine)
@@ -925,8 +1097,9 @@ local function read_live_peek(machine)
 end
 
 local function player_hand_len(machine)
+    -- 只计 @7120..712C（13 张排序手）；勿含 @712D（台面缓冲，常已有牌 → 手数假 14 → 摸入检测永久失败）
     local n = 0
-    for i = 0, HAND_SORTED do
+    for i = 0, HAND_SORTED - 1 do
         local v = mem.read_u8(machine, HAND_ADDR + i)
         if not tile_valid(v) then
             break
@@ -960,9 +1133,7 @@ function force_draw.arm(machine)
     if not force_draw.sticky_backup then
         local snap = force_draw.backup_pool(machine)
         if force_draw.backup_looks_forced(snap) then
-            machine:popmessage(
-                "牌池已是控摸态且无真备份\n无法还原多样性 · 请结束本局再开控摸"
-            )
+            ui_toast.show("牌池已是控摸态且无真备份 · 请结束本局再开", 180)
         end
         force_draw.sticky_backup = snap
     end
@@ -975,27 +1146,40 @@ function force_draw.arm(machine)
         force_draw.armed_pl_n = #(live.sorted_raw or {})
     end
     force_draw.fill_pool(machine, bcd)
+    force_draw.armed_zeros = 0
+    force_draw.prev_n = force_draw.armed_pl_n
+    force_draw.prev_pl_rn = 0
+    pcall(function()
+        local raw = read_discard_hist(machine, PLAYER_DISCARD_ADDR)
+        force_draw.prev_pl_rn = #raw
+    end)
+    force_draw.prev_7502 = mem.read_u8(machine, TABLE_TILE_ADDR)
+    local tap_ok = force_draw.tap_install(machine)
     write_log(
         string.format(
-            "=== [force-draw] ARM %s (%02X) pool-only %s ===\n",
+            "=== [force-draw] ARM %s (%02X) pool-only tap=%s %s ===\n",
             tile_name(bcd),
             bcd,
+            tap_ok and "Y" or "N",
             now()
         ),
         "a"
     )
-    machine:popmessage(
+    ui_toast.show(
         string.format(
-            "控摸开 → 下一摸强制 %s\n摸完/右Ctrl+8/再点同种 关",
-            tile_name(bcd)
-        )
+            "控摸开 → 下一摸 %s · 摸入自动关%s",
+            tile_name(bcd),
+            tap_ok and "" or " · 手数兜底"
+        ),
+        150
     )
 end
 
-function force_draw.disarm(machine, reason)
+function force_draw.disarm(machine, reason, toast_msg)
     reason = reason or "manual"
     local bak = force_draw.sticky_backup or force_draw.backup
     if not force_draw.armed and not bak then
+        force_draw.tap_rm()
         return false
     end
     if bak then
@@ -1005,38 +1189,102 @@ function force_draw.disarm(machine, reason)
     end
     local forced_bak = force_draw.backup_looks_forced(bak)
     force_draw.clear_armed()
+    force_draw.tap_rm()
     write_log(
         string.format("=== [force-draw] DISARM (%s) %s ===\n", reason, now()),
         "a"
     )
-    if not bak then
-        machine:popmessage("控摸关 · 无牌池备份可恢复")
+    if toast_msg then
+        ui_toast.show(toast_msg, 150)
+    elseif not bak then
+        ui_toast.show("控摸关 · 无牌池备份可恢复", 150)
     elseif forced_bak then
-        machine:popmessage("控摸关 · 备份已是污染池\n本局牌池多样性无法还原")
+        ui_toast.show("控摸关 · 备份已污染 · 本局多样性无法还原", 180)
     else
-        machine:popmessage("控摸关 · 牌池已恢复")
+        ui_toast.show("控摸关 · 牌池已恢复", 120)
     end
     return true
 end
 
 function force_draw.run_tick(machine)
+    force_draw.consume_pending(machine)
     if not force_draw.armed then
         return
     end
+    if not force_draw.tap and (force_draw.tick % 32) == 2 then
+        pcall(force_draw.tap_install, machine)
+    end
     force_draw.tick = (force_draw.tick or 0) + 1
-    if (force_draw.tick % 8) == 1 then
-        force_draw.fill_pool(machine, force_draw.target_bcd())
+    local target = force_draw.target_bcd()
+    local name = tile_name(target)
+    local z = force_draw.pool_zero_count(machine)
+    if z > (force_draw.armed_zeros or 0) then
+        force_draw.disarm(
+            machine,
+            string.format("pool_taken_z%d", z),
+            string.format("控摸已摸入 · 曾锁 %s · 牌池已恢复", name)
+        )
+        return
     end
     local n = player_hand_len(machine)
+    local pl_rn = 0
+    pcall(function()
+        local raw = read_discard_hist(machine, PLAYER_DISCARD_ADDR)
+        pl_rn = #raw
+    end)
+    local t7502 = mem.read_u8(machine, TABLE_TILE_ADDR)
     local base = force_draw.armed_pl_n or n
-    if n > base then
-        local bcd = force_draw.target_bcd()
-        local name = tile_name(bcd)
-        force_draw.disarm(machine, string.format("player_hand_%d_to_%d", base, n))
-        machine:popmessage(
-            string.format("控摸：已摸入（手 %d→%d）\n目标曾为 %s", base, n, name)
+    if n < base then
+        force_draw.disarm(
+            machine,
+            string.format("hand_drop_%d_to_%d", base, n),
+            string.format("控摸：手数回落（%d→%d）已关 · 曾锁 %s", base, n, name)
         )
+        return
     end
+    local prev_7502 = force_draw.prev_7502
+    if prev_7502 ~= nil and t7502 == target and prev_7502 ~= t7502 and pl_rn <= (force_draw.prev_pl_rn or pl_rn) then
+        force_draw.disarm(
+            machine,
+            "7502_to_target",
+            string.format("控摸已摸入 · 曾锁 %s · 牌池已恢复", name)
+        )
+        return
+    end
+    local prev_n = force_draw.prev_n
+    local prev_rn = force_draw.prev_pl_rn or 0
+    if prev_n ~= nil and n > prev_n and pl_rn <= prev_rn then
+        force_draw.disarm(
+            machine,
+            string.format("sorted_+1_%d_to_%d", prev_n, n),
+            string.format("控摸已摸入（手 %d→%d）· 曾锁 %s", prev_n, n, name)
+        )
+        return
+    end
+    if n > base then
+        local jump = n - base
+        if jump > 1 then
+            force_draw.disarm(
+                machine,
+                string.format("player_hand_%d_to_%d", base, n),
+                string.format("控摸：手数跳增（%d→%d）已关 · 曾锁 %s", base, n, name)
+            )
+        else
+            force_draw.disarm(
+                machine,
+                string.format("player_hand_%d_to_%d", base, n),
+                string.format("控摸已摸入（手 %d→%d）· 曾锁 %s", base, n, name)
+            )
+        end
+        return
+    end
+    if (force_draw.tick % 8) == 1 then
+        force_draw.fill_pool(machine, target)
+        force_draw.armed_zeros = 0
+    end
+    force_draw.prev_n = n
+    force_draw.prev_pl_rn = pl_rn
+    force_draw.prev_7502 = t7502
 end
 
 function force_draw.index_of(bcd)
@@ -1062,13 +1310,12 @@ function force_draw.select(machine, bcd)
     force_draw.tile_i = idx
     if force_draw.armed then
         force_draw.fill_pool(machine, bcd)
+        force_draw.armed_zeros = 0
         write_log(
             string.format("=== [force-draw] RETARGET %s (%02X) %s ===\n", tile_name(bcd), bcd, now()),
             "a"
         )
-        machine:popmessage(
-            string.format("控摸改 → %s\n摸完自动关 | 再点同种取消", tile_name(bcd))
-        )
+        ui_toast.show(string.format("控摸改 → %s · 摸入自动关", tile_name(bcd)), 120)
         return
     end
     force_draw.arm(machine)
@@ -2572,6 +2819,11 @@ local function draw_peek_panel(machine)
     if not peek_open then
         return
     end
+    -- 暂停时 screen 帧号不动：若仍用帧号去重，periodic 重画会被跳过 → 面板消失
+    local paused = false
+    pcall(function()
+        paused = machine.paused and true or false
+    end)
     local frame_n = nil
     pcall(function()
         local scr = machine.screens[":screen"]
@@ -2579,7 +2831,7 @@ local function draw_peek_panel(machine)
             frame_n = scr:frame_number()
         end
     end)
-    if frame_n ~= nil and frame_n == last_peek_draw_frame then
+    if (not paused) and frame_n ~= nil and frame_n == last_peek_draw_frame then
         return
     end
     if frame_n ~= nil then
@@ -2914,10 +3166,31 @@ local function ensure_pause_poll()
     _G.__fei_mjelctrn_wall = {
         is_family = is_family,
         on_paused_tick = function(m)
-            if m.paused then
-                apply_peek_click(m)
-                apply_pool_click(m)
+            if not m.paused then
+                ptr_tick()
+                return
             end
+            -- 暂停时 frame_done 不跑：补点击 + 持续重画透视（可与暂停并存）
+            apply_peek_click(m)
+            apply_sangen_click(m)
+            apply_accept_click(m)
+            if bleed.click then
+                bleed.click = false
+                bleed.arm(m)
+            end
+            apply_pool_click(m)
+            if bleed.press_frames > 0 then
+                bleed.press_frames = bleed.press_frames - 1
+            end
+            if peek_open or SHOW_DEBUG_HUD then
+                pcall(function()
+                    local live = read_live_peek(m)
+                    update_draw_track(m, live)
+                end)
+                pcall(draw_peek_panel, m)
+                pcall(draw_text_hud, m)
+            end
+            pcall(ui_toast.draw, m)
             ptr_tick()
         end,
         btn_peek = function()
@@ -3030,6 +3303,7 @@ return function(machine)
     pcall(function()
         sangen_watch_tick(machine)
     end)
+    pcall(ui_toast.draw, machine)
     if peek_open or SHOW_DEBUG_HUD then
         pcall(function()
             local live = read_live_peek(machine)

@@ -450,9 +450,119 @@ local function screen_rect_to_panel_px(g, pw, ph, x, y, w, h)
     return px, py, tw, th
 end
 
+-- 须在 blit_tile_bmp / draw_tile 之前：后置 local function 在闭包里会解析成全局 nil → rbmk 透视面板空白
+local function art_key_bcd(v)
+    if not v or v == 0 then
+        return "blank"
+    end
+    v = v & 0xFF
+    if v >= 0x01 and v <= 0x09 then
+        return string.format("man%d", v)
+    end
+    if v >= 0x11 and v <= 0x19 then
+        return string.format("pin%d", v - 0x10)
+    end
+    if v >= 0x21 and v <= 0x29 then
+        return string.format("sou%d", v - 0x20)
+    end
+    return ({
+        [0x31] = "honor-e",
+        [0x32] = "honor-s",
+        [0x33] = "honor-w",
+        [0x34] = "honor-n",
+        [0x35] = "honor-p",
+        [0x36] = "honor-f",
+        [0x37] = "honor-c",
+    })[v] or "unknown"
+end
+
+local function art_key(raw)
+    if not raw or raw == 0 then
+        return "blank"
+    end
+    local v = raw & 0xFF
+    local aka = false
+    if v >= 0x80 then
+        aka = true
+        v = v - 0x80
+    end
+    local hi = v >> 4
+    local lo = v & 0x0F
+    if lo < 1 or lo > 9 then
+        return "unknown"
+    end
+    local suit = ({ [0] = "man", [1] = "pin", [2] = "sou" })[hi]
+    if not suit then
+        return "unknown"
+    end
+    if aka and lo == 5 then
+        return string.format("%s5-aka", suit)
+    end
+    return string.format("%s%d", suit, lo)
+end
+
+local function art_key_for(tile)
+    if tile and tile.enc == "bcd" then
+        return art_key_bcd(tile.raw)
+    end
+    return art_key(tile and tile.raw)
+end
+
+local function suit_of(raw)
+    if not raw or raw == 0 then
+        return "unk"
+    end
+    local v = raw & 0xFF
+    if v >= 0x80 then
+        v = v - 0x80
+    end
+    return ({ [0] = "man", [1] = "pin", [2] = "sou" })[v >> 4] or "unk"
+end
+
+local function suit_of_tile(tile)
+    if tile and tile.enc == "bcd" then
+        local v = tile.raw & 0xFF
+        if v >= 0x01 and v <= 0x09 then
+            return "man"
+        end
+        if v >= 0x11 and v <= 0x19 then
+            return "pin"
+        end
+        if v >= 0x21 and v <= 0x29 then
+            return "sou"
+        end
+        if v >= 0x31 and v <= 0x37 then
+            return "honor"
+        end
+        return "unk"
+    end
+    return suit_of(tile and tile.raw)
+end
+
+local function with_alpha(col, a)
+    return ((a & 0xFF) << 24) | (col & 0x00FFFFFF)
+end
+
+-- plot_box 是实心填色、不混合；高亮只能描边，否则会盖掉牌图
+local function plot_rect_border(panel, px, py, tw, th, color, thick)
+    thick = thick or 2
+    if tw < 1 or th < 1 then
+        return
+    end
+    pcall(function()
+        panel:plot_box(px - thick, py - thick, tw + thick * 2, thick, color)
+        panel:plot_box(px - thick, py + th, tw + thick * 2, thick, color)
+        panel:plot_box(px - thick, py - thick, thick, th + thick * 2, color)
+        panel:plot_box(px + tw, py - thick, thick, th + thick * 2, color)
+    end)
+end
+
 local function blit_tile_bmp(panel, g, pw, ph, x, y, w, h, tile, hi, dim)
     if (not tile) or tile.empty or not tile.raw or tile.raw == 0 then
         return
+    end
+    if tile.force_hi then
+        hi = true
     end
     local px, py, tw, th = screen_rect_to_panel_px(g, pw, ph, x, y, w, h)
     if px + tw > pw or py + th > ph then
@@ -468,13 +578,9 @@ local function blit_tile_bmp(panel, g, pw, ph, x, y, w, h, tile, hi, dim)
         end)
         if ok then
             if hi then
-                pcall(function()
-                    panel:plot_box(px - 1, py - 1, tw + 2, th + 2, 0x60FFFF00)
-                end)
+                plot_rect_border(panel, px, py, tw, th, 0xFFFFFF40, 2)
             elseif aka and not dim then
-                pcall(function()
-                    panel:plot_box(px - 1, py - 1, tw + 2, th + 2, 0xFFC09020)
-                end)
+                plot_rect_border(panel, px, py, tw, th, 0xFFC09020, 2)
             end
             return
         end
@@ -486,6 +592,9 @@ local function blit_tile_bmp(panel, g, pw, ph, x, y, w, h, tile, hi, dim)
     pcall(function()
         panel:plot_box(px, py, tw, th, fill)
     end)
+    if hi then
+        plot_rect_border(panel, px, py, tw, th, 0xFFFFFF40, 2)
+    end
 end
 
 local function blit_row_bmp(panel, g, pw, ph, x, y, w, h, gap, list, maxn, hi_first, dim_after)
@@ -592,63 +701,6 @@ local function draw_panel_labels(ui, st, g)
     end
 end
 
-local function art_key_bcd(v)
-    if not v or v == 0 then
-        return "blank"
-    end
-    v = v & 0xFF
-    if v >= 0x01 and v <= 0x09 then
-        return string.format("man%d", v)
-    end
-    if v >= 0x11 and v <= 0x19 then
-        return string.format("pin%d", v - 0x10)
-    end
-    if v >= 0x21 and v <= 0x29 then
-        return string.format("sou%d", v - 0x20)
-    end
-    return ({
-        [0x31] = "honor-e",
-        [0x32] = "honor-s",
-        [0x33] = "honor-w",
-        [0x34] = "honor-n",
-        [0x35] = "honor-p",
-        [0x36] = "honor-f",
-        [0x37] = "honor-c",
-    })[v] or "unknown"
-end
-
-local function art_key_for(tile)
-    if tile and tile.enc == "bcd" then
-        return art_key_bcd(tile.raw)
-    end
-    return art_key(tile and tile.raw)
-end
-
-local function art_key(raw)
-    if not raw or raw == 0 then
-        return "blank"
-    end
-    local v = raw & 0xFF
-    local aka = false
-    if v >= 0x80 then
-        aka = true
-        v = v - 0x80
-    end
-    local hi = v >> 4
-    local lo = v & 0x0F
-    if lo < 1 or lo > 9 then
-        return "unknown"
-    end
-    local suit = ({ [0] = "man", [1] = "pin", [2] = "sou" })[hi]
-    if not suit then
-        return "unknown"
-    end
-    if aka and lo == 5 then
-        return string.format("%s5-aka", suit)
-    end
-    return string.format("%s%d", suit, lo)
-end
-
 local function short_label(tile)
     if not tile or tile.empty or not tile.name or tile.name == "＿" then
         return ""
@@ -746,41 +798,6 @@ local function load_textures(machine)
             end
         end
     end
-end
-
-local function suit_of_tile(tile)
-    if tile and tile.enc == "bcd" then
-        local v = tile.raw & 0xFF
-        if v >= 0x01 and v <= 0x09 then
-            return "man"
-        end
-        if v >= 0x11 and v <= 0x19 then
-            return "pin"
-        end
-        if v >= 0x21 and v <= 0x29 then
-            return "sou"
-        end
-        if v >= 0x31 and v <= 0x37 then
-            return "honor"
-        end
-        return "unk"
-    end
-    return suit_of(tile and tile.raw)
-end
-
-local function suit_of(raw)
-    if not raw or raw == 0 then
-        return "unk"
-    end
-    local v = raw & 0xFF
-    if v >= 0x80 then
-        v = v - 0x80
-    end
-    return ({ [0] = "man", [1] = "pin", [2] = "sou" })[v >> 4] or "unk"
-end
-
-local function with_alpha(col, a)
-    return ((a & 0xFF) << 24) | (col & 0x00FFFFFF)
 end
 
 local function draw_tile(ui, x, y, w, h, tile, hi, dim)
@@ -1055,6 +1072,7 @@ local function draw_mjelctrn_labels(ui, st, g)
 end
 
 local function draw_mjelctrn_counts(ui, st, g)
+    -- 与 draw_tile 一致：牌图右上角深色角标（缓存面板路径不进 bitmap，须另行叠字）
     local pool = st.pool or {}
     local rows = st.pool_rows or g.pool_rows or 2
     local per = g.pool_row_n or 17
@@ -1064,11 +1082,12 @@ local function draw_mjelctrn_counts(ui, st, g)
             if t and t.count ~= nil then
                 local x0 = g.x0 + (i - 1) * (g.ptw + g.pgap)
                 local y = g.pool_y0 + r * (g.pth + g.pool_row_pad)
+                local dim = t.dim or t.count == 0
                 ui:draw_text(
                     x0 + g.ptw * 0.55,
-                    y + g.pth * 0.55,
+                    y + g.pth * 0.02,
                     tostring(t.count),
-                    (t.count == 0) and 0x80ffffff or 0xffffff40
+                    dim and 0x80202080 or 0xff1a1060
                 )
             end
         end

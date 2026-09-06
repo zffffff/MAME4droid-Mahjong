@@ -28,14 +28,16 @@ alwaysApply: true
 - 本仓：`D:\Dev\MAME4droid-Mahjong`
 - 按键包开发源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（对外以本仓 mahjong_pack 为准）
 - Mods 的 bat/路径问题在仓库 A 改；本仓用 `scripts/sync-mahjong-pack.py` 同步（合并横竖屏桥接，勿裸拷 `master_lamps.lua`）
-- 透视在 `D:\Dev\arcade-mj-enhance`。同步会先整目录覆盖灯控，再叠回透视文件；**禁止**用手拷整目录互盖。见 `docs/整合勿丢内容.md`
+- **麻将增强包**（透视 / 暂停 / 三元 / 可胡 / 配牌出血等局内辅助）在 `D:\Dev\arcade-mj-enhance`。同步会先整目录覆盖灯控，再叠回增强文件；**禁止**用手拷整目录互盖。见 `docs/整合勿丢内容.md`
+- **口径：按键包管操作，增强包管透视和局内辅助。** 进阶版 = 按键包 + 增强包；基础版安装时剥离增强（`stripEnhanceExtrasForBasic`）
+- **打包分流（默认）**：无特别说明时，增强包与其它新内容只保证进阶版；基础版不主动更新。打包前向用户确认「本次基础版会带上哪些」（例如仅按键图）
 - **打包前**先跑 `python android-MAME4droid/scripts/sync-mahjong-pack.py --check`。落后则同步后再打（用户明确说这次先不动按键包时除外）
 - 同步**不会**删/挪 `MAMEmjKey/release/`；与一键发布文件夹核对见 `docs/知识库.md` §2.2（允许 `master_lamps` 桥接差异）
 
 ## 体验门控
 
-- 两版都跑 `AssetPackInstaller`（**basic：artwork + per-game 灯控，启动前清污染文件**；**full 装完整包，暂不 CLI 灯控**）
-- **仅 full**：种子默认、方向桥接、强制竖屏、右上角工具菜单、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）
+- 两版都跑 `AssetPackInstaller`（**basic：artwork + 灯控，安装后剥增强**；**full 装完整包含增强**；启动前清污染文件）
+- **仅 full**：种子默认、方向桥接、强制竖屏、右上角工具菜单、麻将键盘、`oscForceHidden`（`MahjongExperienceHelper` 早退）；麻将增强包仅 full 保留
 - 横屏 OSC 只在 `app/src/full/res/raw*`，且**无** Start/Coin/Option/Exit；`main` 保持上游布局，避免污染 basic
 - 按钮 ID `8=Coin` `9=Start`；Exit / MAME 菜单改走工具箱 🚪 与麻将键更多页 Tab；退出回选台用 `Emulator.requestExitToPickerOrFinish()`
 
