@@ -29,6 +29,7 @@ alwaysApply: true
 - 按键包开发源：`D:\Dev\MAMEmjKey\MAME_Mahjong_Mods`（对外以本仓 mahjong_pack 为准）
 - Mods 的 bat/路径问题在仓库 A 改；本仓用 `scripts/sync-mahjong-pack.py` 同步（合并横竖屏桥接，勿裸拷 `master_lamps.lua`）
 - **麻将增强包**（透视 / 暂停 / 三元 / 可胡 / 配牌出血等局内辅助）在 `D:\Dev\arcade-mj-enhance`。同步会先整目录覆盖灯控，再叠回增强文件；**禁止**用手拷整目录互盖。见 `docs/整合勿丢内容.md`
+- **增强皮肤钮**（peek/pause 等）权威源是增强仓 `fei_mj_lamps/art/buttons/`；sync 只盖主目录 `artwork/mjelctrn`、`artwork/rbmk`（克隆不二次盖→易出现「主低清/克隆高清」）。换高清改增强仓再 sync，测以主 ROM 为准
 - **口径：按键包管操作，增强包管透视和局内辅助。** 进阶版 = 按键包 + 增强包；基础版安装时剥离增强（`stripEnhanceExtrasForBasic`）
 - **打包分流（默认）**：无特别说明时，增强包与其它新内容只保证进阶版；基础版不主动更新。打包前向用户确认「本次基础版会带上哪些」（例如仅按键图）
 - **打包前**先跑 `python android-MAME4droid/scripts/sync-mahjong-pack.py --check`。落后则同步后再打（用户明确说这次先不动按键包时除外）
