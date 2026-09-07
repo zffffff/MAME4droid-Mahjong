@@ -14,6 +14,7 @@
 -- 右Ctrl+0  一键三元：武装 @7CB0 并装弹白/发/中×3（官方表），弹出换牌 UI
 -- 右Ctrl+-  / 皮肤 btn_bleed  下一局配牌出血：写 @7CC1=0（押注界面开局兑现）
 -- 皮肤 btn_accept  听牌可胡：A260 读拦截；关/复位清零 @7424
+-- 可胡开时 log 会记 [listen-accept-pc] 唯一 PC（克隆补偏移用）
 -- F8      三元换牌监视开/关（注意：MAME 默认 F8=减跳帧，可能需在 UI 里改绑）
 -- F9 牌池：34 种常显（0 张半透明）；点牌图 = 控摸下一张（单次，摸完/局间自动关）；角标=真实剩余
 --         （注意：MAME 默认 F9=加跳帧；本仓沿用 F9 透视，冲突时改 UI 键）
@@ -251,8 +252,27 @@ local listen_accept = {
     addr = 0x7424,
     aux = 0x7427,
     accept = 0x50,
+    -- 默认主版窗；apply_rom_profile 会按机种覆盖
     pc_lo = 0xA260,
     pc_hi = 0xA266,
+    seen_pc = {},
+    probe_n = 0,
+    filter_n = 0,
+    post_arm_logs = 0,
+}
+
+-- 听牌可胡：读 @7424 时的 PC 窗（与主版 A260..A266 同宽 7 字节）
+-- mjembase: AB57 → AB54..AB5A
+-- mjelct3 / mjelct3a: ADF4 → ADF1..ADF7（FILTER armed=Y 多次）
+-- mjelctrb: AFF4 → AFF1..AFF7
+local ACCEPT_PC_BY_ROM = {
+    mjelctrn = { 0xA260, 0xA266 },
+    qyjdzjp = { 0xA260, 0xA266 },
+    mjelct3b = { 0xA260, 0xA266 },
+    mjembase = { 0xAB54, 0xAB5A },
+    mjelct3 = { 0xADF1, 0xADF7 },
+    mjelct3a = { 0xADF1, 0xADF7 },
+    mjelctrb = { 0xAFF1, 0xAFF7 },
 }
 
 local HONOR_NAMES = {
@@ -353,9 +373,21 @@ function listen_accept.clear_ram(machine)
     mem.write_u8(machine, listen_accept.aux, 0)
 end
 
-function listen_accept.pc_ok(cpu)
+function listen_accept.apply_rom_profile(machine)
+    local rom = (machine and machine.system and machine.system.name) or ""
+    local w = ACCEPT_PC_BY_ROM[rom]
+    if w then
+        listen_accept.pc_lo = w[1]
+        listen_accept.pc_hi = w[2]
+    else
+        listen_accept.pc_lo = 0xA260
+        listen_accept.pc_hi = 0xA266
+    end
+end
+
+function listen_accept.pc_value(cpu)
     if not cpu or not cpu.state then
-        return false
+        return nil
     end
     local pc = nil
     pcall(function()
@@ -364,7 +396,76 @@ function listen_accept.pc_ok(cpu)
             pc = r.value
         end
     end)
+    return pc
+end
+
+function listen_accept.pc_ok(cpu)
+    local pc = listen_accept.pc_value(cpu)
     return pc and pc >= listen_accept.pc_lo and pc <= listen_accept.pc_hi
+end
+
+-- 可胡开着时记 PC。控摸武装期间对 bank 窗读点逐条打 FILTER（抓换牌否决）。
+function listen_accept.probe_note(cpu, hit)
+    local pc = listen_accept.pc_value(cpu)
+    if not pc then
+        return
+    end
+    local armed = force_draw.armed == true
+    local post = (listen_accept.post_arm_logs or 0) > 0
+    if (armed or post) and pc >= 0x8000 and listen_accept.filter_n < 60 then
+        listen_accept.filter_n = listen_accept.filter_n + 1
+        if post and not armed then
+            listen_accept.post_arm_logs = listen_accept.post_arm_logs - 1
+        end
+        write_log(
+            string.format(
+                "=== [listen-accept-pc] FILTER#%d PC=%04X %s armed=%s window=%04X..%04X ===\n",
+                listen_accept.filter_n,
+                pc,
+                hit and "HIT" or "MISS",
+                armed and "Y" or "N",
+                listen_accept.pc_lo,
+                listen_accept.pc_hi
+            ),
+            "a"
+        )
+    end
+    if listen_accept.seen_pc[pc] then
+        return
+    end
+    if listen_accept.probe_n >= 40 then
+        return
+    end
+    listen_accept.seen_pc[pc] = true
+    listen_accept.probe_n = listen_accept.probe_n + 1
+    write_log(
+        string.format(
+            "=== [listen-accept-pc] #%d PC=%04X %s window=%04X..%04X ===\n",
+            listen_accept.probe_n,
+            pc,
+            hit and "HIT" or "MISS",
+            listen_accept.pc_lo,
+            listen_accept.pc_hi
+        ),
+        "a"
+    )
+end
+
+function listen_accept.probe_reset()
+    listen_accept.seen_pc = {}
+    listen_accept.probe_n = 0
+    listen_accept.filter_n = 0
+    listen_accept.post_arm_logs = 0
+end
+
+function listen_accept.on_force_arm()
+    listen_accept.filter_n = 0
+    listen_accept.post_arm_logs = 0
+end
+
+function listen_accept.on_force_disarm()
+    -- 解除后再抓一阵（否决换牌常发生在摸写前后）
+    listen_accept.post_arm_logs = 30
 end
 
 function listen_accept.tap_rm()
@@ -391,7 +492,12 @@ function listen_accept.tap_install(machine)
             listen_accept.addr,
             "fei_listen7424",
             function(_offset, _data, _mask)
-                if listen_accept.on and listen_accept.pc_ok(listen_accept.cpu) then
+                if not listen_accept.on then
+                    return
+                end
+                local hit = listen_accept.pc_ok(listen_accept.cpu)
+                listen_accept.probe_note(listen_accept.cpu, hit)
+                if hit then
                     return listen_accept.accept
                 end
             end
@@ -510,6 +616,7 @@ function force_draw.tap_fire_restore()
     force_draw.prev_pl_rn = nil
     force_draw.prev_7502 = nil
     force_draw.tap_dead = true
+    listen_accept.on_force_disarm()
     force_draw.pending_log = string.format(
         "=== [force-draw] DISARM (tap_A24D) %s ===\n",
         now()
@@ -607,6 +714,7 @@ function listen_accept.toggle(machine)
         listen_accept.on = false
         listen_accept.tap_rm()
         listen_accept.clear_ram(machine)
+        listen_accept.probe_reset()
         machine:popmessage("听牌可胡关 · 已清 @7424")
         write_log(
             string.format(
@@ -619,12 +727,18 @@ function listen_accept.toggle(machine)
         return
     end
     listen_accept.on = true
+    listen_accept.probe_reset()
+    listen_accept.apply_rom_profile(machine)
     listen_accept.clear_ram(machine)
     local tap_ok = listen_accept.tap_install(machine)
+    local rom = (machine and machine.system and machine.system.name) or "?"
     write_log(
         string.format(
-            "=== [listen-accept] ON tapA260+%s 7424=%02X %s ===\n",
+            "=== [listen-accept] ON rom=%s tap+ %s window=%04X..%04X 7424=%02X %s ===\n",
+            rom,
             tap_ok and "Y" or "N",
+            listen_accept.pc_lo,
+            listen_accept.pc_hi,
             mem.read_u8(machine, listen_accept.addr) or 0,
             now()
         ),
@@ -1155,6 +1269,7 @@ function force_draw.arm(machine)
     end)
     force_draw.prev_7502 = mem.read_u8(machine, TABLE_TILE_ADDR)
     local tap_ok = force_draw.tap_install(machine)
+    listen_accept.on_force_arm()
     write_log(
         string.format(
             "=== [force-draw] ARM %s (%02X) pool-only tap=%s %s ===\n",
@@ -1190,6 +1305,7 @@ function force_draw.disarm(machine, reason, toast_msg)
     local forced_bak = force_draw.backup_looks_forced(bak)
     force_draw.clear_armed()
     force_draw.tap_rm()
+    listen_accept.on_force_disarm()
     write_log(
         string.format("=== [force-draw] DISARM (%s) %s ===\n", reason, now()),
         "a"
@@ -3041,6 +3157,7 @@ local function on_soft_reset(machine)
     listen_accept.on = false
     listen_accept.tap_rm()
     listen_accept.clear_ram(machine)
+    listen_accept.probe_reset()
     pool_click_bcd = nil
     ptr_lock_until = 0
     ptr_lock_frames = 0
