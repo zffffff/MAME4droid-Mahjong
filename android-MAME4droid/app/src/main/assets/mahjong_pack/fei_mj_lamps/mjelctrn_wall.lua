@@ -1227,8 +1227,8 @@ function hand_pat.draw(ui, machine)
     local gx1 = (g and g.gx1) or 0.92
     local gy0 = (g and g.gy0) or 0.02
     local gy1 = (g and g.gy1) or 0.55
-    local bw = math.min(0.14, (gx1 - gx0) * 0.24)
-    local bh = 0.030
+    local bw = math.min(0.16, (gx1 - gx0) * 0.26)
+    local bh = 0.050 -- 与列表行高同量级；0.030 时「牌型」字会下溢出框
     local x0 = gx1 - bw
     local y0 = gy0 + 0.004
     local x1 = gx1
@@ -1239,7 +1239,7 @@ function hand_pat.draw(ui, machine)
             ui:draw_box(x0, y0, x1, y1, 0xffd0c080, 0xf0101018)
         end
         if ui.draw_text then
-            ui:draw_text(x0 + 0.008, y0 + 0.005, hand_pat.menu_open and "牌型<<" or "牌型>>", 0xfffff8e0)
+            ui:draw_text(x0 + 0.012, y0 + 0.012, hand_pat.menu_open and "牌型<<" or "牌型>>", 0xfffff8e0)
         end
     end)
     hand_pat.hits[#hand_pat.hits + 1] = { id = "toggle", x0 = x0, y0 = y0, x1 = x1, y1 = y1 }
@@ -1248,19 +1248,13 @@ function hand_pat.draw(ui, machine)
     end
     local n = #hand_pat.presets
     local cols = 2
-    local rows = math.ceil(n / cols)
-    -- 行高略留上下内边距，避免字贴边/出框（截图黄线切字）
-    local avail = math.max(0.12, (gy1 - y1 - 0.012))
-    local gap = 0.005
-    local row_h = (avail - gap * math.max(rows - 1, 0)) / math.max(rows, 1)
-    if row_h > 0.042 then
-        row_h = 0.042
-    elseif row_h < 0.034 then
-        row_h = 0.034
-    end
+    -- 单位：MAME UI 归一化坐标（约 0=顶、1=底）
+    -- 字高约 0.035~0.04；row_h=0.05 且字从 +0.012 起仍会下溢出
+    local row_h = 0.060
+    local gap = 0.010
     local menu_w = gx1 - gx0
     local col_w = menu_w / cols
-    local my0 = y1 + 0.008
+    local my0 = y1 + 0.010
     for i, p in ipairs(hand_pat.presets) do
         local col = (i - 1) % cols
         local row = math.floor((i - 1) / cols)
@@ -1273,8 +1267,7 @@ function hand_pat.draw(ui, machine)
                 ui:draw_box(mx0, my, mx1, my1, 0xffc8b070, 0xf8101018)
             end
             if ui.draw_text then
-                -- 文字垂直居中偏上一点（MAME 字高约占行高一半多）
-                ui:draw_text(mx0 + 0.010, my + row_h * 0.28, p.label or p.id, 0xfffffaf0)
+                ui:draw_text(mx0 + 0.010, my + 0.008, p.label or p.id, 0xfffffaf0)
             end
         end)
         hand_pat.hits[#hand_pat.hits + 1] = {

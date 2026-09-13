@@ -82,6 +82,23 @@ local function apply_device_orientation_view(machine)
     end
 end
 
+-- Android writes .toggle_throttle (one-shot). Toggle video.throttled directly
+-- so the toolbox speed button still works after users remap F10.
+local function apply_toggle_throttle(machine)
+    local f = io.open(".toggle_throttle", "r")
+    if not f then
+        return
+    end
+    f:close()
+    os.remove(".toggle_throttle")
+    if not machine.video then
+        return
+    end
+    pcall(function()
+        machine.video.throttled = not machine.video.throttled
+    end)
+end
+
 
 -- MAME 0.289+：避免 machine.output:set_value 弃用警告刷屏卡顿
 -- 勿在脚本顶层 loadfile：经典前端 (___empty) 阶段加载会黑屏只剩 OSC。
@@ -110,6 +127,7 @@ emu.register_frame_done(function()
     ensure_fei_output()
 
     apply_device_orientation_view(machine)
+    apply_toggle_throttle(machine)
 
     local screen = machine.screens[":screen"]
     local is_jantouki = (rom_name == "jantouki")

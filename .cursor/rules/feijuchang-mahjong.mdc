@@ -34,6 +34,7 @@ alwaysApply: true
 - **打包分流（默认）**：无特别说明时，增强包与其它新内容只保证进阶版；基础版不主动更新。打包前向用户确认「本次基础版会带上哪些」（例如仅按键图）
 - **打包前**先跑 `python android-MAME4droid/scripts/sync-mahjong-pack.py --check`。落后则同步后再打（用户明确说这次先不动按键包时除外）
 - 同步**不会**删/挪 `MAMEmjKey/release/`；与一键发布文件夹核对见 `docs/知识库.md` §2.2（允许 `master_lamps` 桥接差异）
+- `master_lamps.lua` 须含横竖屏桥接 +（进阶）`.toggle_throttle` 加速桥；勿裸拷 Mods 版覆盖
 
 ## 体验门控
 

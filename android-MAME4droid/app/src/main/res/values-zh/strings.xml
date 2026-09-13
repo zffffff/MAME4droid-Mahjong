@@ -131,7 +131,7 @@
     <string name="mj_mame_ui_menu_button">🎛</string>
     <string name="mj_mame_ui_menu_button_desc">MAME 游戏内菜单（DIP 开关等）</string>
     <string name="mj_speed_button">⏩</string>
-    <string name="mj_speed_button_desc">加速切换（等同电脑版 F10）</string>
+    <string name="mj_speed_button_desc">加速切换（不依赖 F10 快捷键，改键后仍可用）</string>
     <string name="mj_show_keyboard">🀄</string>
     <string name="mj_hide_keyboard">🀆</string>
     <string name="mj_chrome_open">🧰</string>

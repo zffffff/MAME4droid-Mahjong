@@ -116,6 +116,23 @@ local function apply_device_orientation_view(machine)
         last_orient = orient
     end
 end
+
+-- Android writes .toggle_throttle (one-shot). Toggle video.throttled directly
+-- so the toolbox speed button still works after users remap F10.
+local function apply_toggle_throttle(machine)
+    local f = io.open(".toggle_throttle", "r")
+    if not f then
+        return
+    end
+    f:close()
+    os.remove(".toggle_throttle")
+    if not machine.video then
+        return
+    end
+    pcall(function()
+        machine.video.throttled = not machine.video.throttled
+    end)
+end
 '''.lstrip("\n")
 
 
@@ -472,6 +489,9 @@ def check() -> int:
     if "apply_device_orientation_view" not in text:
         print("STALE: pack master_lamps missing orientation bridge")
         stale = True
+    if "apply_toggle_throttle" not in text:
+        print("STALE: pack master_lamps missing throttle toggle bridge")
+        stale = True
 
     lst = lst_keys("mame.lst")
     missing_lst = sorted(n for n in load_whitelist() if n.lower() not in lst)
@@ -507,6 +527,7 @@ def main() -> None:
         '    if not rom_name or rom_name == "___empty" then return end\n'
         "\n"
         "    apply_device_orientation_view(machine)\n"
+        "    apply_toggle_throttle(machine)\n"
         "\n"
         '    local screen = machine.screens[":screen"]'
     )
@@ -608,6 +629,7 @@ def main() -> None:
     text = (PACK / "master_lamps.lua").read_text(encoding="utf-8")
     assert (dst_lamps / "output_proxy.lua").is_file()
     assert "apply_device_orientation_view" in text
+    assert "apply_toggle_throttle" in text
     assert "output_proxy" in text
     if PEEK.is_dir() and (PEEK / "fei_mj_lamps" / "rbmk_wall.lua").is_file():
         assert (dst_lamps / "rbmk_wall.lua").is_file(), "peek overlay lost rbmk_wall.lua"

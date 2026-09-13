@@ -42,6 +42,8 @@ public class MahjongExperienceHelper {
 	private static final String PREF_SEEDED_V2 = "mahjong_defaults_v2";
 	private static final String PREF_SEEDED_V3 = "mahjong_defaults_v3";
 	private static final String ORIENT_FILE = ".device_orientation";
+	/** One-shot: Lua toggles machine.video.throttled (ignores F10 remaps). */
+	private static final String THROTTLE_FILE = ".toggle_throttle";
 	private static final int FLOAT_BAR_ID = 0x6D6A6261; // 'mjba'
 	private static final long VKEY_MIN_HOLD_MS = 45L;
 
@@ -190,10 +192,10 @@ public class MahjongExperienceHelper {
 		mameUiMenuBtn.setText(mm.getString(R.string.mj_mame_ui_menu_button));
 		mameUiMenuBtn.setContentDescription(mm.getString(R.string.mj_mame_ui_menu_button_desc));
 
-		// PC MAME: F10 toggles throttle (frameskip/speed)
+		// Toggle throttle via Lua bridge (not F10 — survives user key remaps)
 		speedBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
 			collapseMenu();
-			pulseVirtualKey(KeyEvent.KEYCODE_F10, (char) 0);
+			requestThrottleToggle();
 		});
 		speedBtn.setText(mm.getString(R.string.mj_speed_button));
 		speedBtn.setContentDescription(mm.getString(R.string.mj_speed_button_desc));
@@ -285,6 +287,25 @@ public class MahjongExperienceHelper {
 		new Handler(Looper.getMainLooper()).postDelayed(
 				() -> Emulator.setKeyData(keyCode, Emulator.KEY_UP, unicode),
 				VKEY_MIN_HOLD_MS);
+	}
+
+	/** Ask master_lamps.lua to flip video.throttled (same effect as default F10). */
+	private void requestThrottleToggle() {
+		if (!Emulator.isEmulating() || !Emulator.isInGame()) {
+			return;
+		}
+		String dir = mm.getMainHelper().getInstallationDIR();
+		if (dir == null || dir.isEmpty()) {
+			return;
+		}
+		if (!dir.endsWith("/")) {
+			dir += "/";
+		}
+		try (FileOutputStream out = new FileOutputStream(dir + THROTTLE_FILE)) {
+			out.write('1');
+		} catch (Exception e) {
+			Log.w(TAG, "Failed writing " + THROTTLE_FILE, e);
+		}
 	}
 
 	private void applyMenuExpanded() {
