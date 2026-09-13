@@ -22,8 +22,9 @@ import com.seleuco.mame4droid.Emulator;
 import com.seleuco.mame4droid.MAME4droid;
 
 /**
- * 通用麻将软键盘：吃碰杠听和 / 开始翻转押注投币常驻；
+ * 通用麻将软键盘：吃碰杠听和 / 开始翻转押注投币洗分常驻；
  * 「打牌 / 更多」只切换字母数字区。横屏常驻键贴游戏画面两侧（非屏幕边缘）。
+ * 洗分同时发 4+W（机种差异），不改更多页与机台 cfg。
  */
 public class MahjongKeyboardPanel {
 
@@ -63,17 +64,30 @@ public class MahjongKeyboardPanel {
 		final String label;
 		final int keyCode;
 		final char unicode;
+		/** 可选第二键（0=无）。洗分：有的机是 4、有的是 W，同按不改 cfg。 */
+		final int altKeyCode;
+		final char altUnicode;
 
 		KeySpec(String label, int keyCode, char unicode) {
+			this(label, keyCode, unicode, 0, (char) 0);
+		}
+
+		KeySpec(String label, int keyCode, char unicode, int altKeyCode, char altUnicode) {
 			this.label = label;
 			this.keyCode = keyCode;
 			this.unicode = unicode;
+			this.altKeyCode = altKeyCode;
+			this.altUnicode = altUnicode;
 		}
 	}
 
 	private static KeySpec key(String label, int keyCode, char unicode) {
 		return new KeySpec(label, keyCode, unicode);
 	}
+
+	/** 洗分：同时发 4 与 W；更多页仍保留单独 4/W，不改机台 cfg。 */
+	private static final KeySpec KEY_XIFEN =
+			new KeySpec("洗分", KeyEvent.KEYCODE_4, '4', KeyEvent.KEYCODE_W, 'W');
 
 	private static final KeySpec[] ACTIONS_MJ = {
 			key("吃", KeyEvent.KEYCODE_SPACE, ' '),
@@ -272,18 +286,17 @@ public class MahjongKeyboardPanel {
 	}
 
 	/**
-	 * 左栏（画面外）：开始、空格、翻转、押注、投币、打牌。
-	 * 空格使「开始」与右栏「吃」顶部对齐（同为 6 格）。
+	 * 左栏（画面外）：开始、翻转、押注、投币、洗分、打牌（6 格，与右栏对齐）。
 	 */
 	private LinearLayout buildLandscapeLeftRail(int keyH, int keyW, float density, int gap) {
 		LinearLayout col = new LinearLayout(mm);
 		col.setOrientation(LinearLayout.VERTICAL);
 		col.setGravity(Gravity.CENTER_HORIZONTAL);
 		addSideKey(col, key("开始", KeyEvent.KEYCODE_1, '1'), keyH, keyW, density, gap, true);
-		addSideSpacer(col, keyH, keyW, gap);
 		addSideKey(col, key("翻转", KeyEvent.KEYCODE_Y, 'Y'), keyH, keyW, density, gap, false);
 		addSideKey(col, key("押注", KeyEvent.KEYCODE_3, '3'), keyH, keyW, density, gap, false);
 		addSideKey(col, key("投币", KeyEvent.KEYCODE_5, '5'), keyH, keyW, density, gap, false);
+		addSideKey(col, KEY_XIFEN, keyH, keyW, density, gap, false);
 		tabPlay = makeSideTab("打牌", keyH, keyW, density, gap);
 		tabPlay.setOnClickListener(v -> {
 			currentTab = TAB_PLAY;
@@ -321,14 +334,6 @@ public class MahjongKeyboardPanel {
 		col.addView(key);
 	}
 
-	private void addSideSpacer(LinearLayout col, int keyH, int keyW, int gap) {
-		View spacer = new View(mm);
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(keyW, keyH);
-		lp.setMargins(0, gap / 2, 0, gap / 2);
-		spacer.setLayoutParams(lp);
-		col.addView(spacer);
-	}
-
 	private TextView makeSideTab(String label, int keyH, int keyW, float density, int gap) {
 		TextView tab = new TextView(mm);
 		tab.setText(label);
@@ -358,13 +363,14 @@ public class MahjongKeyboardPanel {
 		colLp.setMargins(edge, 0, edge, edge + keyH);
 		column.setLayoutParams(colLp);
 
-		// 第一行：7 格对齐 —— 开始 押注 … 翻转 投币
+		// 第一行：7 格 —— 开始 押注 … 翻转 投币 洗分（翻转/投币左移一格）
 		column.addView(buildPortraitSlotRow(new KeySpec[]{
 				key("开始", KeyEvent.KEYCODE_1, '1'),
 				key("押注", KeyEvent.KEYCODE_3, '3'),
-				null, null, null,
+				null, null,
 				key("翻转", KeyEvent.KEYCODE_Y, 'Y'),
 				key("投币", KeyEvent.KEYCODE_5, '5'),
+				KEY_XIFEN,
 		}, keyH, density, gap));
 
 		// 第二行：打牌 | 吃碰杠听和 | 更多
@@ -762,6 +768,8 @@ public class MahjongKeyboardPanel {
 
 		final int keyCode = spec.keyCode;
 		final char unicode = spec.unicode;
+		final int altKeyCode = spec.altKeyCode;
+		final char altUnicode = spec.altUnicode;
 		final Runnable[] pendingUp = new Runnable[1];
 
 		key.setOnTouchListener((v, event) -> {
@@ -772,6 +780,9 @@ public class MahjongKeyboardPanel {
 					pendingUp[0] = null;
 				}
 				Emulator.setKeyData(keyCode, Emulator.KEY_DOWN, unicode);
+				if (altKeyCode != 0) {
+					Emulator.setKeyData(altKeyCode, Emulator.KEY_DOWN, altUnicode);
+				}
 				keyBg.setColor(pressedColor);
 				key.setBackground(keyBg);
 				return true;
@@ -780,6 +791,9 @@ public class MahjongKeyboardPanel {
 				long hold = event.getEventTime() - event.getDownTime();
 				Runnable up = () -> {
 					Emulator.setKeyData(keyCode, Emulator.KEY_UP, unicode);
+					if (altKeyCode != 0) {
+						Emulator.setKeyData(altKeyCode, Emulator.KEY_UP, altUnicode);
+					}
 					pendingUp[0] = null;
 				};
 				if (hold < MIN_HOLD_MS) {

@@ -57,6 +57,7 @@ public class MahjongExperienceHelper {
 	private TextView toggleBtn = null;
 	private TextView mjKbBtn = null;
 	private TextView mameUiMenuBtn = null;
+	private TextView speedBtn = null;
 	private TextView menuBtn = null;
 	private TextView romBtn = null;
 	private TextView snapBtn = null;
@@ -188,6 +189,14 @@ public class MahjongExperienceHelper {
 		});
 		mameUiMenuBtn.setText(mm.getString(R.string.mj_mame_ui_menu_button));
 		mameUiMenuBtn.setContentDescription(mm.getString(R.string.mj_mame_ui_menu_button_desc));
+
+		// PC MAME: F10 toggles throttle (frameskip/speed)
+		speedBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
+			collapseMenu();
+			pulseVirtualKey(KeyEvent.KEYCODE_F10, (char) 0);
+		});
+		speedBtn.setText(mm.getString(R.string.mj_speed_button));
+		speedBtn.setContentDescription(mm.getString(R.string.mj_speed_button_desc));
 
 		menuBtn = addPanelButton(panel, padH, padV, density, gap, v -> {
 			collapseMenu();

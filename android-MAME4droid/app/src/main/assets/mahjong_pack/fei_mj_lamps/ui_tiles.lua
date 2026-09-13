@@ -1252,6 +1252,7 @@ return {
     draw_row = draw_row,
     draw_panel = draw_panel,
     draw_mjelctrn_panel = draw_mjelctrn_panel,
+    get_mjelctrn_geom = mjelctrn_geom,
     draw_toggle = draw_toggle,
     row_n = ROW_N,
     is_landscape = is_landscape,

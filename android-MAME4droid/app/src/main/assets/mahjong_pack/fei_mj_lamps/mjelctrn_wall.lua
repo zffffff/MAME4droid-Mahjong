@@ -13,6 +13,7 @@
 --         听牌被拒时：跳过「归还池+重抽」(A274 call AA5E / A277 jr)，改 jr A279 接受
 -- 右Ctrl+0  一键三元：武装 @7CB0 并装弹白/发/中×3（官方表），弹出换牌 UI
 -- 右Ctrl+-  / 皮肤 btn_bleed  下一局配牌出血：写 @7CC1=0（押注界面开局兑现）
+-- F9 透视开时：面板「牌型」菜单（写 @72C0 手镜像；含十三不搭探测）
 -- 皮肤 btn_accept  听牌可胡：A260 读拦截；关/复位清零 @7424
 -- 可胡开时 log 会记 [listen-accept-pc] 唯一 PC（克隆补偏移用）
 -- F8      三元换牌监视开/关（注意：MAME 默认 F8=减跳帧，可能需在 UI 里改绑）
@@ -49,6 +50,7 @@ local CPU_HAND_ADDR = 0x7240
 local CPU_HAND_FALLBACKS = { 0x7240, 0x77C0, 0x7610, 0x7630, 0x7100 }
 -- 勿用 @72C0：那是玩家手镜像；@7240 空时回退到它会把「电脑手」显示成玩家手
 local TABLE_TILE_ADDR = 0x7502 -- 台面最近牌（含电脑刚打、玩家刚摸），勿标「刚摸」
+local HAND_MIRROR_ADDR = 0x72C0 -- 判定用手镜像（cheat 役满手同址）
 local WALL_POOL_ADDR = 0x7000 -- A875 牌池：非零=剩余 BCD，00=已取走
 local WALL_POOL_LEN = 0xE0 -- 至约 @70DF（含字牌区）
 -- 听牌可胡：每帧写 @7424=$50 会卡 B001 入口；仅 A260 读拦截
@@ -242,6 +244,182 @@ local force_draw = {
     -- ld ($7502),a @A24D 共 3 字节；写监视触发时 PC 常已到 A250，须放宽
     pc_lo = 0xA24D,
     pc_hi = 0xA25F,
+}
+-- 透视内「牌型」菜单（不占皮肤常驻钮）
+-- 牌码对齐 jiangsheng mjelct3 cheat @72C0；四杠等需副露结构的未收
+local hand_pat = {
+    menu_open = false,
+    hits = {},
+    click_id = nil,
+    hold = nil, -- 换牌阶段短时每帧盖回镜像 { tiles=, frames= }
+    presets = {
+        {
+            id = "yakuman_tri",
+            label = "字一色大三元四暗刻",
+            tiles14 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37,
+            },
+            wait_hint = "听：中",
+        },
+        {
+            id = "daisangen",
+            label = "大三元",
+            tiles14 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37,
+            },
+            wait_hint = "听：中",
+        },
+        {
+            id = "daisuushi",
+            label = "大四喜",
+            tiles14 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x32, 0x33, 0x33, 0x33, 0x34, 0x34, 0x34, 0x35, 0x35,
+            },
+            tiles13 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x32, 0x33, 0x33, 0x33, 0x34, 0x34, 0x34, 0x35,
+            },
+            wait_hint = "听：白",
+        },
+        {
+            id = "shosuushi",
+            label = "小四喜",
+            tiles14 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x34, 0x35, 0x35, 0x35,
+            },
+            tiles13 = {
+                0x31, 0x31, 0x31, 0x32, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x34, 0x35, 0x35,
+            },
+            wait_hint = "听：白",
+        },
+        {
+            id = "dairoisei",
+            label = "大七星(电子基盘归为字一色)",
+            tiles14 = {
+                0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x31, 0x31, 0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37,
+            },
+            wait_hint = "听：中；机内计为字一色",
+        },
+        {
+            id = "kokushi",
+            label = "国士无双",
+            tiles14 = {
+                0x01, 0x09, 0x11, 0x19, 0x21, 0x29, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x01, 0x09, 0x11, 0x19, 0x21, 0x29, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+            },
+            wait_hint = "听：中等国士牌",
+        },
+        {
+            id = "chuuren",
+            label = "九莲宝灯",
+            tiles14 = {
+                0x01, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x09, 0x09, 0x09,
+            },
+            tiles13 = {
+                0x01, 0x01, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x09, 0x09,
+            },
+            wait_hint = "听：九万",
+        },
+        {
+            id = "ryuuiisou",
+            label = "绿一色",
+            tiles14 = {
+                0x22, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x24, 0x26, 0x26, 0x26, 0x28, 0x28, 0x28,
+            },
+            tiles13 = {
+                0x22, 0x22, 0x22, 0x23, 0x23, 0x24, 0x24, 0x24, 0x26, 0x26, 0x26, 0x28, 0x28,
+            },
+            wait_hint = "听：8条",
+        },
+        {
+            id = "koukaku",
+            label = "红孔雀",
+            tiles14 = {
+                0x21, 0x21, 0x21, 0x25, 0x25, 0x25, 0x27, 0x27, 0x27, 0x29, 0x29, 0x29, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x21, 0x21, 0x21, 0x25, 0x25, 0x25, 0x27, 0x27, 0x27, 0x29, 0x29, 0x29, 0x37,
+            },
+            wait_hint = "听：中",
+        },
+        {
+            id = "chinroutou",
+            label = "清老头",
+            tiles14 = {
+                0x01, 0x01, 0x01, 0x09, 0x09, 0x09, 0x11, 0x11, 0x11, 0x19, 0x19, 0x19, 0x21, 0x21,
+            },
+            tiles13 = {
+                0x01, 0x01, 0x01, 0x09, 0x09, 0x09, 0x11, 0x11, 0x11, 0x19, 0x19, 0x19, 0x21,
+            },
+            wait_hint = "听：1条",
+        },
+        {
+            id = "hyakuman",
+            label = "百万石",
+            tiles14 = {
+                0x05, 0x05, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09,
+            },
+            tiles13 = {
+                0x05, 0x05, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09,
+            },
+            wait_hint = "听：九万",
+        },
+        {
+            id = "chariot",
+            label = "大车轮",
+            tiles14 = {
+                0x02, 0x02, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08, 0x08,
+            },
+            tiles13 = {
+                0x02, 0x02, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08,
+            },
+            wait_hint = "听：八万",
+        },
+        {
+            id = "suurenkou",
+            label = "四连刻",
+            -- 六七八九万四个刻 + 中对（旧 cheat 6789 形胡后机内常显「百万石」）
+            tiles14 = {
+                0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09, 0x37,
+            },
+            wait_hint = "听：中",
+        },
+        {
+            id = "shinkansen",
+            label = "东北新干线",
+            tiles14 = {
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x31, 0x31, 0x31, 0x34, 0x34,
+            },
+            tiles13 = {
+                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x31, 0x31, 0x31, 0x34,
+            },
+            wait_hint = "听：北",
+        },
+        {
+            id = "shiisan",
+            label = "十三不搭(电子基盘可能无此牌型)",
+            tiles14 = {
+                0x01, 0x04, 0x07, 0x12, 0x15, 0x18, 0x23, 0x26, 0x29, 0x31, 0x32, 0x33, 0x34, 0x34,
+            },
+            tiles13 = {
+                0x01, 0x04, 0x07, 0x12, 0x15, 0x18, 0x23, 0x26, 0x29, 0x31, 0x32, 0x33, 0x34,
+            },
+            wait_hint = "听：北等；电子基盘可能无此役",
+        },
+    },
 }
 -- 控摸提示画在画面顶部（popmessage 居中会挡手牌）
 local ui_toast = { lines = nil, frames = 0 }
@@ -870,6 +1048,266 @@ local function tile_name(v)
         return HONOR_NAMES[v]
     end
     return string.format("[%02X]", v)
+end
+
+function hand_pat.closed_count(machine)
+    local n = 0
+    for i = 0, HAND_SORTED do
+        local v = mem.read_u8(machine, HAND_ADDR + i)
+        if tile_valid(v) then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function hand_pat.mirror_count(machine)
+    local n = 0
+    for i = 0, 13 do
+        local v = mem.read_u8(machine, HAND_MIRROR_ADDR + i)
+        if tile_valid(v) then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function hand_pat.write_tiles(machine, tiles, sync_screen)
+    local nwrite = #tiles
+    for i = 1, nwrite do
+        mem.write_u8(machine, HAND_MIRROR_ADDR + i - 1, tiles[i])
+    end
+    if nwrite == 13 then
+        mem.write_u8(machine, HAND_MIRROR_ADDR + 13, 0)
+    end
+    if not sync_screen then
+        return
+    end
+    for i = 1, 13 do
+        mem.write_u8(machine, HAND_ADDR + i - 1, (i <= nwrite) and tiles[i] or 0)
+    end
+    if nwrite == 14 then
+        mem.write_u8(machine, HAND_ADDR + HAND_STAGING_OFF, tiles[14])
+    else
+        mem.write_u8(machine, HAND_ADDR + HAND_STAGING_OFF, 0)
+    end
+end
+
+function hand_pat.tick(machine)
+    local h = hand_pat.hold
+    if not h or not h.tiles or not machine then
+        return
+    end
+    h.frames = (h.frames or 0) - 1
+    if h.frames < 0 then
+        hand_pat.hold = nil
+        return
+    end
+    -- 开局换牌会反复刷镜像；短时间每帧盖回（类 cheat Always）
+    hand_pat.write_tiles(machine, h.tiles, false)
+end
+
+function hand_pat.apply(machine, preset)
+    if not machine or not preset then
+        return false
+    end
+    local n_hand = hand_pat.closed_count(machine)
+    local n_mir = hand_pat.mirror_count(machine)
+    -- 开局换牌：@7120 常空，权威在 @72C0（与 MAME cheat 相同）
+    local first_chance = n_hand < 13 and n_mir >= 13
+    local n = first_chance and n_mir or math.max(n_hand, n_mir)
+    local tiles = nil
+    local mode = nil
+    -- 换牌 UI 为 A–N 共 14 槽；只写 13 张会挤到 B–N，A 易剩扣牌/空（C 女孩+扣牌实机）
+    -- 与 cheat 一致：换牌阶段一律写满 14 字节，勿清 @72CD
+    if first_chance then
+        if preset.tiles14 and #preset.tiles14 == 14 then
+            tiles = preset.tiles14
+            mode = "14fc"
+        end
+    elseif n >= 14 and preset.tiles14 and #preset.tiles14 == 14 then
+        tiles = preset.tiles14
+        mode = "14"
+    elseif n >= 13 then
+        tiles = preset.tiles13
+        if (not tiles or #tiles ~= 13) and preset.tiles14 and #preset.tiles14 == 14 then
+            tiles = {}
+            for i = 1, 13 do
+                tiles[i] = preset.tiles14[i]
+            end
+        end
+        mode = "13"
+    end
+    if not tiles or (#tiles ~= 13 and #tiles ~= 14) then
+        ui_toast.show(
+            string.format(
+                "牌型：需手或镜像≥13（手%d 镜像%d）·「%s」",
+                n_hand,
+                n_mir,
+                preset.label or "?"
+            ),
+            180
+        )
+        return false
+    end
+    local sync_screen = not first_chance
+    hand_pat.write_tiles(machine, tiles, sync_screen)
+    if first_chance then
+        hand_pat.hold = { tiles = tiles, frames = 240 }
+    else
+        hand_pat.hold = nil
+    end
+    local hex = {}
+    for i = 1, #tiles do
+        hex[#hex + 1] = string.format("%02X", tiles[i])
+    end
+    write_log(
+        string.format(
+            "=== [hand-pat] rom=%s id=%s %s mode=%s first_chance=%s hand=%d mir=%d tiles=%s %s ===\n",
+            (machine.system and machine.system.name) or "?",
+            preset.id or "?",
+            preset.label or "",
+            mode,
+            first_chance and "Y" or "N",
+            n_hand,
+            n_mir,
+            table.concat(hex, " "),
+            now()
+        ),
+        "a"
+    )
+    if first_chance then
+        ui_toast.show(
+            string.format(
+                "换牌阶段已套用「%s」(14槽镜像)\n勿只写13张；建议少扣牌或套用后再确认A键",
+                preset.label or "?"
+            ),
+            260
+        )
+    elseif mode == "14" then
+        ui_toast.show(
+            string.format("已套用「%s」(14张)\n可直接荣/自摸试胡", preset.label or "?"),
+            210
+        )
+    else
+        ui_toast.show(
+            string.format(
+                "已套用「%s」(13张听)\n%s",
+                preset.label or "?",
+                preset.wait_hint or "摸一张后再胡（可控摸）"
+            ),
+            240
+        )
+    end
+    hand_pat.menu_open = false
+    return true
+end
+
+function hand_pat.preset_by_id(id)
+    for _, p in ipairs(hand_pat.presets) do
+        if p.id == id then
+            return p
+        end
+    end
+    return nil
+end
+
+function hand_pat.draw(ui, machine)
+    hand_pat.hits = {}
+    if not ui or not peek_open then
+        return
+    end
+    local g = nil
+    if tiles_ui and tiles_ui.get_mjelctrn_geom then
+        pcall(function()
+            g = tiles_ui.get_mjelctrn_geom()
+        end)
+    end
+    local gx0 = (g and g.gx0) or 0.08
+    local gx1 = (g and g.gx1) or 0.92
+    local gy0 = (g and g.gy0) or 0.02
+    local gy1 = (g and g.gy1) or 0.55
+    local bw = math.min(0.14, (gx1 - gx0) * 0.24)
+    local bh = 0.030
+    local x0 = gx1 - bw
+    local y0 = gy0 + 0.004
+    local x1 = gx1
+    local y1 = y0 + bh
+    -- draw_box(x0,y0,x1,y1, outline, fill)：深色底 + 浅字
+    pcall(function()
+        if ui.draw_box then
+            ui:draw_box(x0, y0, x1, y1, 0xffd0c080, 0xf0101018)
+        end
+        if ui.draw_text then
+            ui:draw_text(x0 + 0.008, y0 + 0.005, hand_pat.menu_open and "牌型<<" or "牌型>>", 0xfffff8e0)
+        end
+    end)
+    hand_pat.hits[#hand_pat.hits + 1] = { id = "toggle", x0 = x0, y0 = y0, x1 = x1, y1 = y1 }
+    if not hand_pat.menu_open then
+        return
+    end
+    local n = #hand_pat.presets
+    local cols = 2
+    local rows = math.ceil(n / cols)
+    -- 行高略留上下内边距，避免字贴边/出框（截图黄线切字）
+    local avail = math.max(0.12, (gy1 - y1 - 0.012))
+    local gap = 0.005
+    local row_h = (avail - gap * math.max(rows - 1, 0)) / math.max(rows, 1)
+    if row_h > 0.042 then
+        row_h = 0.042
+    elseif row_h < 0.034 then
+        row_h = 0.034
+    end
+    local menu_w = gx1 - gx0
+    local col_w = menu_w / cols
+    local my0 = y1 + 0.008
+    for i, p in ipairs(hand_pat.presets) do
+        local col = (i - 1) % cols
+        local row = math.floor((i - 1) / cols)
+        local mx0 = gx0 + col * col_w
+        local mx1 = mx0 + col_w - 0.006
+        local my = my0 + row * (row_h + gap)
+        local my1 = my + row_h
+        pcall(function()
+            if ui.draw_box then
+                ui:draw_box(mx0, my, mx1, my1, 0xffc8b070, 0xf8101018)
+            end
+            if ui.draw_text then
+                -- 文字垂直居中偏上一点（MAME 字高约占行高一半多）
+                ui:draw_text(mx0 + 0.010, my + row_h * 0.28, p.label or p.id, 0xfffffaf0)
+            end
+        end)
+        hand_pat.hits[#hand_pat.hits + 1] = {
+            id = p.id,
+            x0 = mx0,
+            y0 = my,
+            x1 = mx1,
+            y1 = my1,
+        }
+    end
+end
+
+function hand_pat.hit(ux, uy)
+    if not ux or not uy or not hand_pat.hits then
+        return nil
+    end
+    for _, h in ipairs(hand_pat.hits) do
+        if ux >= h.x0 and ux <= h.x1 and uy >= h.y0 and uy <= h.y1 then
+            return h.id
+        end
+    end
+    return nil
+end
+
+function hand_pat.on_click(machine, id)
+    if id == "toggle" then
+        hand_pat.menu_open = not hand_pat.menu_open
+        return
+    end
+    local p = hand_pat.preset_by_id(id)
+    if p then
+        hand_pat.apply(machine, p)
+    end
 end
 
 local function read_player_hand(machine)
@@ -2780,6 +3218,22 @@ local function hit_pool_tile_xy(view, x, y)
     return tiles_ui.hit_mjelctrn_pool(ux, uy, peek_state.pool)
 end
 
+local function hit_hand_pat_xy(view, x, y)
+    if not peek_open then
+        return nil
+    end
+    local ux, uy
+    if tiles_ui and tiles_ui.view_to_ui01 then
+        ux, uy = tiles_ui.view_to_ui01(view, x, y)
+    elseif tiles_ui and tiles_ui.view_to_screen then
+        ux, uy = tiles_ui.view_to_screen(view, x, y)
+    end
+    if not ux then
+        return nil
+    end
+    return hand_pat.hit(ux, uy)
+end
+
 local function hook_peek_pointer(machine)
     -- 每个 view userdata 只 set_*_callback 一次（横↔竖会换 current_view，必须都能挂）
     -- 列表再开若复用同一 view：登记仍在 → 跳过，避免「按任意键」假死
@@ -2889,6 +3343,10 @@ local function toggle_peek(machine)
         last_peek_toggle_tick = t
     end
     peek_open = not peek_open
+    if not peek_open then
+        hand_pat.menu_open = false
+        hand_pat.hits = {}
+    end
     if tiles_ui then
         tiles_ui.ensure_art(machine)
     end
@@ -2931,6 +3389,15 @@ local function apply_pool_click(machine)
     force_draw.select(machine, bcd)
 end
 
+local function apply_hand_pat_click(machine)
+    if not hand_pat.click_id then
+        return
+    end
+    local id = hand_pat.click_id
+    hand_pat.click_id = nil
+    hand_pat.on_click(machine, id)
+end
+
 local function draw_peek_panel(machine)
     if not peek_open then
         return
@@ -2964,6 +3431,7 @@ local function draw_peek_panel(machine)
         local ok = pcall(function()
             tiles_ui.draw_mjelctrn_panel(ui, peek_state)
         end)
+        pcall(hand_pat.draw, ui, machine)
         if ok then
             return
         end
@@ -3159,6 +3627,10 @@ local function on_soft_reset(machine)
     listen_accept.clear_ram(machine)
     listen_accept.probe_reset()
     pool_click_bcd = nil
+    hand_pat.menu_open = false
+    hand_pat.hits = {}
+    hand_pat.click_id = nil
+    hand_pat.hold = nil
     ptr_lock_until = 0
     ptr_lock_frames = 0
     last_peek_toggle_tick = 0
@@ -3296,6 +3768,7 @@ local function ensure_pause_poll()
                 bleed.arm(m)
             end
             apply_pool_click(m)
+            apply_hand_pat_click(m)
             if bleed.press_frames > 0 then
                 bleed.press_frames = bleed.press_frames - 1
             end
@@ -3359,6 +3832,12 @@ local function ensure_pause_poll()
                 ptr_mark_busy(0.35)
                 return
             end
+            local hid = hit_hand_pat_xy(view, x, y)
+            if hid then
+                hand_pat.click_id = hid
+                ptr_mark_busy(0.25)
+                return
+            end
             local bcd = hit_pool_tile_xy(view, x, y)
             if bcd then
                 pool_click_bcd = bcd
@@ -3411,11 +3890,15 @@ return function(machine)
         bleed.arm(machine)
     end
     apply_pool_click(machine)
+    apply_hand_pat_click(machine)
     if bleed.press_frames > 0 then
         bleed.press_frames = bleed.press_frames - 1
     end
     pcall(function()
         force_draw.run_tick(machine)
+    end)
+    pcall(function()
+        hand_pat.tick(machine)
     end)
     pcall(function()
         sangen_watch_tick(machine)
