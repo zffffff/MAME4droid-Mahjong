@@ -6,6 +6,11 @@
 -- 皮肤 btn_pause  暂停/继续（不绑麻将键；MAME 暂停默认是 F5）
 -- 右Ctrl+5/2/…  Phase 1 hunt（见 电子基盘透视知识.md）
 --   右Ctrl+5/2/4 记录时自动 emu.pause()；按 F5 继续（电脑不等玩家）
+-- 副露地址 hunt（不必卡吃碰瞬间）：
+--   开局无副露 Ctrl+5 → 画面上已能看见副露后再 Ctrl+2（弃牌打出也没关系）
+--   脚本在「判定电脑副露 / 玩家副露块变多」时自动写 [meld-hunt]（不用手按）
+-- 杠 hunt：控摸凑齐 → 杠（游戏键，勿用左Ctrl热键）→ Ctrl+2；再 Donden → Ctrl+2
+--   （杠块会先出现在 @72D0/@7130，对调后多半进 @7250）
 -- 右Ctrl+2 另写 [draw-slot]：用手数 multiset 推断刚摸，对照 @7502/@712D（摸牌验证）
 -- 右Ctrl+6  dump 当前 bank 下 A24D/A215/AA5E 等（追摸牌生成/过滤；冷启动 bank 无效）
 -- 右Ctrl+7  控摸：切换目标牌（万/筒/索/字循环）
@@ -13,9 +18,11 @@
 --         听牌被拒时：跳过「归还池+重抽」(A274 call AA5E / A277 jr)，改 jr A279 接受
 -- 右Ctrl+0  一键三元：武装 @7CB0 并装弹白/发/中×3（官方表），弹出换牌 UI
 -- 右Ctrl+-  / 皮肤 btn_bleed  下一局配牌出血：写 @7CC1=0（押注界面开局兑现）
--- F9 透视开时：面板「牌型」菜单（写 @72C0 手镜像；含十三不搭探测）
+-- F9 透视开时：面板「玩家役满」「电脑役满」下拉（写 @72C0 / @7240；含十三不搭探测）
 -- 皮肤 btn_accept  听牌可胡：A260 读拦截；关/复位清零 @7424
--- 可胡开时 log 会记 [listen-accept-pc] 唯一 PC（克隆补偏移用）
+--                 喂荣：透视点电脑手锁定（单次）→ 弃牌 PC 劫持写入 + 手/河对调一致
+--                 主版 A2CE/9850/9168；mjelct3 9FE0/9605/9627（两套窗同时武装，同族 ROM 共用）
+-- 可胡开时 log 会记 [listen-accept-pc]；喂荣记 [listen-accept-feed] / [listen-accept-7502]
 -- F8      三元换牌监视开/关（注意：MAME 默认 F8=减跳帧，可能需在 UI 里改绑）
 -- F9 牌池：34 种常显（0 张半透明）；点牌图 = 控摸下一张（单次，摸完/局间自动关）；角标=真实剩余
 --         （注意：MAME 默认 F9=加跳帧；本仓沿用 F9 透视，冲突时改 UI 键）
@@ -46,13 +53,22 @@ local HAND_ADDR = 0x7120
 local HAND_SORTED = 13 -- 画面手牌 13 张；@7120 第 14 字节是台面缓冲不是排序手
 local HAND_STAGING_OFF = 13 -- @7120+13 = 0x712D
 local CPU_HAND_ADDR = 0x7240
--- 吃碰杠时 @7240 常被清空；镜像里往往仍有剩余手（按长度优先）
-local CPU_HAND_FALLBACKS = { 0x7240, 0x77C0, 0x7610, 0x7630, 0x7100 }
--- 勿用 @72C0：那是玩家手镜像；@7240 空时回退到它会把「电脑手」显示成玩家手
+-- 透视读电脑手（只读）：@7240 主；空则 @77C0；再空试 @7610/@7630（只读，勿理牌写入）
+-- 绝不用 @7100：副露时几乎总是玩家手拷贝，取它会串台
+-- 绝不用 @72C0/@77B0：玩家手镜像
+local CPU_HAND_FALLBACKS = { 0x7240, 0x77C0, 0x7610, 0x7630 }
+local CPU_HAND_PRIO = { [0x7240] = 40, [0x77C0] = 30, [0x7610] = 20, [0x7630] = 10 }
+-- 喂荣若再动手牌，只允许写这几个（当前暂停写入手牌）
+local CPU_HAND_WRITABLE = { 0x7240, 0x77C0 }
+local PLAYER_HAND_MIRRORS = { 0x7120 } -- 仅画面手；@72C0/@77B0 在 Donden 后会滞后，拿来判串台会把真电脑手当玩家手拒掉
+-- 喂荣改手牌：副露透视未稳前关闭，避免 pack 同步污染真电脑手
+local FEED_MUTATE_CPU_HAND = false
 local TABLE_TILE_ADDR = 0x7502 -- 台面最近牌（含电脑刚打、玩家刚摸），勿标「刚摸」
 local HAND_MIRROR_ADDR = 0x72C0 -- 判定用手镜像（cheat 役满手同址）
 local WALL_POOL_ADDR = 0x7000 -- A875 牌池：非零=剩余 BCD，00=已取走
 local WALL_POOL_LEN = 0xE0 -- 至约 @70DF（含字牌区）
+-- 打牌影子里「刚打 BCD」槽（仅这几处可安全写成牌面；勿扫整段 @7605-764D，以免误改张数/状态）
+local DISCARD_SHADOW_TILE_ADDRS = { 0x760A, 0x761D, 0x763D, 0x764D }
 -- 听牌可胡：每帧写 @7424=$50 会卡 B001 入口；仅 A260 读拦截
 -- 控摸：仅填牌池 @7000，勿改 bank 窗 ROM
 local draw_code = {
@@ -65,6 +81,21 @@ local CPU_HAND_MAX = 13
 local CPU_DISCARD_ADDR = 0x7200 -- 电脑河牌 append 序列（实机 2026-08-27 确认）
 local PLAYER_DISCARD_ADDR = 0x7280 -- 玩家河牌 append 序列（实机 2026-08-27 确认）
 local DISCARD_HIST_MAX = 40
+-- 副露方案（2026-09-17）：结算/Donden 都跟副露走 → 先读副露块，再反推暗手期望张数
+-- 2026-09-17 实机钉死（用户局：碰中→吃一二三筒→玩家碰六筒→Donden）：
+--   块格式：`mark` + 三张 BCD；mark=`82`碰 / `81`吃（旧 `44` 仍扫，三元/杠残留）
+--   电脑副露 @7250 顺序追加（每口 4 字节）；玩家 @72D0 先出现，@7130 稍后/对调后可见
+local meld = {
+    MARK_CHI = 0x81,
+    MARK_PON = 0x82,
+    MARK_KAN = 0x84, -- 大明杠直接写 84；加杠则 82→84（终态相同）
+    MARK_ANKAN = 0x44, -- 暗杠（2026-09-17：暗杠北 = 44 34 34 34）
+    PLAYER_ADDR = 0x7130,
+    PLAYER_MIRROR = 0x72D0, -- 玩家副露常先写这里
+    CPU_ADDR = 0x7250,
+    -- 每口 4 字节、最多 4 口；只认表头连续块（勿扫 0x40，会把 @7150 镜像算成第二口）
+    SCAN_LEN = 0x10,
+}
 
 local SHOW_DEBUG_HUD = false
 local peek_open = false
@@ -74,6 +105,10 @@ local accept_click = false
 local peek_state = nil
 local pool_click_bcd = nil
 local cpu_hand_cache = { raw = {}, src = nil } -- @7240 清空时的软缓存
+-- 可信电脑手：只被可信镜像刷新，绝不因「像玩家」误清空（副露后喂荣依赖它）
+local cpu_hand_trusted = { raw = {}, src = nil }
+-- HUD 暂存：副露瞬间 @7120/@7280 常空读，顶栏用上次非零避免「你手0/你河0」闪断
+local hud_sticky = { pl_n = 0, pl_rn = 0, cpu_rn = 0 }
 local last_player_draw = nil -- BCD or nil
 local last_cpu_draw = nil
 local draw_track_prev = nil
@@ -249,9 +284,11 @@ local force_draw = {
 -- 牌码对齐 jiangsheng mjelct3 cheat @72C0；四杠等需副露结构的未收
 local hand_pat = {
     menu_open = false,
+    menu_target = nil, -- "player" | "cpu"
     hits = {},
     click_id = nil,
     hold = nil, -- 换牌阶段短时每帧盖回镜像 { tiles=, frames= }
+    hold_cpu = nil, -- 电脑役满：换牌阶段盖回 @7240/@77C0
     presets = {
         {
             id = "yakuman_tri",
@@ -263,6 +300,8 @@ local hand_pat = {
                 0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37,
             },
             wait_hint = "听：中",
+            wait_bcd = { 0x37 },
+            key_bcd = { 0x35, 0x36, 0x37 },
         },
         {
             id = "daisangen",
@@ -274,6 +313,8 @@ local hand_pat = {
                 0x31, 0x31, 0x31, 0x32, 0x32, 0x35, 0x35, 0x35, 0x36, 0x36, 0x36, 0x37, 0x37,
             },
             wait_hint = "听：中",
+            wait_bcd = { 0x37 },
+            key_bcd = { 0x35, 0x36, 0x37 },
         },
         {
             id = "daisuushi",
@@ -362,6 +403,8 @@ local hand_pat = {
                 0x01, 0x01, 0x01, 0x09, 0x09, 0x09, 0x11, 0x11, 0x11, 0x19, 0x19, 0x19, 0x21,
             },
             wait_hint = "听：1条",
+            wait_bcd = { 0x21 },
+            key_bcd = { 0x01, 0x09, 0x11, 0x19, 0x21 },
         },
         {
             id = "hyakuman",
@@ -377,13 +420,14 @@ local hand_pat = {
         {
             id = "chariot",
             label = "大车轮",
+            -- 机内役名为大车轮：二～八筒七对（非万子）
             tiles14 = {
-                0x02, 0x02, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08, 0x08,
+                0x12, 0x12, 0x13, 0x13, 0x14, 0x14, 0x15, 0x15, 0x16, 0x16, 0x17, 0x17, 0x18, 0x18,
             },
             tiles13 = {
-                0x02, 0x02, 0x03, 0x03, 0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08,
+                0x12, 0x12, 0x13, 0x13, 0x14, 0x14, 0x15, 0x15, 0x16, 0x16, 0x17, 0x17, 0x18,
             },
-            wait_hint = "听：八万",
+            wait_hint = "听：八筒",
         },
         {
             id = "suurenkou",
@@ -409,24 +453,69 @@ local hand_pat = {
             wait_hint = "听：北",
         },
         {
-            id = "shiisan",
-            label = "十三不搭(电子基盘可能无此牌型)",
+            id = "shiisan1",
+            label = "十三不搭1",
+            -- 147万 + 258筒 + 369条 + 东南西北北（经典探测形）
             tiles14 = {
                 0x01, 0x04, 0x07, 0x12, 0x15, 0x18, 0x23, 0x26, 0x29, 0x31, 0x32, 0x33, 0x34, 0x34,
             },
             tiles13 = {
                 0x01, 0x04, 0x07, 0x12, 0x15, 0x18, 0x23, 0x26, 0x29, 0x31, 0x32, 0x33, 0x34,
             },
-            wait_hint = "听：北等；电子基盘可能无此役",
+            wait_hint = "人和/自摸（仅首张机会）；电脑=仅天和",
+            wait_bcd = {},
+            key_bcd = {
+                0x01, 0x04, 0x07, 0x12, 0x15, 0x18, 0x23, 0x26, 0x29, 0x31, 0x32, 0x33, 0x34,
+            },
+            tenhou_only = true,
+        },
+        {
+            id = "shiisan2",
+            label = "十三不搭2",
+            -- 日麻形：159万 + 26筒 + 37条 + 东南西北中；14 张中成对
+            tiles14 = {
+                0x01, 0x05, 0x09, 0x12, 0x16, 0x23, 0x27, 0x31, 0x32, 0x33, 0x34, 0x35, 0x37, 0x37,
+            },
+            tiles13 = {
+                0x01, 0x05, 0x09, 0x12, 0x16, 0x23, 0x27, 0x31, 0x32, 0x33, 0x34, 0x35, 0x37,
+            },
+            wait_hint = "人和/自摸（仅首张机会）；电脑=仅天和",
+            wait_bcd = {},
+            key_bcd = {
+                0x01, 0x05, 0x09, 0x12, 0x16, 0x23, 0x27, 0x31, 0x32, 0x33, 0x34, 0x35, 0x37,
+            },
+            tenhou_only = true,
         },
     },
+}
+-- 电脑役满「必和窗」探测：注入后记摸/打，自动标 W0 / S_discard / S_pass / W_retry
+local cpu_win_probe = {
+    active = false,
+    session = 0,
+    id = nil,
+    label = nil,
+    mode = nil,
+    first_chance = false,
+    complete14 = false,
+    tenhou_only = false,
+    wait = {},
+    key = {},
+    saw_skip = false,
+    last_draw = nil,
+    draw_was_wait = false,
+    discard_n = 0,
+    coded = false,
+    last_n_cpu = nil,
 }
 -- 控摸提示画在画面顶部（popmessage 居中会挡手牌）
 local ui_toast = { lines = nil, frames = 0 }
 local listen_accept = {
     on = false,
     tap = nil,
+    disc_tap = nil, -- 写 @7502：仅电脑弃牌 PC 窗喂荣（单次）
+    disc_riv_tap = nil, -- 写 @7200 河 append：同上
     cpu = nil,
+    mach = nil,
     addr = 0x7424,
     aux = 0x7427,
     accept = 0x50,
@@ -437,6 +526,22 @@ local listen_accept = {
     probe_n = 0,
     filter_n = 0,
     post_arm_logs = 0,
+    feed_n = 0,
+    feed_log_n = 0,
+    wait_bcd = nil, -- 透视点电脑手锁定的喂荣牌（单次；打出后清）
+    feed_done = false,
+    pending_clear_wait = nil,
+    feed_pending_was = nil, -- 本次弃牌原值（log）
+    feed_fallback_rn = nil,
+    feed_sticky = false, -- 已命中弃牌决定后，粘住改写直至 commit
+    pending_commit = nil, -- 弃牌 finish PC 后下一帧 commit
+    hold = nil, -- 弃牌提交后短时盖河 { wait, was, rn, frames }
+    snap_wait_n = nil, -- 锁定时手里 wait 张数（用于打出后对齐）
+    hold_tap7502 = nil,
+    hold_tap7200 = nil,
+    hold_tap_shadow = nil,
+    prev_cpu_rn = nil,
+    w7502_log_n = 0,
 }
 
 -- 听牌可胡：读 @7424 时的 PC 窗（与主版 A260..A266 同宽 7 字节）
@@ -471,6 +576,30 @@ for i = 1, 9 do
 end
 for i = 0x31, 0x37 do
     BCD_TILE[i] = true
+end
+
+-- 必须在 listen_accept / force_draw 等之前定义：后面的 local 对早前闭包不可见，会变成全局 nil → pcall 吞错
+local function tile_valid(v)
+    if not v or v == 0 or v == 0xFF or v == 0xEE or v == 0xFD then
+        return false
+    end
+    return BCD_TILE[v] == true
+end
+
+local function tile_name(v)
+    if v >= 0x01 and v <= 0x09 then
+        return string.format("%d万", v)
+    end
+    if v >= 0x11 and v <= 0x19 then
+        return string.format("%d筒", v - 0x10)
+    end
+    if v >= 0x21 and v <= 0x29 then
+        return string.format("%d条", v - 0x20)
+    end
+    if HONOR_NAMES[v] then
+        return HONOR_NAMES[v]
+    end
+    return string.format("[%02X]", v)
 end
 
 local function now()
@@ -541,6 +670,196 @@ function mem.bytes_eq(machine, addr, expect)
         end
     end
     return true
+end
+
+-- 副露扫描须在 local mem 之后定义，否则闭包里的 mem 会落到全局 nil
+-- mark：`81`吃 / `82`碰 / `80`–`8F` 其它（杠候选）/ `44` 旧痕迹
+function meld.is_mark(v)
+    if not v then
+        return false
+    end
+    if v == meld.MARK_ANKAN then
+        return true
+    end
+    return v >= 0x80 and v <= 0x8F
+end
+
+function meld.mark_kind(v)
+    if v == meld.MARK_CHI then
+        return "chi"
+    end
+    if v == meld.MARK_PON then
+        return "pon"
+    end
+    if v == meld.MARK_KAN then
+        return "kan" -- 大明杠或加杠（终态均为 84+三张）
+    end
+    if v == meld.MARK_ANKAN then
+        return "ankan"
+    end
+    if v and v >= 0x80 and v <= 0x8F then
+        return string.format("m%02X", v)
+    end
+    return "?"
+end
+
+function meld.read_blocks(machine, base, scan_len)
+    scan_len = scan_len or meld.SCAN_LEN
+    local blocks = {}
+    if not machine or not base then
+        return blocks
+    end
+    -- 只从表头连续读：遇非 mark 块即停（避免扫进手牌/对调镜像造成「副露2」假阳）
+    local i = 0
+    while i <= scan_len - 4 do
+        local mark = mem.read_u8(machine, base + i)
+        if not meld.is_mark(mark) then
+            break
+        end
+        local t1 = mem.read_u8(machine, base + i + 1)
+        local t2 = mem.read_u8(machine, base + i + 2)
+        local t3 = mem.read_u8(machine, base + i + 3)
+        if not (tile_valid(t1) and tile_valid(t2) and tile_valid(t3)) then
+            break
+        end
+        blocks[#blocks + 1] = {
+            addr = base + i,
+            mark = mark,
+            kind = meld.mark_kind(mark),
+            tiles = { t1, t2, t3 },
+        }
+        i = i + 4
+    end
+    return blocks
+end
+
+function meld.format_blocks(blocks)
+    if not blocks or #blocks == 0 then
+        return "-"
+    end
+    local parts = {}
+    for i = 1, #blocks do
+        local b = blocks[i]
+        local names = {}
+        for j = 1, #b.tiles do
+            names[#names + 1] = tile_name(b.tiles[j])
+        end
+        parts[#parts + 1] = string.format(
+            "@%04X%s/%02X[%s]",
+            b.addr,
+            b.kind or "?",
+            b.mark or 0,
+            table.concat(names, "")
+        )
+    end
+    return table.concat(parts, " ")
+end
+
+-- 吃碰杠后暗手期望张数：13-3n；刚副露尚未打牌时多 1（14-3n）
+function meld.expected_closed_n(meld_n, awaiting_discard)
+    meld_n = meld_n or 0
+    if meld_n < 0 then
+        meld_n = 0
+    end
+    local n = 13 - 3 * meld_n
+    if awaiting_discard then
+        n = n + 1
+    end
+    if n < 1 then
+        n = 1
+    end
+    return n
+end
+
+-- 由暗手张数反推副露口数（只升不降地校正 meld_count）
+function meld.infer_n_from_closed(closed_n, awaiting_discard)
+    closed_n = closed_n or 0
+    if awaiting_discard then
+        if closed_n >= 14 then
+            return 0
+        end
+        if closed_n >= 11 then
+            return 1
+        end
+        if closed_n >= 8 then
+            return 2
+        end
+        if closed_n >= 5 then
+            return 3
+        end
+        return 4
+    end
+    if closed_n >= 13 then
+        return 0
+    end
+    if closed_n >= 10 then
+        return 1
+    end
+    if closed_n >= 7 then
+        return 2
+    end
+    if closed_n >= 4 then
+        return 3
+    end
+    return 4
+end
+
+-- 副露 hunt：dump 已知窗 + 扫 hot 区所有 `44`+三张（事后拍也够用，不要求卡在打牌前）
+function meld.dump_hunt(machine, why)
+    if not machine then
+        return
+    end
+    local tag = why or "?"
+    write_log(string.format("=== [meld-hunt] %s %s ===\n", tag, now()), "a")
+    local windows = {
+        { "pl@7130", meld.PLAYER_ADDR },
+        { "pl@72D0", meld.PLAYER_MIRROR },
+        { "cpu@7250", meld.CPU_ADDR },
+    }
+    for _, w in ipairs(windows) do
+        local blocks = meld.read_blocks(machine, w[2], 0x40)
+        local hex = {}
+        for i = 0, 0x3F do
+            local v = mem.read_u8(machine, w[2] + i) or 0
+            hex[#hex + 1] = string.format("%02X", v)
+        end
+        write_log(
+            string.format(
+                "  %s blocks=%d %s\n  hex: %s\n",
+                w[1],
+                #blocks,
+                meld.format_blocks(blocks),
+                table.concat(hex, " ")
+            ),
+            "a"
+        )
+    end
+    -- 全 hot 扫描：`80`–`8F`/`44` + 三张
+    local hits = {}
+    for addr = 0x7100, 0x77FC do
+        local mark = mem.read_u8(machine, addr)
+        if meld.is_mark(mark) then
+            local t1 = mem.read_u8(machine, addr + 1)
+            local t2 = mem.read_u8(machine, addr + 2)
+            local t3 = mem.read_u8(machine, addr + 3)
+            if tile_valid(t1) and tile_valid(t2) and tile_valid(t3) then
+                hits[#hits + 1] = string.format(
+                    "@%04X%s/%02X[%s%s%s]",
+                    addr,
+                    meld.mark_kind(mark),
+                    mark,
+                    tile_name(t1),
+                    tile_name(t2),
+                    tile_name(t3)
+                )
+            end
+        end
+    end
+    if #hits > 0 then
+        write_log("  hot-meld-hits: " .. table.concat(hits, " ") .. "\n", "a")
+    else
+        write_log("  hot-meld-hits: (none)\n", "a")
+    end
 end
 
 function listen_accept.clear_ram(machine)
@@ -634,6 +953,1403 @@ function listen_accept.probe_reset()
     listen_accept.probe_n = 0
     listen_accept.filter_n = 0
     listen_accept.post_arm_logs = 0
+    listen_accept.w7502_log_n = 0
+    -- 勿清 prev_cpu_rn / feed_done：开可胡或探针复位时仍要保持喂荣单次状态
+end
+
+function listen_accept.cpu_river_count(machine)
+    local n = 0
+    for i = 0, DISCARD_HIST_MAX - 1 do
+        local v = mem.read_u8(machine, CPU_DISCARD_ADDR + i)
+        if not tile_valid(v) then
+            break
+        end
+        n = i + 1
+    end
+    return n
+end
+
+function listen_accept.disc_tap_rm()
+    if listen_accept.disc_tap then
+        pcall(function()
+            listen_accept.disc_tap:remove()
+        end)
+        listen_accept.disc_tap = nil
+    end
+end
+
+function listen_accept.disc_riv_tap_rm()
+    if listen_accept.disc_riv_tap then
+        pcall(function()
+            listen_accept.disc_riv_tap:remove()
+        end)
+        listen_accept.disc_riv_tap = nil
+    end
+end
+
+function listen_accept.hold_tap_rm()
+    if listen_accept.hold_tap7502 then
+        pcall(function()
+            listen_accept.hold_tap7502:remove()
+        end)
+        listen_accept.hold_tap7502 = nil
+    end
+    if listen_accept.hold_tap7200 then
+        pcall(function()
+            listen_accept.hold_tap7200:remove()
+        end)
+        listen_accept.hold_tap7200 = nil
+    end
+    if listen_accept.hold_tap_shadow then
+        pcall(function()
+            listen_accept.hold_tap_shadow:remove()
+        end)
+        listen_accept.hold_tap_shadow = nil
+    end
+end
+
+function listen_accept.disc_taps_rm()
+    listen_accept.disc_tap_rm()
+    listen_accept.disc_riv_tap_rm()
+end
+
+function listen_accept.rom_name()
+    local m = listen_accept.mach or (manager and manager.machine)
+    return (m and m.system and m.system.name) or ""
+end
+
+function listen_accept.is_mjelct3_family()
+    local rom = listen_accept.rom_name()
+    return rom == "mjelct3" or rom == "mjelct3a"
+end
+
+-- 弃牌「可见提交」：主版 9168；mjelct3 9605 / 9627；9644=序列结束（常写 00，勿当牌值改写）
+function listen_accept.pc_cpu_discard_finish(cpu)
+    local pc = listen_accept.pc_value(cpu)
+    if not pc then
+        return false
+    end
+    if pc >= 0x9158 and pc <= 0x9178 then
+        return true -- mjelctrn 9168
+    end
+    if pc >= 0x95F8 and pc <= 0x9610 then
+        return true -- mjelct3 9605
+    end
+    if pc >= 0x9618 and pc <= 0x9630 then
+        return true -- mjelct3 9627
+    end
+    if pc >= 0x9638 and pc <= 0x9650 then
+        return true -- mjelct3 9644 结束标记
+    end
+    return false
+end
+
+-- 喂荣新策略（post-discard swap）：
+-- 让电脑正常打完（河/手先自洽），再把「河末那张」换成锁定牌，手里锁定牌与原弃牌对调。
+-- 不再中途劫持弃牌写（易出现：手里发没了、河里仍是八万）。
+
+-- 画面河/刚打牌常读影子槽，不只 @7200；逻辑河已对时仍可能画面错
+function listen_accept.apply_discard_shadow(machine, wait, _was)
+    if not machine or not wait then
+        return
+    end
+    for _, addr in ipairs(DISCARD_SHADOW_TILE_ADDRS) do
+        mem.write_u8(machine, addr, wait)
+    end
+end
+
+function listen_accept.snapshot_cpu_river(machine)
+    local t = {}
+    local n = listen_accept.cpu_river_count(machine)
+    for i = 0, n - 1 do
+        t[i + 1] = mem.read_u8(machine, CPU_DISCARD_ADDR + i) or 0
+    end
+    return t
+end
+
+-- 河变长时定位「刚打出」那一格：旧→新 append 在末尾；新→旧则在开头
+function listen_accept.detect_new_discard(machine, rn, prev_bytes)
+    local last = mem.read_u8(machine, CPU_DISCARD_ADDR + rn - 1) or 0
+    if not prev_bytes or #prev_bytes + 1 ~= rn then
+        return rn, last
+    end
+    local prefix_ok = true
+    for i = 1, #prev_bytes do
+        if (mem.read_u8(machine, CPU_DISCARD_ADDR + i - 1) or 0) ~= prev_bytes[i] then
+            prefix_ok = false
+            break
+        end
+    end
+    if prefix_ok then
+        return rn, last
+    end
+    local first = mem.read_u8(machine, CPU_DISCARD_ADDR) or 0
+    local suffix_ok = true
+    for i = 1, #prev_bytes do
+        if (mem.read_u8(machine, CPU_DISCARD_ADDR + i) or 0) ~= prev_bytes[i] then
+            suffix_ok = false
+            break
+        end
+    end
+    if suffix_ok then
+        return 1, first
+    end
+    return rn, last
+end
+
+-- 电脑已打完：先只改「刚打出」那一格并护住；真稳定后再改手
+function listen_accept.commit_feed(machine, was, why, rn_slot)
+    local wait = listen_accept.wait_bcd
+    if not wait or not machine or listen_accept.hold or listen_accept.feed_done then
+        return
+    end
+    local rn = listen_accept.cpu_river_count(machine)
+    if rn < 1 then
+        rn = listen_accept.feed_fallback_rn or 1
+    end
+    local slot = rn_slot or rn
+    if slot < 1 then
+        slot = rn
+    end
+    was = was or 0
+    if was == 0 then
+        was = mem.read_u8(machine, CPU_DISCARD_ADDR + slot - 1) or 0
+    end
+
+    -- 副露后 RAM 手常空，锁定可能只在透视缓存里：仍改河/@7502 供吃碰，手在 hold 里对齐
+    local has_live = listen_accept.count_bcd_in_hand(machine, wait) > 0
+    local has_cache = listen_accept.count_bcd_in_cache(wait) > 0
+    if was ~= wait and not has_live and not has_cache then
+        write_log(
+            string.format(
+                "=== [listen-accept-feed] WARN no_wait_live/cache was=%02X wait=%02X（仍改河） %s ===\n",
+                was,
+                wait,
+                now()
+            ),
+            "a"
+        )
+    end
+
+    local snap_w = listen_accept.snap_wait_n or 0
+    if snap_w < 1 then
+        snap_w = has_live and listen_accept.count_bcd_in_hand(machine, wait)
+            or listen_accept.count_bcd_in_cache(wait)
+        if snap_w < 1 then
+            snap_w = 1
+        end
+    end
+
+    mem.write_u8(machine, TABLE_TILE_ADDR, wait)
+    mem.write_u8(machine, CPU_DISCARD_ADDR + slot - 1, wait)
+    listen_accept.apply_discard_shadow(machine, wait, was)
+
+    listen_accept.hold = {
+        wait = wait,
+        was = was,
+        rn = rn,
+        rn_slot = slot,
+        frames = 120,
+        phase = "river",
+        stable = 0,
+        rewrites = 0,
+        swapped = false,
+        snap_wait_n = snap_w,
+        why = why or "commit",
+    }
+    listen_accept.disc_taps_rm()
+    listen_accept.hold_tap_install(machine)
+    listen_accept.feed_sticky = false
+    write_log(
+        string.format(
+            "=== [listen-accept-feed] HOLD-RIVER was=%02X wait=%02X rn=%d slot=%d snapW=%d live=%s cache=%s why=%s %s ===\n",
+            was,
+            wait,
+            rn,
+            slot,
+            snap_w,
+            has_live and "Y" or "N",
+            has_cache and "Y" or "N",
+            why or "?",
+            now()
+        ),
+        "a"
+    )
+end
+
+function listen_accept.apply_hold_writes(machine)
+    local h = listen_accept.hold
+    if not h or not machine or not h.wait then
+        return
+    end
+    local slot = h.rn_slot or h.rn or 1
+    if slot >= 1 then
+        mem.write_u8(machine, CPU_DISCARD_ADDR + slot - 1, h.wait)
+    end
+    listen_accept.apply_discard_shadow(machine, h.wait, h.was)
+end
+
+function listen_accept.tick_hold(machine)
+    local h = listen_accept.hold
+    if not h or not machine then
+        return
+    end
+    local slot = h.rn_slot or h.rn or 1
+    local addr = CPU_DISCARD_ADDR + slot - 1
+    -- 先读再写：避免自己写完再读造成假 stable
+    local river = mem.read_u8(machine, addr)
+    if river == h.wait then
+        h.stable = (h.stable or 0) + 1
+        -- 逻辑河已对时仍刷新画面影子（吃碰判定看 @7502/@7200，画面看影子）
+        listen_accept.apply_discard_shadow(machine, h.wait, h.was)
+        if mem.read_u8(machine, TABLE_TILE_ADDR) ~= h.wait then
+            mem.write_u8(machine, TABLE_TILE_ADDR, h.wait)
+        end
+    else
+        h.stable = 0
+        h.rewrites = (h.rewrites or 0) + 1
+        mem.write_u8(machine, addr, h.wait)
+        listen_accept.apply_discard_shadow(machine, h.wait, h.was)
+        if mem.read_u8(machine, TABLE_TILE_ADDR) ~= h.wait then
+            mem.write_u8(machine, TABLE_TILE_ADDR, h.wait)
+        end
+    end
+
+    -- 河稳住后每帧对手（含 phase=done），直到 hold 结束，防机盖回锁定牌
+    if (h.stable or 0) >= 12 then
+        local need = h.was and h.was ~= 0 and h.was ~= h.wait
+        if need then
+            if not listen_accept.hand_feed_synced(machine, h.wait, h.was, h.snap_wait_n) then
+                if listen_accept.swap_hand_after_river(machine, h.wait, h.was) then
+                    h.swapped = true
+                end
+            else
+                h.swapped = true
+            end
+        else
+            h.swapped = true
+        end
+        if h.phase ~= "done"
+            and (
+                listen_accept.hand_feed_synced(machine, h.wait, h.was, h.snap_wait_n)
+                or not need
+            )
+        then
+            if h.phase ~= "hand_ok" then
+                h.phase = "hand_ok"
+                write_log(
+                    string.format(
+                        "=== [listen-accept-feed] HAND-SWAP was=%02X wait=%02X sync=Y slot=%d stable=%d snapW=%d %s ===\n",
+                        h.was or 0,
+                        h.wait,
+                        slot,
+                        h.stable or 0,
+                        h.snap_wait_n or 0,
+                        now()
+                    ),
+                    "a"
+                )
+            end
+            -- 再护几帧手/河后收尾
+            if (h.stable or 0) >= 24 then
+                h.phase = "done"
+                listen_accept.mark_feed_done(h.why or "river_stable", h.was, h.wait)
+            end
+        end
+    end
+
+    h.frames = (h.frames or 0) - 1
+    if h.frames >= 0 then
+        return
+    end
+
+    listen_accept.hold_tap_rm()
+    river = mem.read_u8(machine, addr)
+    -- 超时仍尽量再对手一次
+    if h.phase ~= "done" then
+        if h.was and h.was ~= 0 and h.was ~= h.wait then
+            listen_accept.swap_hand_after_river(machine, h.wait, h.was)
+            h.swapped = listen_accept.hand_feed_synced(machine, h.wait, h.was, h.snap_wait_n)
+                or h.swapped
+        end
+        listen_accept.mark_feed_done(
+            h.swapped and (h.why or "timeout_ok") or "timeout_hand",
+            h.was,
+            h.wait
+        )
+        write_log(
+            string.format(
+                "=== [listen-accept-feed] HAND-SWAP was=%02X wait=%02X sync=%s slot=%d stable=%d rewrites=%d (timeout) %s ===\n",
+                h.was or 0,
+                h.wait,
+                h.swapped and "Y" or "N",
+                slot,
+                h.stable or 0,
+                h.rewrites or 0,
+                now()
+            ),
+            "a"
+        )
+    end
+    if river ~= h.wait and h.swapped then
+        if h.was and h.was ~= 0 and h.was ~= h.wait then
+            if listen_accept.count_bcd_in_hand(machine, h.was) > 0
+                and listen_accept.count_bcd_in_hand(machine, h.wait) < 1
+            then
+                listen_accept.remove_one_bcd(machine, h.was)
+                listen_accept.add_one_bcd(machine, h.wait)
+                listen_accept.pack_cpu_hand(machine)
+            end
+        end
+        ui_toast.show("喂荣河牌被改回，已恢复手牌", 220)
+        write_log(
+            string.format(
+                "=== [listen-accept-feed] REVERT-HAND river_back=%02X wait=%02X %s ===\n",
+                river or 0,
+                h.wait,
+                now()
+            ),
+            "a"
+        )
+    elseif river ~= h.wait then
+        ui_toast.show(
+            string.format(
+                "喂荣未稳住：河仍是 %s\n目标 %s",
+                tile_name(river or 0),
+                tile_name(h.wait)
+            ),
+            260
+        )
+        write_log(
+            string.format(
+                "=== [listen-accept-feed] FAIL river=%02X wait=%02X slot=%d rewrites=%d %s ===\n",
+                river or 0,
+                h.wait,
+                slot,
+                h.rewrites or 0,
+                now()
+            ),
+            "a"
+        )
+    end
+    listen_accept.hold = nil
+end
+
+function listen_accept.hand_count_at(machine, base)
+    local n = 0
+    if not machine or not base then
+        return 0
+    end
+    for i = 0, CPU_HAND_MAX - 1 do
+        if tile_valid(mem.read_u8(machine, base + i)) then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function listen_accept.read_hand_contig(machine, base)
+    local raws = {}
+    if not machine or not base then
+        return raws
+    end
+    for i = 0, CPU_HAND_MAX - 1 do
+        local v = mem.read_u8(machine, base + i)
+        if not tile_valid(v) then
+            break
+        end
+        raws[#raws + 1] = v
+    end
+    return raws
+end
+
+function listen_accept.multiset_overlap(a, b)
+    local mb = {}
+    for _, v in ipairs(b or {}) do
+        mb[v] = (mb[v] or 0) + 1
+    end
+    local n = 0
+    for _, v in ipairs(a or {}) do
+        local c = mb[v] or 0
+        if c > 0 then
+            n = n + 1
+            mb[v] = c - 1
+        end
+    end
+    return n
+end
+
+-- 副露时工作区常把玩家手拷进 @7100/@77C0：同长且多重集合完全一致才判串台
+function listen_accept.raw_looks_like_player(machine, raws)
+    if not machine or not raws or #raws < 5 then
+        return false
+    end
+    for _, addr in ipairs(PLAYER_HAND_MIRRORS) do
+        local pl = listen_accept.read_hand_contig(machine, addr)
+        if #pl >= 5 and #pl == #raws then
+            local ov = listen_accept.multiset_overlap(raws, pl)
+            if ov == #raws then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function listen_accept.base_looks_like_player(machine, base)
+    return listen_accept.raw_looks_like_player(
+        machine,
+        listen_accept.read_hand_contig(machine, base)
+    )
+end
+
+-- 副露后 @7240 常空：取可信电脑镜像（拒玩家串台），勿只按「张数最多」
+function listen_accept.live_cpu_hand_base(machine)
+    local best, best_score = CPU_HAND_ADDR, -1
+    if not machine then
+        return best, 0
+    end
+    for _, base in ipairs(CPU_HAND_FALLBACKS) do
+        local raws = listen_accept.read_hand_contig(machine, base)
+        if #raws > 0 and not listen_accept.raw_looks_like_player(machine, raws) then
+            local score = #raws * 10 + (CPU_HAND_PRIO[base] or 0)
+            if score > best_score then
+                best, best_score = base, score
+            end
+        end
+    end
+    if best_score < 0 then
+        return CPU_HAND_ADDR, 0
+    end
+    return best, listen_accept.hand_count_at(machine, best)
+end
+
+function listen_accept.count_bcd_in_hand(machine, bcd)
+    local n = 0
+    if not machine or not bcd then
+        return 0
+    end
+    -- 只数可信电脑镜像（拷贝取 max，勿累加；串台缓冲不计）
+    for _, base in ipairs(CPU_HAND_FALLBACKS) do
+        if not listen_accept.base_looks_like_player(machine, base) then
+            local c = 0
+            for i = 0, CPU_HAND_MAX - 1 do
+                if mem.read_u8(machine, base + i) == bcd then
+                    c = c + 1
+                end
+            end
+            if c > n then
+                n = c
+            end
+        end
+    end
+    return n
+end
+
+function listen_accept.count_bcd_in_cache(bcd)
+    local n = 0
+    if not bcd then
+        return 0
+    end
+    local raw = (cpu_hand_trusted.raw and #cpu_hand_trusted.raw > 0)
+            and cpu_hand_trusted.raw
+        or cpu_hand_cache.raw
+    if not raw then
+        return 0
+    end
+    for _, v in ipairs(raw) do
+        if v == bcd then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+function listen_accept.hand_has_at(machine, base, bcd)
+    if not machine or not base or not bcd then
+        return false
+    end
+    for i = 0, CPU_HAND_MAX - 1 do
+        if mem.read_u8(machine, base + i) == bcd then
+            return true
+        end
+    end
+    return false
+end
+
+-- 优先：含该牌且张数最多的可信镜像（拒玩家串台）
+function listen_accept.find_hand_base_with(machine, bcd)
+    local best, best_n = nil, -1
+    if not machine or not bcd then
+        return nil
+    end
+    for _, base in ipairs(CPU_HAND_FALLBACKS) do
+        if not listen_accept.base_looks_like_player(machine, base)
+            and listen_accept.hand_has_at(machine, base, bcd)
+        then
+            local n = listen_accept.hand_count_at(machine, base)
+            if n > best_n then
+                best, best_n = base, n
+            end
+        end
+    end
+    return best
+end
+
+function listen_accept.remove_one_bcd(machine, bcd)
+    local base = listen_accept.find_hand_base_with(machine, bcd)
+        or listen_accept.live_cpu_hand_base(machine)
+    for i = 0, CPU_HAND_MAX - 1 do
+        local addr = base + i
+        if mem.read_u8(machine, addr) == bcd then
+            mem.write_u8(machine, addr, 0)
+            return true
+        end
+    end
+    return false
+end
+
+function listen_accept.add_one_bcd(machine, bcd)
+    if not tile_valid(bcd) then
+        return false
+    end
+    local base = listen_accept.live_cpu_hand_base(machine)
+    for i = 0, CPU_HAND_MAX - 1 do
+        local addr = base + i
+        if not tile_valid(mem.read_u8(machine, addr)) then
+            mem.write_u8(machine, addr, bcd)
+            return true
+        end
+    end
+    return false
+end
+
+function listen_accept.pack_cpu_hand(machine, base)
+    if not FEED_MUTATE_CPU_HAND then
+        return
+    end
+    if not machine then
+        return
+    end
+    base = base or listen_accept.live_cpu_hand_base(machine)
+    local writable = false
+    for _, a in ipairs(CPU_HAND_WRITABLE) do
+        if a == base then
+            writable = true
+            break
+        end
+    end
+    if not writable then
+        return
+    end
+    local tiles = {}
+    for i = 0, CPU_HAND_MAX - 1 do
+        local v = mem.read_u8(machine, base + i)
+        if tile_valid(v) then
+            tiles[#tiles + 1] = v
+        end
+    end
+    table.sort(tiles)
+    if listen_accept.raw_looks_like_player(machine, tiles) then
+        write_log(
+            string.format(
+                "=== [cpu-hand] skip-pack player-like @%04X n=%d %s ===\n",
+                base,
+                #tiles,
+                now()
+            ),
+            "a"
+        )
+        return
+    end
+    for i = 0, CPU_HAND_MAX - 1 do
+        mem.write_u8(machine, base + i, tiles[i + 1] or 0)
+    end
+    for _, dst in ipairs(CPU_HAND_WRITABLE) do
+        if dst ~= base then
+            for i = 0, CPU_HAND_MAX - 1 do
+                mem.write_u8(machine, dst + i, mem.read_u8(machine, base + i))
+            end
+        end
+    end
+    cpu_hand_cache = { raw = tiles, src = base }
+    cpu_hand_trusted = { raw = tiles, src = base }
+    cpu_hand_src_addr = base
+end
+
+function listen_accept.patch_cpu_hand_cache(wait, was)
+    local function patch_raw(raw)
+        if not raw or #raw < 1 or not wait then
+            return false
+        end
+        for i, v in ipairs(raw) do
+            if v == wait then
+                if was and was ~= 0 and was ~= wait and tile_valid(was) then
+                    raw[i] = was
+                else
+                    table.remove(raw, i)
+                end
+                return true
+            end
+        end
+        return false
+    end
+    local ok = patch_raw(cpu_hand_trusted.raw)
+    if cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+        ok = patch_raw(cpu_hand_cache.raw) or ok
+    end
+    return ok
+end
+
+function listen_accept.add_one_to_cache(bcd)
+    if not bcd or not tile_valid(bcd) then
+        return false
+    end
+    local function add(raw)
+        if not raw then
+            return false
+        end
+        if #raw >= CPU_HAND_MAX then
+            return false
+        end
+        raw[#raw + 1] = bcd
+        return true
+    end
+    local ok = add(cpu_hand_trusted.raw)
+    if cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+        add(cpu_hand_cache.raw)
+    elseif ok and (not cpu_hand_cache.raw or #cpu_hand_cache.raw < 1) then
+        cpu_hand_cache = {
+            raw = cpu_hand_trusted.raw,
+            src = cpu_hand_trusted.src,
+        }
+    end
+    return ok
+end
+
+-- 副露缓存下电脑打牌：
+-- 摸切 → 不动；手切 → 先补本巡摸入再扣弃牌；碰/吃后必打 → 只扣弃牌
+function listen_accept.patch_cache_after_cpu_discard(disc, table_v)
+    if not disc or not tile_valid(disc) then
+        return false
+    end
+    local raw = cpu_hand_trusted.raw
+    if not raw or #raw < 1 then
+        return false
+    end
+    local pending = cpu_hand_trusted.pending_draw
+    local no_draw = cpu_hand_trusted.no_draw_discard
+    local in_hand = listen_accept.count_in_list(raw, disc) > 0
+    -- 碰/吃后必打：优先于摸切；弃牌必须在手里才扣（勿乱删末张，曾扣到只剩 5/1）
+    if no_draw then
+        if not in_hand then
+            cpu_hand_trusted.after_meld_miss = (cpu_hand_trusted.after_meld_miss or 0) + 1
+            write_log(
+                string.format(
+                    "=== [peek-hand] discard after-meld-wait=%02X trust=%d miss=%d %s ===\n",
+                    disc,
+                    #raw,
+                    cpu_hand_trusted.after_meld_miss or 0,
+                    now()
+                ),
+                "a"
+            )
+            -- 连续错过：多半是假副露/已打过，清 no_draw 以免一直不更新、再被 force 扣穿
+            if (cpu_hand_trusted.after_meld_miss or 0) >= 2 then
+                cpu_hand_trusted.no_draw_discard = false
+                cpu_hand_trusted.after_meld_miss = 0
+                cpu_hand_trusted.pending_draw = nil
+                write_log(
+                    string.format(
+                        "=== [peek-hand] no_draw clear after-miss trust=%d %s ===\n",
+                        #raw,
+                        now()
+                    ),
+                    "a"
+                )
+            end
+            return false
+        end
+        listen_accept.mark_stale_before_patch()
+        listen_accept.remove_n_from_cache(disc, 1)
+        cpu_hand_trusted.no_draw_discard = false
+        cpu_hand_trusted.pending_draw = nil
+        cpu_hand_trusted.after_meld_miss = 0
+        write_log(
+            string.format(
+                "=== [peek-hand] discard after-meld=%02X trust=%d %s ===\n",
+                disc,
+                cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+                now()
+            ),
+            "a"
+        )
+        return true
+    end
+    -- 摸切：弃牌不在缓存，或 pending 摸入就是这张（含「手里已有同种再摸切」）
+    if (not in_hand) or (pending and pending == disc) then
+        cpu_hand_trusted.pending_draw = nil
+        write_log(
+            string.format(
+                "=== [peek-hand] discard tsumogiri=%02X in_hand=%s trust=%d %s ===\n",
+                disc,
+                in_hand and "Y" or "N",
+                #raw,
+                now()
+            ),
+            "a"
+        )
+        return true
+    end
+    -- 手切：必须有摸入证据，否则不扣（漏记摸入时曾越打越少 → 10 变 6）
+    local draw = pending
+    if (not draw or draw == disc) and table_v and tile_valid(table_v) and table_v ~= disc then
+        draw = table_v
+    end
+    if not (draw and tile_valid(draw) and draw ~= disc) then
+        cpu_hand_trusted.pending_draw = nil
+        write_log(
+            string.format(
+                "=== [peek-hand] discard keep=%02X no-draw-ev trust=%d %s ===\n",
+                disc,
+                #raw,
+                now()
+            ),
+            "a"
+        )
+        return true
+    end
+    listen_accept.mark_stale_before_patch()
+    listen_accept.add_one_to_cache(draw)
+    listen_accept.remove_n_from_cache(disc, 1)
+    cpu_hand_trusted.pending_draw = nil
+    write_log(
+        string.format(
+            "=== [peek-hand] discard tedashi disc=%02X draw=%02X trust=%d %s ===\n",
+            disc,
+            draw,
+            cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+            now()
+        ),
+        "a"
+    )
+    return true
+end
+
+function listen_accept.remove_n_from_cache(bcd, n)
+    n = n or 1
+    if not bcd or n < 1 then
+        return 0
+    end
+    local function rm(raw, left)
+        if not raw then
+            return 0
+        end
+        local i = 1
+        local did = 0
+        while i <= #raw and did < left do
+            if raw[i] == bcd then
+                table.remove(raw, i)
+                did = did + 1
+            else
+                i = i + 1
+            end
+        end
+        return did
+    end
+    local a = rm(cpu_hand_trusted.raw, n)
+    if cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+        rm(cpu_hand_cache.raw, n)
+    end
+    return a
+end
+
+-- @7250 口数已增但「河缩/世代」没抓到 → 暗手卡在旧张数（典型：副露1 后一直 10）
+function listen_accept.align_trust_to_cpu_melds(machine, ram_n, awaiting_discard, why)
+    ram_n = ram_n or 0
+    local raw = cpu_hand_trusted.raw
+    if not raw or #raw < 1 or ram_n < 1 then
+        return false
+    end
+    local target = meld.expected_closed_n(ram_n, awaiting_discard)
+    if #raw <= target then
+        cpu_hand_trusted.meld_count = ram_n
+        local gen = cpu_hand_trusted.pl_discard_gen or 0
+        if gen >= 1 then
+            cpu_hand_trusted.meld_at_gen = gen
+        end
+        return false
+    end
+    local need = #raw - target
+    local claim = cpu_hand_trusted.last_pl_discard
+    local blocks = meld.read_blocks(machine, meld.CPU_ADDR)
+    if blocks and #blocks > 0 then
+        local b = blocks[#blocks]
+        if b.tiles and b.tiles[1] then
+            if b.kind == "pon" or b.kind == "kan" or b.kind == "ankan" then
+                claim = b.tiles[1]
+            elseif not (claim and listen_accept.count_in_list(b.tiles, claim) > 0) then
+                claim = b.tiles[1]
+            end
+        end
+    end
+    listen_accept.mark_stale_before_patch()
+    local removed = 0
+    if claim and tile_valid(claim) then
+        removed = listen_accept.remove_n_from_cache(claim, math.min(need, 2))
+    end
+    while removed < need and cpu_hand_trusted.raw and #cpu_hand_trusted.raw > target do
+        table.remove(cpu_hand_trusted.raw)
+        if cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+            if #cpu_hand_cache.raw > 0 then
+                table.remove(cpu_hand_cache.raw)
+            end
+        end
+        removed = removed + 1
+    end
+    if cpu_hand_cache.raw == nil or cpu_hand_cache.raw == cpu_hand_trusted.raw then
+        cpu_hand_cache = {
+            raw = cpu_hand_trusted.raw,
+            src = cpu_hand_trusted.src,
+        }
+    end
+    cpu_hand_trusted.meld_count = ram_n
+    if awaiting_discard then
+        cpu_hand_trusted.no_draw_discard = true
+        cpu_hand_trusted.pending_draw = nil
+    end
+    -- 标记本世代已扣过，避免下一帧 cpu-meld 再 force-shrink（曾 13→11→9→8）
+    local gen = cpu_hand_trusted.pl_discard_gen or 0
+    if gen >= 1 then
+        cpu_hand_trusted.meld_at_gen = gen
+    end
+    write_log(
+        string.format(
+            "=== [peek-hand] align-meld ram=%d rem=%d trust=%d expect=%d await=%s why=%s %s ===\n",
+            ram_n,
+            removed,
+            cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+            target,
+            awaiting_discard and "Y" or "N",
+            why or "-",
+            now()
+        ),
+        "a"
+    )
+    return removed > 0
+end
+
+function listen_accept.count_in_list(raw, bcd)
+    local c = 0
+    for _, v in ipairs(raw or {}) do
+        if v == bcd then
+            c = c + 1
+        end
+    end
+    return c
+end
+
+-- 吃：从缓存去掉能与 claimed 组成顺子的两张
+function listen_accept.remove_chi_partners_from_raw(raw, claimed)
+    if not raw or not claimed then
+        return false
+    end
+    local suit = claimed & 0xF0
+    local n = claimed & 0x0F
+    if suit > 0x20 or n < 1 or n > 9 then
+        return false
+    end
+    local cands = {}
+    if n >= 3 then
+        cands[#cands + 1] = { suit + (n - 2), suit + (n - 1) }
+    end
+    if n >= 2 and n <= 8 then
+        cands[#cands + 1] = { suit + (n - 1), suit + (n + 1) }
+    end
+    if n <= 7 then
+        cands[#cands + 1] = { suit + (n + 1), suit + (n + 2) }
+    end
+    for _, pair in ipairs(cands) do
+        local a, b = pair[1], pair[2]
+        if listen_accept.count_in_list(raw, a) >= 1
+            and listen_accept.count_in_list(raw, b) >= 1
+        then
+            local function rm1(t)
+                for i, v in ipairs(raw) do
+                    if v == t then
+                        table.remove(raw, i)
+                        return true
+                    end
+                end
+                return false
+            end
+            return rm1(a) and rm1(b)
+        end
+    end
+    return false
+end
+
+-- 电脑吃/碰玩家河牌后：暗手先少 2 张（碰后还要打牌再到 10）
+-- 绝不因手里有 3 张同牌就当杠扣 3——会变成暗手少 1（10 显示成 9）
+-- 去重用「玩家弃牌世代」：同一口弃牌只扣一次；河长偶然相同也不会挡住下一口吃
+function listen_accept.can_meld_claim(claimed)
+    local raw = cpu_hand_trusted.raw
+    if not raw or not claimed or not tile_valid(claimed) then
+        return false, nil
+    end
+    if listen_accept.count_in_list(raw, claimed) >= 2 then
+        return true, "pon"
+    end
+    -- 试算吃：复制后再扣，不改真缓存
+    local copy = {}
+    for i, v in ipairs(raw) do
+        copy[i] = v
+    end
+    if listen_accept.remove_chi_partners_from_raw(copy, claimed) then
+        return true, "chi"
+    end
+    return false, nil
+end
+
+function listen_accept.patch_cache_after_cpu_meld(machine, claimed)
+    if not claimed or not tile_valid(claimed) then
+        return false
+    end
+    local raw = cpu_hand_trusted.raw
+    -- 两口后暗手可到 7；三口到 4。按当前副露数放宽下限
+    local meld_n = cpu_hand_trusted.meld_count or 0
+    local min_raw = (meld_n >= 2) and 4 or 7
+    local ram_n = 0
+    if machine then
+        ram_n = #meld.read_blocks(machine, meld.CPU_ADDR)
+        if ram_n >= 2 then
+            min_raw = 4
+        elseif ram_n >= 1 and meld_n >= 1 then
+            min_raw = 4
+        end
+    end
+    if not raw or #raw < min_raw then
+        return false
+    end
+    -- @7250 尚无块：多半是河缩误判，绝不能 force 扣缓存（曾 ram=0 连扣到只剩 1～2 张）
+    if ram_n < 1 then
+        write_log(
+            string.format(
+                "=== [peek-hand] cpu-meld skip no-ram claim=%02X trust=%d %s ===\n",
+                claimed,
+                #raw,
+                now()
+            ),
+            "a"
+        )
+        return false
+    end
+    local gen = cpu_hand_trusted.pl_discard_gen or 0
+    if gen < 1 then
+        return false
+    end
+    -- align-meld 已按 RAM 扣过 → 只补标记，禁止再 force-shrink（曾 13→11→9→8）
+    if ram_n >= 1 then
+        local exp_await = meld.expected_closed_n(ram_n, true)
+        local exp_done = meld.expected_closed_n(ram_n, false)
+        if #raw <= exp_await then
+            cpu_hand_trusted.meld_count = ram_n
+            cpu_hand_trusted.meld_at_gen = gen
+            if #raw > exp_done then
+                cpu_hand_trusted.no_draw_discard = true
+                cpu_hand_trusted.pending_draw = nil
+            end
+            write_log(
+                string.format(
+                    "=== [peek-hand] cpu-meld skip already-aligned claim=%02X trust=%d ram=%d exp=%d %s ===\n",
+                    claimed,
+                    #raw,
+                    ram_n,
+                    exp_await,
+                    now()
+                ),
+                "a"
+            )
+            return false
+        end
+    end
+    if cpu_hand_trusted.meld_at_gen == gen then
+        write_log(
+            string.format(
+                "=== [peek-hand] cpu-meld skip same-gen=%d claim=%02X trust=%d %s ===\n",
+                gen,
+                claimed,
+                #raw,
+                now()
+            ),
+            "a"
+        )
+        if ram_n >= 1 and #raw > meld.expected_closed_n(ram_n, true) then
+            return listen_accept.align_trust_to_cpu_melds(
+                machine,
+                ram_n,
+                true,
+                "same-gen-oversize"
+            )
+        end
+        return false
+    end
+    local can, kind = listen_accept.can_meld_claim(claimed)
+    listen_accept.mark_stale_before_patch()
+    local removed = 0
+    if can and kind == "pon" then
+        removed = listen_accept.remove_n_from_cache(claimed, 2)
+    elseif can then
+        local ok = listen_accept.remove_chi_partners_from_raw(cpu_hand_trusted.raw, claimed)
+        if ok and cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+            listen_accept.remove_chi_partners_from_raw(cpu_hand_cache.raw, claimed)
+        elseif ok then
+            cpu_hand_cache = {
+                raw = cpu_hand_trusted.raw,
+                src = cpu_hand_trusted.src,
+            }
+        end
+        if ok then
+            removed = 2
+        end
+    end
+    -- 第二口常认不出吃碰组合，但台面已副露：强制暗手 -2；勿扣穿期望张数
+    if removed < 2 and #raw >= min_raw then
+        local expect_cap = meld.expected_closed_n(
+            ram_n > 0 and ram_n or (meld_n + 1),
+            true
+        )
+        local have = listen_accept.count_in_list(raw, claimed)
+        if have >= 1 then
+            removed = listen_accept.remove_n_from_cache(claimed, math.min(2, have))
+        end
+        while removed < 2
+            and cpu_hand_trusted.raw
+            and #cpu_hand_trusted.raw > expect_cap
+        do
+            table.remove(cpu_hand_trusted.raw)
+            if cpu_hand_cache.raw and cpu_hand_cache.raw ~= cpu_hand_trusted.raw then
+                if #cpu_hand_cache.raw > 0 then
+                    table.remove(cpu_hand_cache.raw)
+                end
+            end
+            removed = removed + 1
+        end
+        if cpu_hand_cache.raw == nil or cpu_hand_cache.raw == cpu_hand_trusted.raw then
+            cpu_hand_cache = {
+                raw = cpu_hand_trusted.raw,
+                src = cpu_hand_trusted.src,
+            }
+        end
+        kind = can and kind or "force"
+        write_log(
+            string.format(
+                "=== [peek-hand] cpu-meld force-shrink claim=%02X rem=%d trust=%d cap=%d %s ===\n",
+                claimed,
+                removed,
+                cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+                expect_cap,
+                now()
+            ),
+            "a"
+        )
+    end
+    if removed > 0 then
+        cpu_hand_trusted.meld_at_gen = gen
+        -- 碰/吃后必打一张，本巡无摸
+        cpu_hand_trusted.no_draw_discard = true
+        cpu_hand_trusted.pending_draw = nil
+        -- @7250 常已先写入：以 RAM 块数为准，避免 soft-sync 后再 +1 变成「副露2」
+        if ram_n > 0 then
+            cpu_hand_trusted.meld_count = ram_n
+        else
+            cpu_hand_trusted.meld_count = (cpu_hand_trusted.meld_count or 0) + 1
+        end
+        write_log(
+            string.format(
+                "=== [peek-hand] cpu-meld %s claim=%02X rem=%d trust=%d meld_n=%d ram=%d expect=%d gen=%d why=%s %s ===\n",
+                kind or "?",
+                claimed,
+                removed,
+                cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+                cpu_hand_trusted.meld_count or 0,
+                ram_n,
+                meld.expected_closed_n(
+                    cpu_hand_trusted.meld_count,
+                    true
+                ),
+                gen,
+                listen_accept._peek_meld_why or "-",
+                now()
+            ),
+            "a"
+        )
+        return true
+    end
+    write_log(
+        string.format(
+            "=== [peek-hand] cpu-meld fail claim=%02X trust=%d gen=%d %s ===\n",
+            claimed,
+            #raw,
+            gen,
+            now()
+        ),
+        "a"
+    )
+    return false
+end
+
+-- 扣牌前记下「扣之前的样子」：之后实读若仍等于它，说明镜像没跟上，勿撑回去
+function listen_accept.mark_stale_before_patch()
+    local raw = cpu_hand_trusted.raw
+    if not raw or #raw < 1 then
+        return
+    end
+    local copy = {}
+    for i, v in ipairs(raw) do
+        copy[i] = v
+    end
+    cpu_hand_trusted.stale = copy
+end
+
+-- 新局：两家河都空 → 丢弃上一局残留缓存（否则新局 13 张会被旧短缓存挡住）
+function listen_accept.reset_cpu_hand_cache(why)
+    local had = cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0
+    cpu_hand_trusted = { raw = {}, src = nil }
+    cpu_hand_cache = { raw = {}, src = nil }
+    cpu_hand_src_addr = nil
+    if had > 0 then
+        write_log(
+            string.format(
+                "=== [peek-hand] reset why=%s had=%d %s ===\n",
+                why or "?",
+                had,
+                now()
+            ),
+            "a"
+        )
+    end
+end
+
+function listen_accept.multiset_is_subset(small, big)
+    if not small or not big then
+        return false
+    end
+    local mb = {}
+    for _, v in ipairs(big) do
+        mb[v] = (mb[v] or 0) + 1
+    end
+    for _, v in ipairs(small) do
+        local c = mb[v] or 0
+        if c < 1 then
+            return false
+        end
+        mb[v] = c - 1
+    end
+    return true
+end
+
+function listen_accept.multiset_equal_lists(a, b)
+    if not a or not b or #a ~= #b or #a < 1 then
+        return false
+    end
+    return listen_accept.multiset_overlap(a, b) == #a
+end
+
+-- 河已是 wait：把手里一张 wait 原地换成 was（机已扣 was / 尚未扣都行）
+function listen_accept.swap_hand_after_river(machine, wait, was)
+    if not wait or not was or was == 0 or was == wait then
+        return false
+    end
+    if not tile_valid(was) then
+        return false
+    end
+    -- 副露透视优先：只改显示缓存，不写 RAM
+    if not FEED_MUTATE_CPU_HAND then
+        return listen_accept.patch_cpu_hand_cache(wait, was)
+    end
+    if not machine then
+        return false
+    end
+    local base = listen_accept.find_hand_base_with(machine, wait)
+    if base then
+        for i = 0, CPU_HAND_MAX - 1 do
+            local addr = base + i
+            if mem.read_u8(machine, addr) == wait then
+                mem.write_u8(machine, addr, was)
+                listen_accept.pack_cpu_hand(machine, base)
+                return true
+            end
+        end
+    end
+    return listen_accept.patch_cpu_hand_cache(wait, was)
+end
+
+function listen_accept.swap_hand_for_feed(machine, wait, was)
+    return listen_accept.swap_hand_after_river(machine, wait, was)
+end
+
+-- 目标：锁定牌张数降到 snap_wait_n-1（通常从 1→0）
+function listen_accept.hand_feed_synced(machine, wait, was, snap_wait_n)
+    if not wait then
+        return true
+    end
+    local want = math.max(0, (snap_wait_n or 1) - 1)
+    local live_n = listen_accept.count_bcd_in_hand(machine, wait)
+    local cache_n = listen_accept.count_bcd_in_cache(wait)
+    -- 有 live 手时以 live 为准；全空才看缓存
+    local _, live_total = listen_accept.live_cpu_hand_base(machine)
+    if live_total > 0 then
+        return live_n <= want
+    end
+    return cache_n <= want
+end
+
+function listen_accept.sort_cpu_hands(_machine)
+end
+
+function listen_accept.sync_cpu_hand_mirrors(_machine)
+end
+
+function listen_accept.hold_tap_install(machine)
+    listen_accept.hold_tap_rm()
+    local h = listen_accept.hold
+    if not h or not machine then
+        return false
+    end
+    local cpu = machine.devices and machine.devices[":maincpu"]
+    local space = cpu and cpu.spaces and cpu.spaces["program"]
+    if not space or not space.install_write_tap then
+        return false
+    end
+    local slot = h.rn_slot or h.rn or 1
+    if slot >= 1 then
+        local river_addr = CPU_DISCARD_ADDR + slot - 1
+        local ok2, t2 = pcall(function()
+            return space:install_write_tap(
+                river_addr,
+                river_addr,
+                "fei_feed_hold7200",
+                function(_offset, data, _mask)
+                    local hh = listen_accept.hold
+                    if not hh or not hh.wait then
+                        return
+                    end
+                    if ((data or 0) & 0xFF) == hh.wait then
+                        return
+                    end
+                    return hh.wait
+                end
+            )
+        end)
+        if ok2 and t2 then
+            listen_accept.hold_tap7200 = t2
+        end
+    end
+    -- 护画面影子槽（仅已知刚打牌面地址）
+    local ok3, t3 = pcall(function()
+        return space:install_write_tap(
+            0x760A,
+            0x764D,
+            "fei_feed_hold_shadow",
+            function(offset, data, _mask)
+                local hh = listen_accept.hold
+                if not hh or not hh.wait then
+                    return
+                end
+                local addr = offset & 0xFFFF
+                local hit = false
+                for _, a in ipairs(DISCARD_SHADOW_TILE_ADDRS) do
+                    if addr == a then
+                        hit = true
+                        break
+                    end
+                end
+                if not hit then
+                    return
+                end
+                local cur = (data or 0) & 0xFF
+                if cur == hh.wait then
+                    return
+                end
+                return hh.wait
+            end
+        )
+    end)
+    if ok3 and t3 then
+        listen_accept.hold_tap_shadow = t3
+    end
+    return listen_accept.hold_tap7200 ~= nil or listen_accept.hold_tap_shadow ~= nil
+end
+
+-- 中途不再改写弃牌；仅保留 tap 空壳以免旧调用报错（真正喂荣靠河变长后 swap）
+function listen_accept.feed_try_rewrite(_data)
+    return nil
+end
+
+function listen_accept.disc_tap_install(machine)
+    listen_accept.disc_tap_rm()
+    if not listen_accept.wait_bcd or not machine then
+        return false
+    end
+    local cpu = machine.devices and machine.devices[":maincpu"]
+    local space = cpu and cpu.spaces and cpu.spaces["program"]
+    if not space or not space.install_write_tap then
+        return false
+    end
+    listen_accept.cpu = cpu
+    listen_accept.mach = machine
+    local ok, tap = pcall(function()
+        return space:install_write_tap(
+            TABLE_TILE_ADDR,
+            TABLE_TILE_ADDR,
+            "fei_feed_disc7502",
+            function(_offset, data, _mask)
+                return listen_accept.feed_try_rewrite(data)
+            end
+        )
+    end)
+    if ok and tap then
+        listen_accept.disc_tap = tap
+        return true
+    end
+    return false
+end
+
+function listen_accept.disc_riv_tap_install(machine)
+    listen_accept.disc_riv_tap_rm()
+    if not listen_accept.wait_bcd or not machine then
+        return false
+    end
+    local cpu = machine.devices and machine.devices[":maincpu"]
+    local space = cpu and cpu.spaces and cpu.spaces["program"]
+    if not space or not space.install_write_tap then
+        return false
+    end
+    listen_accept.cpu = cpu
+    listen_accept.mach = machine
+    local riv_end = CPU_DISCARD_ADDR + DISCARD_HIST_MAX - 1
+    local ok, tap = pcall(function()
+        return space:install_write_tap(
+            CPU_DISCARD_ADDR,
+            riv_end,
+            "fei_feed_disc7200",
+            function(_offset, data, _mask)
+                return listen_accept.feed_try_rewrite(data)
+            end
+        )
+    end)
+    if ok and tap then
+        listen_accept.disc_riv_tap = tap
+        return true
+    end
+    return false
+end
+
+function listen_accept.disc_taps_install(machine)
+    listen_accept.disc_tap_install(machine)
+    listen_accept.disc_riv_tap_install(machine)
+    return listen_accept.disc_tap ~= nil
 end
 
 function listen_accept.on_force_arm()
@@ -642,28 +2358,264 @@ function listen_accept.on_force_arm()
 end
 
 function listen_accept.on_force_disarm()
-    -- 解除后再抓一阵（否决换牌常发生在摸写前后）
     listen_accept.post_arm_logs = 30
 end
 
-function listen_accept.tap_rm()
+function listen_accept.wait_name()
+    local w = listen_accept.wait_bcd
+    if not w then
+        return "(未锁定)"
+    end
+    local nm = string.format("%02X", w)
+    pcall(function()
+        nm = tile_name(w)
+    end)
+    return nm
+end
+
+function listen_accept.clear_wait(why)
+    local was = listen_accept.wait_bcd
+    if not was then
+        listen_accept.feed_done = false
+        listen_accept.snap_wait_n = nil
+        return
+    end
+    local nm = listen_accept.wait_name()
+    listen_accept.wait_bcd = nil
+    -- 单次=本锁已消费；清锁后必须允许下一锁再喂（勿让 feed_done 卡住 tick_feed）
+    listen_accept.feed_done = false
+    listen_accept.snap_wait_n = nil
+    listen_accept.disc_taps_rm()
+    -- hold 自行耗尽护河；清锁定时不拆 hold
+    listen_accept.feed_pending_was = nil
+    listen_accept.feed_fallback_rn = nil
+    listen_accept.feed_sticky = false
+    listen_accept.pending_commit = nil
+    pcall(function()
+        if tiles_ui and tiles_ui.invalidate_panel_cache then
+            tiles_ui.invalidate_panel_cache()
+        end
+    end)
+    write_log(
+        string.format(
+            "=== [listen-accept-wait] clear was=%02X %s why=%s %s ===\n",
+            was,
+            nm,
+            why or "?",
+            now()
+        ),
+        "a"
+    )
+end
+
+function listen_accept.set_wait(bcd)
+    if not bcd or bcd == 0 then
+        return
+    end
+    if listen_accept.wait_bcd == (bcd & 0xFF) then
+        local nm = listen_accept.wait_name()
+        listen_accept.hold_tap_rm()
+        listen_accept.hold = nil
+        listen_accept.clear_wait("toggle_same")
+        ui_toast.show(string.format("已取消喂荣锁定「%s」", nm), 160)
+        return
+    end
+    listen_accept.hold_tap_rm()
+    listen_accept.disc_taps_rm()
+    listen_accept.hold = nil
+    listen_accept.wait_bcd = bcd & 0xFF
+    listen_accept.feed_done = false
+    listen_accept.feed_pending_was = nil
+    listen_accept.feed_fallback_rn = nil
+    listen_accept.feed_sticky = false
+    listen_accept.pending_commit = nil
+    listen_accept.pending_clear_wait = nil
+    local m = manager and manager.machine
+    listen_accept.snap_wait_n = 0
+    if m then
+        listen_accept.mach = m
+        listen_accept.snap_wait_n = listen_accept.count_bcd_in_hand(m, listen_accept.wait_bcd)
+        -- 副露中 RAM 空：用透视缓存张数，否则 snapW=0 会导致不再对手
+        if listen_accept.snap_wait_n < 1 then
+            listen_accept.snap_wait_n = listen_accept.count_bcd_in_cache(listen_accept.wait_bcd)
+        end
+        if listen_accept.snap_wait_n < 1 then
+            listen_accept.snap_wait_n = 1
+        end
+    end
+    local nm = listen_accept.wait_name()
+    pcall(function()
+        if tiles_ui and tiles_ui.invalidate_panel_cache then
+            tiles_ui.invalidate_panel_cache()
+        end
+    end)
+    ui_toast.show(
+        string.format(
+            "喂荣锁定「%s」(单次)\n电脑打出后，河末换成此张",
+            nm
+        ),
+        260
+    )
+    write_log(
+        string.format(
+            "=== [listen-accept-wait] lock=%02X %s snapW=%d rom=%s %s ===\n",
+            bcd & 0xFF,
+            nm,
+            listen_accept.snap_wait_n or 0,
+            listen_accept.rom_name(),
+            now()
+        ),
+        "a"
+    )
+    pcall(function()
+        if m then
+            listen_accept.cpu = m.devices and m.devices[":maincpu"]
+            listen_accept.prev_cpu_rn = listen_accept.cpu_river_count(m)
+            listen_accept.prev_river = listen_accept.snapshot_cpu_river(m)
+            -- post-swap 不装弃牌写劫持
+            listen_accept.disc_taps_rm()
+        end
+    end)
+end
+
+function listen_accept.pc_player_or_draw(cpu)
+    local pc = listen_accept.pc_value(cpu)
+    if not pc then
+        return true
+    end
+    -- 玩家摸/打、电脑摸：勿改写
+    if pc >= 0xA24D and pc <= 0xA25F then
+        return true
+    end
+    if pc >= 0x8C60 and pc <= 0x8C80 then
+        return true
+    end
+    if pc >= 0xA210 and pc <= 0xA225 then
+        return true
+    end
+    if pc >= 0xA380 and pc <= 0xA3A0 then
+        return true
+    end
+    -- mjelct3：9F64/9F35 是摸侧，不是弃牌提交（弃=9FE0/9605）
+    if pc >= 0x9F20 and pc <= 0x9F70 then
+        return true
+    end
+    return false
+end
+
+function listen_accept.pc_cpu_discard(cpu)
+    local pc = listen_accept.pc_value(cpu)
+    if not pc then
+        return false
+    end
+    -- 主版：A2CE / 9850 / 9168 / 95E8
+    if pc >= 0xA2C0 and pc <= 0xA2E8 then
+        return true
+    end
+    if pc >= 0x9840 and pc <= 0x9870 then
+        return true
+    end
+    if pc >= 0x9140 and pc <= 0x9190 then
+        return true
+    end
+    if pc >= 0x95D0 and pc <= 0x95F0 then
+        return true -- 吃后弃 95E8（勿扩到 9605，那是 mjelct3 窗）
+    end
+    -- mjelct3：只劫持真弃牌写（9FE0 / 9605 / 9627）；9644 不在此窗（结束标记另判）
+    if pc >= 0x9FD0 and pc <= 0x9FF0 then
+        return true
+    end
+    if pc >= 0x95F8 and pc <= 0x9610 then
+        return true -- 9605
+    end
+    if pc >= 0x9618 and pc <= 0x9630 then
+        return true -- 9627
+    end
+    return false
+end
+
+function listen_accept.pc_cpu_discard_strict(cpu)
+    return listen_accept.pc_cpu_discard(cpu)
+end
+
+function listen_accept.cpu_has_bcd(bcd)
+    if not bcd or not listen_accept.mach then
+        return false
+    end
+    -- 副露后读 live 镜像（@77C0/@7100），勿死盯空的 @7240；再空则看透视缓存
+    if listen_accept.count_bcd_in_hand(listen_accept.mach, bcd) > 0 then
+        return true
+    end
+    return listen_accept.count_bcd_in_cache(bcd) > 0
+end
+
+function listen_accept.mark_feed_done(why, was, wait)
+    listen_accept.feed_n = (listen_accept.feed_n or 0) + 1
+    listen_accept.feed_done = true
+    listen_accept.pending_clear_wait = why or "fed"
+    if (listen_accept.feed_log_n or 0) < 50 then
+        listen_accept.feed_log_n = (listen_accept.feed_log_n or 0) + 1
+        local pc = listen_accept.pc_value(listen_accept.cpu) or 0
+        listen_accept.pending_feed_log = string.format(
+            "=== [listen-accept-feed] #%d %s pc=%04X was=%02X -> wait=%02X (oneshot) %s ===\n",
+            listen_accept.feed_n,
+            why or "tap",
+            pc,
+            was or 0,
+            wait or 0,
+            now()
+        )
+        listen_accept.pending_feed_wait = wait
+        listen_accept.pending_feed_was = was or 0
+    end
+end
+
+function listen_accept.try_feed_write(_data, _why)
+    return nil
+end
+
+function listen_accept.read_tap_rm()
     if listen_accept.tap then
         pcall(function()
             listen_accept.tap:remove()
         end)
         listen_accept.tap = nil
     end
-    listen_accept.cpu = nil
 end
 
-function listen_accept.tap_install(machine)
-    listen_accept.tap_rm()
+function listen_accept.feed_tap_rm()
+    listen_accept.disc_taps_rm()
+    listen_accept.hold_tap_rm()
+end
+
+function listen_accept.tap_rm()
+    listen_accept.read_tap_rm()
+    listen_accept.feed_tap_rm()
+    listen_accept.cpu = nil
+    listen_accept.mach = nil
+end
+
+function listen_accept.feed_tap_install(machine)
+    if machine then
+        listen_accept.mach = machine
+        listen_accept.cpu = machine.devices and machine.devices[":maincpu"]
+    end
+    -- post-swap：不装 disc write tap
+    return true
+end
+
+function listen_accept.read_tap_install(machine)
+    listen_accept.read_tap_rm()
+    if not listen_accept.on or not machine then
+        return false
+    end
     local cpu = machine.devices[":maincpu"]
     local space = cpu and cpu.spaces and cpu.spaces["program"]
     if not space or not space.install_read_tap then
         return false
     end
     listen_accept.cpu = cpu
+    listen_accept.mach = machine
     local ok, tap = pcall(function()
         return space:install_read_tap(
             listen_accept.addr,
@@ -678,6 +2630,23 @@ function listen_accept.tap_install(machine)
                 if hit then
                     return listen_accept.accept
                 end
+                if listen_accept.wait_bcd and listen_accept.probe_n < 80 then
+                    local pc = listen_accept.pc_value(listen_accept.cpu)
+                    if pc and pc >= 0x8000 and not listen_accept.seen_pc[pc] then
+                        listen_accept.seen_pc[pc] = true
+                        listen_accept.probe_n = listen_accept.probe_n + 1
+                        write_log(
+                            string.format(
+                                "=== [listen-accept-pc] RON? #%d pc=%04X hit=N wait=%02X %s ===\n",
+                                listen_accept.probe_n,
+                                pc,
+                                listen_accept.wait_bcd,
+                                now()
+                            ),
+                            "a"
+                        )
+                    end
+                end
             end
         )
     end)
@@ -685,8 +2654,18 @@ function listen_accept.tap_install(machine)
         listen_accept.tap = tap
         return true
     end
-    listen_accept.cpu = nil
     return false
+end
+
+function listen_accept.ensure_feed(machine)
+    if machine then
+        listen_accept.mach = machine
+        listen_accept.cpu = machine.devices and machine.devices[":maincpu"]
+    end
+end
+
+function listen_accept.tap_install(machine)
+    return listen_accept.read_tap_install(machine)
 end
 
 function force_draw.target_bcd()
@@ -845,6 +2824,109 @@ function force_draw.consume_pending(machine)
     end
 end
 
+function listen_accept.consume_pending(machine)
+    if listen_accept.pending_w7502 and #listen_accept.pending_w7502 > 0 then
+        for _, line in ipairs(listen_accept.pending_w7502) do
+            write_log(line, "a")
+        end
+        listen_accept.pending_w7502 = nil
+    end
+    if listen_accept.pending_feed_log then
+        write_log(listen_accept.pending_feed_log, "a")
+        listen_accept.pending_feed_log = nil
+    end
+    if listen_accept.pending_feed_wait then
+        local w = listen_accept.pending_feed_wait
+        local was = listen_accept.pending_feed_was or 0
+        listen_accept.pending_feed_wait = nil
+        listen_accept.pending_feed_was = nil
+        local wn, wasn = string.format("%02X", w), string.format("%02X", was)
+        pcall(function()
+            wn = tile_name(w)
+            wasn = tile_name(was)
+        end)
+        if was == w then
+            ui_toast.show(string.format("喂荣完成：电脑打出 %s · 已解锁", wn), 180)
+        else
+            ui_toast.show(string.format("喂荣完成：电脑改打 %s（原 %s）· 已解锁", wn, wasn), 180)
+        end
+    end
+    if listen_accept.pending_clear_wait then
+        local why = listen_accept.pending_clear_wait
+        listen_accept.pending_clear_wait = nil
+        listen_accept.clear_wait(why)
+    end
+end
+
+-- 电脑河变长或同长改写末张：打完后再把「刚打出」换成锁定牌
+function listen_accept.tick_feed(machine)
+    if not machine then
+        return
+    end
+    if listen_accept.hold then
+        return
+    end
+    local rn = listen_accept.cpu_river_count(machine)
+    if not listen_accept.wait_bcd then
+        listen_accept.prev_river = listen_accept.snapshot_cpu_river(machine)
+        listen_accept.prev_cpu_rn = #listen_accept.prev_river
+        listen_accept.feed_done = false
+        return
+    end
+    if listen_accept.feed_done then
+        return
+    end
+    listen_accept.ensure_feed(machine)
+    local prev = listen_accept.prev_cpu_rn
+    local prev_bytes = listen_accept.prev_river
+    local prev_n = prev_bytes and #prev_bytes or (prev or 0)
+
+    -- 1) 河变长：新打出
+    if prev ~= nil and rn > prev then
+        local slot, last = listen_accept.detect_new_discard(machine, rn, prev_bytes)
+        listen_accept.feed_fallback_rn = rn
+        listen_accept.feed_pending_was = last
+        listen_accept.prev_cpu_rn = rn
+        listen_accept.prev_river = listen_accept.snapshot_cpu_river(machine)
+        listen_accept.commit_feed(machine, last, "river_grow", slot)
+        return
+    end
+
+    -- 2) 同长但内容变（副露后 mjelct3 常改写末格而不变长）
+    --    注意：未触发前不可每帧刷新 prev，否则永远看不见 diff
+    if rn >= 1 and prev_n >= 1 and rn == prev_n and prev_bytes then
+        local cur = listen_accept.snapshot_cpu_river(machine)
+        local changed = false
+        local slot = rn
+        for i = 1, rn do
+            if (cur[i] or 0) ~= (prev_bytes[i] or 0) then
+                changed = true
+                slot = i
+            end
+        end
+        if changed then
+            local last = cur[slot] or cur[rn] or 0
+            if (cur[rn] or 0) ~= (prev_bytes[rn] or 0) then
+                slot = rn
+                last = cur[rn] or 0
+            end
+            listen_accept.feed_fallback_rn = rn
+            listen_accept.feed_pending_was = last
+            listen_accept.prev_cpu_rn = rn
+            listen_accept.prev_river = cur
+            listen_accept.commit_feed(machine, last, "river_rewrite", slot)
+            return
+        end
+        return
+    end
+
+    -- 3) 缩短（吃碰从河拿走）或首次：对齐快照
+    if prev == nil or rn < prev_n then
+        listen_accept.prev_cpu_rn = rn
+        listen_accept.prev_river = listen_accept.snapshot_cpu_river(machine)
+    end
+end
+
 function force_draw.backup_pool(machine)
     local t = {}
     for i = 0, WALL_POOL_LEN - 1 do
@@ -890,15 +2972,16 @@ end
 function listen_accept.toggle(machine)
     if listen_accept.on then
         listen_accept.on = false
-        listen_accept.tap_rm()
+        listen_accept.read_tap_rm()
         listen_accept.clear_ram(machine)
         listen_accept.probe_reset()
         machine:popmessage("听牌可胡关 · 已清 @7424")
         write_log(
             string.format(
-                "=== [listen-accept] OFF %s verify7424=%02X ===\n",
+                "=== [listen-accept] OFF %s verify7424=%02X feed=%s ===\n",
                 now(),
-                mem.read_u8(machine, listen_accept.addr) or 0
+                mem.read_u8(machine, listen_accept.addr) or 0,
+                listen_accept.wait_name()
             ),
             "a"
         )
@@ -910,24 +2993,34 @@ function listen_accept.toggle(machine)
     listen_accept.clear_ram(machine)
     local tap_ok = listen_accept.tap_install(machine)
     local rom = (machine and machine.system and machine.system.name) or "?"
+    local wait_nm = listen_accept.wait_name()
     write_log(
         string.format(
-            "=== [listen-accept] ON rom=%s tap+ %s window=%04X..%04X 7424=%02X %s ===\n",
+            "=== [listen-accept] ON rom=%s tap+ %s disc_tap=%s window=%04X..%04X wait=%s 7424=%02X %s ===\n",
             rom,
             tap_ok and "Y" or "N",
+            listen_accept.disc_tap and "Y" or "N",
             listen_accept.pc_lo,
             listen_accept.pc_hi,
+            wait_nm,
             mem.read_u8(machine, listen_accept.addr) or 0,
             now()
         ),
         "a"
     )
-    if not tap_ok then
+    if tap_ok then
+        ui_toast.show(
+            string.format(
+                "听牌可胡开 · 自摸旁路\n喂荣=%s（点电脑手锁定，与可胡无关）",
+                wait_nm
+            ),
+            260
+        )
+        machine:popmessage(string.format("听牌可胡开 · 喂荣=%s", wait_nm))
+    else
         listen_accept.on = false
-        machine:popmessage("听牌可胡失败：无法装读拦截")
-        return
+        machine:popmessage("听牌可胡：读拦截安装失败")
     end
-    machine:popmessage("听牌可胡开\n按下=下一摸放行")
 end
 
 -- 控摸写 A274 前必须确认 bank（仅 code-dump 参考）
@@ -1027,29 +3120,6 @@ local function dump_draw_code_context(machine, reason)
     return #hits
 end
 
-local function tile_valid(v)
-    if not v or v == 0 or v == 0xFF or v == 0xEE or v == 0xFD then
-        return false
-    end
-    return BCD_TILE[v] == true
-end
-
-local function tile_name(v)
-    if v >= 0x01 and v <= 0x09 then
-        return string.format("%d万", v)
-    end
-    if v >= 0x11 and v <= 0x19 then
-        return string.format("%d筒", v - 0x10)
-    end
-    if v >= 0x21 and v <= 0x29 then
-        return string.format("%d条", v - 0x20)
-    end
-    if HONOR_NAMES[v] then
-        return HONOR_NAMES[v]
-    end
-    return string.format("[%02X]", v)
-end
-
 function hand_pat.closed_count(machine)
     local n = 0
     for i = 0, HAND_SORTED do
@@ -1093,18 +3163,56 @@ function hand_pat.write_tiles(machine, tiles, sync_screen)
     end
 end
 
+function hand_pat.write_cpu_tiles(machine, tiles)
+    if not machine or not tiles then
+        return
+    end
+    local nwrite = #tiles
+    if nwrite > 14 then
+        nwrite = 14
+    end
+    for _, base in ipairs(CPU_HAND_WRITABLE) do
+        for i = 1, nwrite do
+            mem.write_u8(machine, base + i - 1, tiles[i])
+        end
+        if nwrite < 14 then
+            mem.write_u8(machine, base + nwrite, 0)
+        end
+    end
+    -- 透视可信缓存同步，避免图与注入脱节
+    local copy = {}
+    local nshow = math.min(nwrite, CPU_HAND_MAX)
+    for i = 1, nshow do
+        copy[i] = tiles[i]
+    end
+    cpu_hand_trusted.raw = copy
+    cpu_hand_trusted.src = CPU_HAND_ADDR
+    cpu_hand_trusted.meld_count = 0
+    cpu_hand_trusted.no_draw_discard = nil
+    cpu_hand_trusted.stale = nil
+    cpu_hand_cache = { raw = copy, src = CPU_HAND_ADDR }
+end
+
 function hand_pat.tick(machine)
     local h = hand_pat.hold
-    if not h or not h.tiles or not machine then
-        return
+    if h and h.tiles and machine then
+        h.frames = (h.frames or 0) - 1
+        if h.frames < 0 then
+            hand_pat.hold = nil
+        else
+            -- 开局换牌会反复刷镜像；短时间每帧盖回（类 cheat Always）
+            hand_pat.write_tiles(machine, h.tiles, false)
+        end
     end
-    h.frames = (h.frames or 0) - 1
-    if h.frames < 0 then
-        hand_pat.hold = nil
-        return
+    local hc = hand_pat.hold_cpu
+    if hc and hc.tiles and machine then
+        hc.frames = (hc.frames or 0) - 1
+        if hc.frames < 0 then
+            hand_pat.hold_cpu = nil
+        else
+            hand_pat.write_cpu_tiles(machine, hc.tiles)
+        end
     end
-    -- 开局换牌会反复刷镜像；短时间每帧盖回（类 cheat Always）
-    hand_pat.write_tiles(machine, h.tiles, false)
 end
 
 function hand_pat.apply(machine, preset)
@@ -1200,6 +3308,135 @@ function hand_pat.apply(machine, preset)
         )
     end
     hand_pat.menu_open = false
+    hand_pat.menu_target = nil
+    return true
+end
+
+function hand_pat.apply_cpu(machine, preset)
+    if not machine or not preset then
+        return false
+    end
+    local cpu_m = meld.read_blocks(machine, meld.CPU_ADDR)
+    if #cpu_m > 0 then
+        ui_toast.show("电脑已有副露，无法注入役满\n（需无副露）", 200)
+        return false
+    end
+    local n_cpu = 0
+    for i = 0, CPU_HAND_MAX - 1 do
+        local v = mem.read_u8(machine, CPU_HAND_ADDR + i)
+        if not tile_valid(v) then
+            break
+        end
+        n_cpu = n_cpu + 1
+    end
+    if n_cpu < 1 then
+        for i = 0, CPU_HAND_MAX - 1 do
+            local v = mem.read_u8(machine, 0x77C0 + i)
+            if not tile_valid(v) then
+                break
+            end
+            n_cpu = n_cpu + 1
+        end
+    end
+    local n_hand = hand_pat.closed_count(machine)
+    local n_mir = hand_pat.mirror_count(machine)
+    -- 开局换牌（first chance）：玩家手空镜像满；电脑侧常已有 13，宜尽早注入测天和
+    local first_chance = n_hand < 13 and n_mir >= 13
+    local tiles = nil
+    local mode = nil
+    if first_chance then
+        if preset.tiles14 and #preset.tiles14 == 14 then
+            tiles = preset.tiles14
+            mode = "14fc-cpu"
+        end
+    elseif preset.tiles14 and #preset.tiles14 == 14 and n_cpu >= 14 then
+        tiles = preset.tiles14
+        mode = "14-cpu"
+    end
+    if not tiles then
+        tiles = preset.tiles13
+        if (not tiles or #tiles ~= 13) and preset.tiles14 and #preset.tiles14 == 14 then
+            tiles = {}
+            for i = 1, 13 do
+                tiles[i] = preset.tiles14[i]
+            end
+        end
+        if first_chance and preset.tiles14 and #preset.tiles14 == 14 then
+            tiles = preset.tiles14
+            mode = "14fc-cpu"
+        else
+            mode = mode or "13-cpu"
+        end
+    end
+    if not tiles or (#tiles ~= 13 and #tiles ~= 14) then
+        ui_toast.show(
+            string.format("电脑役满：牌型无效·「%s」", preset.label or "?"),
+            160
+        )
+        return false
+    end
+    if n_cpu < 7 and not first_chance then
+        ui_toast.show(
+            string.format(
+                "电脑手数过少(%d)，请等发牌完成后再注\n换牌阶段可打开「电脑役满」选牌型",
+                n_cpu
+            ),
+            220
+        )
+        return false
+    end
+    hand_pat.write_cpu_tiles(machine, tiles)
+    hand_pat.hold_cpu = {
+        tiles = tiles,
+        frames = first_chance and 300 or 90,
+    }
+    local hex = {}
+    for i = 1, #tiles do
+        hex[#hex + 1] = string.format("%02X", tiles[i])
+    end
+    write_log(
+        string.format(
+            "=== [hand-pat-cpu] rom=%s id=%s %s mode=%s first_chance=%s cpu_n=%d tiles=%s %s ===\n",
+            (machine.system and machine.system.name) or "?",
+            preset.id or "?",
+            preset.label or "",
+            mode,
+            first_chance and "Y" or "N",
+            n_cpu,
+            table.concat(hex, " "),
+            now()
+        ),
+        "a"
+    )
+    pcall(function()
+        cpu_win_probe.arm(preset, mode, first_chance, tiles)
+    end)
+    if first_chance then
+        ui_toast.show(
+            string.format(
+                "换牌阶段已给电脑「%s」(%d张)\n测天和：少操作，确认后直接开打",
+                preset.label or "?",
+                #tiles
+            ),
+            280
+        )
+    elseif #tiles == 14 then
+        ui_toast.show(
+            string.format("已给电脑「%s」(14张·无副露)\n可试自摸/荣", preset.label or "?"),
+            210
+        )
+    else
+        ui_toast.show(
+            string.format(
+                "已给电脑「%s」(13张听·无副露)\n%s",
+                preset.label or "?",
+                preset.wait_hint or "摸一张后再胡"
+            ),
+            240
+        )
+    end
+    hand_pat.menu_open = false
+    hand_pat.menu_target = nil
     return true
 end
 
@@ -1226,35 +3463,76 @@ function hand_pat.draw(ui, machine)
     local gx0 = (g and g.gx0) or 0.08
     local gx1 = (g and g.gx1) or 0.92
     local gy0 = (g and g.gy0) or 0.02
-    local gy1 = (g and g.gy1) or 0.55
-    local bw = math.min(0.16, (gx1 - gx0) * 0.26)
-    local bh = 0.050 -- 与列表行高同量级；0.030 时「牌型」字会下溢出框
-    local x0 = gx1 - bw
+    local bw = math.min(0.175, (gx1 - gx0) * 0.28)
+    local bh = 0.050
+    local gap_btn = 0.008
     local y0 = gy0 + 0.004
-    local x1 = gx1
     local y1 = y0 + bh
-    -- draw_box(x0,y0,x1,y1, outline, fill)：深色底 + 浅字
+    -- 右：「玩家役满」；左：「电脑役满」——共用同一套下拉列表
+    local px1 = gx1
+    local px0 = px1 - bw
+    local cx1 = px0 - gap_btn
+    local cx0 = cx1 - bw
+    local pl_open = hand_pat.menu_open and hand_pat.menu_target == "player"
+    local cpu_open = hand_pat.menu_open and hand_pat.menu_target == "cpu"
     pcall(function()
         if ui.draw_box then
-            ui:draw_box(x0, y0, x1, y1, 0xffd0c080, 0xf0101018)
+            ui:draw_box(
+                cx0,
+                y0,
+                cx1,
+                y1,
+                cpu_open and 0xffffc0d0 or 0xffc090a0,
+                0xf0181018
+            )
+            ui:draw_box(
+                px0,
+                y0,
+                px1,
+                y1,
+                pl_open and 0xffffe0a0 or 0xffd0c080,
+                0xf0101018
+            )
         end
         if ui.draw_text then
-            ui:draw_text(x0 + 0.012, y0 + 0.012, hand_pat.menu_open and "牌型<<" or "牌型>>", 0xfffff8e0)
+            ui:draw_text(
+                cx0 + 0.006,
+                y0 + 0.012,
+                cpu_open and "电脑<<" or "电脑役满",
+                0xffffe8f0
+            )
+            ui:draw_text(
+                px0 + 0.006,
+                y0 + 0.012,
+                pl_open and "玩家<<" or "玩家役满",
+                0xfffff8e0
+            )
         end
     end)
-    hand_pat.hits[#hand_pat.hits + 1] = { id = "toggle", x0 = x0, y0 = y0, x1 = x1, y1 = y1 }
+    hand_pat.hits[#hand_pat.hits + 1] = {
+        id = "toggle_cpu",
+        x0 = cx0,
+        y0 = y0,
+        x1 = cx1,
+        y1 = y1,
+    }
+    hand_pat.hits[#hand_pat.hits + 1] = {
+        id = "toggle_player",
+        x0 = px0,
+        y0 = y0,
+        x1 = px1,
+        y1 = y1,
+    }
     if not hand_pat.menu_open then
         return
     end
-    local n = #hand_pat.presets
     local cols = 2
-    -- 单位：MAME UI 归一化坐标（约 0=顶、1=底）
-    -- 字高约 0.035~0.04；row_h=0.05 且字从 +0.012 起仍会下溢出
     local row_h = 0.060
     local gap = 0.010
     local menu_w = gx1 - gx0
     local col_w = menu_w / cols
     local my0 = y1 + 0.010
+    local outline = cpu_open and 0xffc090a0 or 0xffc8b070
     for i, p in ipairs(hand_pat.presets) do
         local col = (i - 1) % cols
         local row = math.floor((i - 1) / cols)
@@ -1264,7 +3542,7 @@ function hand_pat.draw(ui, machine)
         local my1 = my + row_h
         pcall(function()
             if ui.draw_box then
-                ui:draw_box(mx0, my, mx1, my1, 0xffc8b070, 0xf8101018)
+                ui:draw_box(mx0, my, mx1, my1, outline, 0xf8101018)
             end
             if ui.draw_text then
                 ui:draw_text(mx0 + 0.010, my + 0.008, p.label or p.id, 0xfffffaf0)
@@ -1292,13 +3570,37 @@ function hand_pat.hit(ux, uy)
     return nil
 end
 
+function hand_pat.toggle_menu(target)
+    if hand_pat.menu_open and hand_pat.menu_target == target then
+        hand_pat.menu_open = false
+        hand_pat.menu_target = nil
+    else
+        hand_pat.menu_open = true
+        hand_pat.menu_target = target
+    end
+end
+
 function hand_pat.on_click(machine, id)
+    if id == "toggle_player" then
+        hand_pat.toggle_menu("player")
+        return
+    end
+    if id == "toggle_cpu" then
+        hand_pat.toggle_menu("cpu")
+        return
+    end
+    -- 兼容旧 id
     if id == "toggle" then
-        hand_pat.menu_open = not hand_pat.menu_open
+        hand_pat.toggle_menu("player")
         return
     end
     local p = hand_pat.preset_by_id(id)
-    if p then
+    if not p then
+        return
+    end
+    if hand_pat.menu_target == "cpu" then
+        hand_pat.apply_cpu(machine, p)
+    else
         hand_pat.apply(machine, p)
     end
 end
@@ -1333,17 +3635,449 @@ local function read_cpu_hand_at(machine, addr)
 end
 
 local function read_cpu_hand(machine)
-    local best, best_addr = {}, nil
-    for _, addr in ipairs(CPU_HAND_FALLBACKS) do
-        local raws = read_cpu_hand_at(machine, addr)
-        if #raws > #best then
-            best, best_addr = raws, addr
+    -- 新局河皆空时：只清「残局短缓存」的 stale 标记，让完整 13 张实读能进来
+    -- 切勿在 trust<13 时整段 reset——发牌过程中每帧都会误清（曾把 12 张清成空）
+    if not tile_valid(mem.read_u8(machine, CPU_DISCARD_ADDR))
+        and not tile_valid(mem.read_u8(machine, PLAYER_DISCARD_ADDR))
+    then
+        if cpu_hand_trusted.stale then
+            cpu_hand_trusted.stale = nil
+        end
+        -- 新河空：副露计数也归零（新局）
+        if (cpu_hand_trusted.meld_count or 0) > 0 then
+            cpu_hand_trusted.meld_count = 0
+        end
+        cpu_hand_trusted.no_draw_discard = nil
+        cpu_hand_trusted.meld_at_gen = nil
+        cpu_hand_trusted.after_meld_miss = nil
+        hud_sticky.pl_n = 0
+        hud_sticky.pl_rn = 0
+        hud_sticky.cpu_rn = 0
+    end
+
+    local trust = cpu_hand_trusted.raw
+    local trust_n = trust and #trust or 0
+    local stale = cpu_hand_trusted.stale
+    local pl7120 = read_cpu_hand_at(machine, HAND_ADDR)
+    local pl_melds = meld.read_blocks(machine, meld.PLAYER_ADDR)
+    local pl_melds2 = meld.read_blocks(machine, meld.PLAYER_MIRROR)
+    local cpu_melds = meld.read_blocks(machine, meld.CPU_ADDR)
+    local pl_mn = math.max(#pl_melds, #pl_melds2)
+    local cpu_mn = #cpu_melds
+    -- @7250 有块 → 以 RAM 为准；空且非「刚副露未打牌」→ 清零（Donden 后勿留幽灵「电脑副露2」）
+    if cpu_mn > 0 then
+        cpu_hand_trusted.meld_count = cpu_mn
+    elseif not cpu_hand_trusted.no_draw_discard then
+        cpu_hand_trusted.meld_count = 0
+    end
+    -- 满手+无副露块仍挂 no_draw（expect=14）= 上局残留；勿在「刚 patch 尚未写表」时清
+    if cpu_mn == 0
+        and cpu_hand_trusted.no_draw_discard
+        and trust_n >= 13
+        and (cpu_hand_trusted.meld_count or 0) == 0
+    then
+        cpu_hand_trusted.no_draw_discard = nil
+    end
+    -- 幽灵副露1：无吃碰记账、缓存恰 10、总线满 13、且 @7250 也空 → Donden 中途残片误判
+    if (cpu_hand_trusted.meld_count or 0) == 1
+        and cpu_mn == 0
+        and not cpu_hand_trusted.meld_at_gen
+        and not cpu_hand_trusted.no_draw_discard
+        and trust_n == 10
+        and pl_mn == 0
+    then
+        local live13 = read_cpu_hand_at(machine, CPU_HAND_ADDR)
+        if #live13 < 13 then
+            live13 = read_cpu_hand_at(machine, 0x77C0)
+        end
+        if #live13 >= 13
+            and not listen_accept.raw_looks_like_player(machine, live13)
+        then
+            write_log(
+                string.format(
+                    "=== [peek-hand] unstick phantom-meld1 trust=10 live=%d %s ===\n",
+                    #live13,
+                    now()
+                ),
+                "a"
+            )
+            cpu_hand_trusted.meld_count = 0
+            cpu_hand_trusted.raw = {}
+            cpu_hand_cache = { raw = {}, src = nil }
+            trust = cpu_hand_trusted.raw
+            trust_n = 0
+            stale = nil
         end
     end
+    local meld_n = cpu_hand_trusted.meld_count or 0
+    local expect_n = meld.expected_closed_n(meld_n, cpu_hand_trusted.no_draw_discard)
+    local prev_pl_mn = cpu_hand_trusted.prev_pl_meld_n
+    local prev_cpu_mn = cpu_hand_trusted.prev_cpu_meld_n
+    local meld_swapped = type(prev_pl_mn) == "number"
+        and type(prev_cpu_mn) == "number"
+        and (prev_pl_mn > 0 or prev_cpu_mn > 0)
+        and pl_mn == prev_cpu_mn
+        and cpu_mn == prev_pl_mn
+        and (pl_mn ~= prev_pl_mn or cpu_mn ~= prev_cpu_mn)
+    -- 对调后新电脑暗手期望 = 旧玩家副露数对应张数
+    local expect_after_donden = meld.expected_closed_n(prev_pl_mn or 0)
+
+    -- 串台自愈：缓存已等于玩家手（误把 prev 当电脑手）→ 丢弃，改回实读
+    if trust_n >= 7
+        and #pl7120 >= 7
+        and listen_accept.multiset_equal_lists(trust, pl7120)
+    then
+        write_log(
+            string.format(
+                "=== [peek-hand] unstick player-like trust=%d %s ===\n",
+                trust_n,
+                now()
+            ),
+            "a"
+        )
+        cpu_hand_trusted.raw = {}
+        cpu_hand_trusted.stale = nil
+        cpu_hand_trusted.no_draw_discard = nil
+        cpu_hand_trusted.meld_at_gen = nil
+        cpu_hand_cache = { raw = {}, src = nil }
+        cpu_hand_trusted.donden_cool_frames = 0
+        -- 串台时不要清冷却又立刻被噪声地址二次 donden；给一点稳定窗
+        cpu_hand_trusted.donden_cool_frames = 45
+        trust = cpu_hand_trusted.raw
+        trust_n = 0
+        stale = nil
+    end
+    -- 无副露却短缓存（曾卡死在 3 张）：整手实读应能盖掉
+    if meld_n == 0
+        and trust_n > 0
+        and trust_n < 7
+        and expect_n >= 10
+    then
+        write_log(
+            string.format(
+                "=== [peek-hand] unstick short-trust=%d expect=%d %s ===\n",
+                trust_n,
+                expect_n,
+                now()
+            ),
+            "a"
+        )
+        cpu_hand_trusted.raw = {}
+        cpu_hand_trusted.stale = nil
+        cpu_hand_trusted.no_draw_discard = nil
+        cpu_hand_cache = { raw = {}, src = nil }
+        trust = cpu_hand_trusted.raw
+        trust_n = 0
+        stale = nil
+    end
+    local best, best_addr, best_score = {}, nil, -1
+    local rejected = nil
+    local probe = {}
+    local donden = false
+
+    -- 冷却：对调后数秒内禁止再次 donden（镜像未对齐时会 77C0↔7630 交替）
+    local cool_left = cpu_hand_trusted.donden_cool_frames or 0
+    if cool_left > 0 then
+        cpu_hand_trusted.donden_cool_frames = cool_left - 1
+    end
+    local in_cool = cool_left > 0
+    -- 对调只信主镜像；@7610/@7630 是影子噪声，参与 donden 会整秒翻牌
+    local DONDON_ADDRS = { [0x7240] = true, [0x77C0] = true }
+    -- 无副露至少按 7 张护栏；有副露才允许短到 expect±1
+    local min_live = 7
+    if meld_n >= 1 then
+        min_live = math.max(4, expect_n - 1)
+    end
+
+    for _, addr in ipairs(CPU_HAND_FALLBACKS) do
+        local raws = read_cpu_hand_at(machine, addr)
+        probe[addr] = #raws
+        if #raws > 0 then
+            local eq_player = listen_accept.multiset_equal_lists(raws, pl7120)
+            local eq_trust = trust_n >= 7
+                and listen_accept.multiset_equal_lists(raws, trust)
+            -- Donden：玩家手≈旧电脑缓存，或副露块已互换；总线是另一副完整暗手
+            -- 无副露时必须满 13 张——对调过程中会短暂出现 10 张，绝不能当「副露1」采纳
+            local donden_hit = false
+            local min_donden_n = 13
+            if meld_swapped then
+                min_donden_n = math.max(4, expect_after_donden)
+            elseif meld_n >= 1 then
+                min_donden_n = math.max(7, expect_n)
+            end
+            if not in_cool
+                and DONDON_ADDRS[addr]
+                and not eq_player
+                and not eq_trust
+                and #raws >= min_donden_n
+                and trust_n >= 7
+                and not listen_accept.raw_looks_like_player(machine, raws)
+            then
+                local ov_trust = listen_accept.multiset_overlap(raws, trust)
+                local half = math.floor(math.max(#raws, trust_n) / 2)
+                local pl_got_old_cpu = #pl7120 >= 7
+                    and (
+                        listen_accept.multiset_equal_lists(pl7120, trust)
+                        or listen_accept.multiset_overlap(pl7120, trust)
+                            >= math.min(#pl7120, trust_n) - 2
+                    )
+                local len_ok = true
+                if meld_n == 0 and not meld_swapped then
+                    len_ok = #raws >= 13 and #pl7120 >= 13
+                elseif meld_swapped then
+                    len_ok = math.abs(#raws - expect_after_donden) <= 1
+                end
+                if ov_trust <= half and len_ok and (pl_got_old_cpu or meld_swapped) then
+                    -- 新电脑手不能大部分等于当前玩家手（对调残片）
+                    local ov_pl = #pl7120 >= 7
+                        and listen_accept.multiset_overlap(raws, pl7120)
+                        or 0
+                    if ov_pl <= math.floor(#raws / 2) then
+                        donden_hit = true
+                    end
+                end
+            end
+            if donden_hit then
+                local sc = (addr == CPU_HAND_ADDR) and 5200 or 5000
+                if meld_swapped then
+                    sc = sc + 400
+                end
+                if sc > best_score then
+                    donden = true
+                    best, best_addr, best_score = raws, addr, sc
+                end
+            elseif eq_player or listen_accept.raw_looks_like_player(machine, raws) then
+                rejected = addr
+            else
+                -- Donden 冷却中：拒绝「玩家手片段」（3/5 张串台）
+                local cool_reject = false
+                if in_cool and #pl7120 >= 7 then
+                    local ov = listen_accept.multiset_overlap(raws, pl7120)
+                    local half = math.floor(#raws / 2)
+                    if ov > half or (meld_n == 0 and #raws < 13) then
+                        cool_reject = true
+                        rejected = addr
+                    end
+                end
+                if not cool_reject then
+                local score = (CPU_HAND_PRIO[addr] or 0)
+                local rivers_empty = not tile_valid(mem.read_u8(machine, CPU_DISCARD_ADDR))
+                    and not tile_valid(mem.read_u8(machine, PLAYER_DISCARD_ADDR))
+                -- 满手护栏：无副露时勿用「trust≥4」影子逻辑，否则 3 张短缓存会永久挡住 13
+                local shadow = trust_n >= min_live and not rivers_empty
+                -- Donden 中途残片（无副露却读到 10 张）：有满手缓存时一律拒收
+                if meld_n == 0
+                    and not rivers_empty
+                    and trust_n >= 13
+                    and #raws > 0
+                    and #raws < 13
+                then
+                    score = score - 2500
+                elseif #raws < min_live and (trust_n >= min_live or (meld_n == 0 and expect_n >= 10)) then
+                    score = score - 2000
+                elseif shadow and expect_n >= 4
+                    and math.abs(#raws - expect_n) >= 2
+                    and #raws ~= trust_n
+                    and #raws ~= trust_n + 1
+                    and #raws ~= trust_n - 1
+                then
+                    score = score - 1500
+                elseif stale and listen_accept.multiset_equal_lists(raws, stale) then
+                    score = score - 1000
+                elseif shadow and #raws == expect_n then
+                    score = score + 800
+                    if trust_n == expect_n
+                        and listen_accept.multiset_equal_lists(raws, trust)
+                    then
+                        score = score + 500
+                    end
+                elseif shadow and #raws == trust_n
+                    and listen_accept.multiset_equal_lists(raws, trust)
+                then
+                    score = score + 500
+                elseif shadow
+                    and #raws == trust_n + 1
+                    and listen_accept.multiset_is_subset(trust, raws)
+                then
+                    score = score + 2000
+                elseif shadow
+                    and #raws == trust_n - 1
+                    and listen_accept.multiset_is_subset(raws, trust)
+                    and not (stale or cpu_hand_trusted.no_draw_discard)
+                then
+                    score = score + 2000
+                elseif shadow then
+                    score = score - 1000
+                elseif trust_n > 0 and #raws < trust_n and listen_accept.multiset_is_subset(raws, trust) then
+                    local drop = trust_n - #raws
+                    if drop == 1 then
+                        score = score + 2000
+                    else
+                        score = score - 500
+                    end
+                elseif trust_n > 0 and #raws > trust_n then
+                    if rivers_empty then
+                        score = score + #raws
+                    elseif (#raws - trust_n) == 1
+                        and listen_accept.multiset_is_subset(trust, raws)
+                    then
+                        score = score + 2000
+                    elseif trust_n < 7
+                        and #raws >= math.min(13, expect_n)
+                        and expect_n >= 10
+                    then
+                        -- 短缓存恢复：3 张挡住 13 张时走这里
+                        score = score + 3000
+                    else
+                        score = score - 1000
+                    end
+                else
+                    score = score + #raws
+                end
+                if score > best_score then
+                    best, best_addr, best_score = raws, addr, score
+                end
+                end -- not cool_reject
+            end
+        end
+    end
+
+    -- 只丢弃「与扣牌前完全相同」的陈旧镜像；更长实读已在打分阶段抑制（防撑回 13）
+    if #best > 0 and stale and listen_accept.multiset_equal_lists(best, stale) then
+        best, best_addr = {}, nil
+    end
+    -- 打分为负：没有可用实读，继续用可信缓存
+    if #best > 0 and best_score < 0 then
+        best, best_addr = {}, nil
+    end
+
     if #best > 0 then
-        cpu_hand_cache = { raw = best, src = best_addr }
+        local copy = {}
+        for i, v in ipairs(best) do
+            copy[i] = v
+        end
+        -- 实读已不是「扣牌前」那副：镜像跟上或新摸，清掉 stale
+        local keep_stale = stale
+            and listen_accept.multiset_equal_lists(copy, stale)
+        cpu_hand_cache = { raw = copy, src = best_addr }
+        cpu_hand_trusted = {
+            raw = copy,
+            src = best_addr,
+            prev_player = cpu_hand_trusted.prev_player,
+            last_live = cpu_hand_trusted.last_live,
+            donden_cool_frames = cpu_hand_trusted.donden_cool_frames,
+            pl_discard_gen = cpu_hand_trusted.pl_discard_gen,
+            meld_at_gen = cpu_hand_trusted.meld_at_gen,
+            last_pl_discard = cpu_hand_trusted.last_pl_discard,
+            last_discard_rn = cpu_hand_trusted.last_discard_rn,
+            pending_draw = cpu_hand_trusted.pending_draw,
+            no_draw_discard = cpu_hand_trusted.no_draw_discard,
+            meld_count = cpu_hand_trusted.meld_count,
+            prev_pl_meld_n = cpu_hand_trusted.prev_pl_meld_n,
+            prev_cpu_meld_n = cpu_hand_trusted.prev_cpu_meld_n,
+            stale = keep_stale and stale or nil,
+        }
+        -- 记录最近一次完整实读，供下一帧「总线整手跳变」检测
+        if #copy >= 4 and best_addr and best_addr ~= 0xD0DE then
+            local lv = {}
+            for i, v in ipairs(copy) do
+                lv[i] = v
+            end
+            cpu_hand_trusted.last_live = lv
+        end
         cpu_hand_src_addr = best_addr
-        return best, best_addr, false
+        if donden then
+            -- 对调后整手作废旧扣牌/摸打状态；冷却约 5s，避免镜像未对齐时交替翻牌
+            -- 副露/河随座位互换：以对调后 @7250 实读为准（勿用陈旧 prev_pl，易与镜像不同步）
+            local post_cpu = meld.read_blocks(machine, meld.CPU_ADDR)
+            cpu_hand_trusted.meld_count = #post_cpu
+            cpu_hand_trusted.pl_discard_gen = nil
+            cpu_hand_trusted.meld_at_gen = nil
+            cpu_hand_trusted.last_pl_discard = nil
+            cpu_hand_trusted.last_discard_rn = nil
+            cpu_hand_trusted.pending_draw = nil
+            cpu_hand_trusted.no_draw_discard = nil
+            cpu_hand_trusted.stale = nil
+            cpu_hand_trusted.donden_cool_frames = 300
+            draw_track_prev = nil
+            -- 立刻对齐 prev_player，避免下一帧再次判成「整手突变」
+            do
+                local pp = {}
+                for i, v in ipairs(pl7120) do
+                    pp[i] = v
+                end
+                cpu_hand_trusted.prev_player = pp
+                local lv = {}
+                for i, v in ipairs(copy) do
+                    lv[i] = v
+                end
+                cpu_hand_trusted.last_live = lv
+            end
+            write_log(
+                string.format(
+                    "=== [peek-hand] donden-refresh @%04X n=%d pl=%d meld_n=%d expect=%d ram7250=%d meld_swap=%s %s ===\n",
+                    best_addr or 0,
+                    #copy,
+                    #pl7120,
+                    cpu_hand_trusted.meld_count or 0,
+                    meld.expected_closed_n(cpu_hand_trusted.meld_count),
+                    #post_cpu,
+                    meld_swapped and "Y" or "N",
+                    now()
+                ),
+                "a"
+            )
+        end
+        return copy, best_addr, false
+    end
+
+    -- 无实读可采纳时，仍更新 last_live（若总线有完整手）
+    do
+        local live_n = probe[0x7240] or 0
+        if live_n < 4 then
+            live_n = probe[0x77C0] or 0
+        end
+        if live_n >= 4 then
+            for _, addr in ipairs(CPU_HAND_FALLBACKS) do
+                local raws = read_cpu_hand_at(machine, addr)
+                if #raws >= 4 and not listen_accept.raw_looks_like_player(machine, raws) then
+                    local lv = {}
+                    for i, v in ipairs(raws) do
+                        lv[i] = v
+                    end
+                    cpu_hand_trusted.last_live = lv
+                    break
+                end
+            end
+        end
+    end
+
+    if (listen_accept._peek_hand_log_n or 0) < 40 then
+        if rejected or trust_n > 0 then
+            listen_accept._peek_hand_log_n = (listen_accept._peek_hand_log_n or 0) + 1
+            write_log(
+                string.format(
+                    "=== [peek-hand] 7240=%d 77C0=%d 7610=%d 7630=%d rej=%s trust=%d meld=%d expect=%d plM=%d cpuM=%d %s ===\n",
+                    probe[0x7240] or 0,
+                    probe[0x77C0] or 0,
+                    probe[0x7610] or 0,
+                    probe[0x7630] or 0,
+                    rejected and string.format("%04X", rejected) or "-",
+                    trust_n,
+                    meld_n,
+                    expect_n,
+                    pl_mn,
+                    cpu_mn,
+                    now()
+                ),
+                "a"
+            )
+        end
+    end
+    if trust_n > 0 then
+        cpu_hand_cache = { raw = trust, src = cpu_hand_trusted.src }
+        cpu_hand_src_addr = cpu_hand_trusted.src
+        return trust, cpu_hand_trusted.src, true
     end
     if cpu_hand_cache.raw and #cpu_hand_cache.raw > 0 then
         cpu_hand_src_addr = cpu_hand_cache.src
@@ -1374,6 +4108,17 @@ local function multiset_gains(old_m, new_m)
     return g
 end
 
+function listen_accept.multiset_losses(old_m, new_m)
+    local g = {}
+    for v, n in pairs(old_m) do
+        local d = n - (new_m[v] or 0)
+        for _ = 1, d do
+            g[#g + 1] = v
+        end
+    end
+    return g
+end
+
 local function player_hand_list(live)
     -- 追踪/显示手数：只用 @7120..712C，不含 @712D（常被台面污染，会把电脑打误判成你摸）
     local list = {}
@@ -1390,13 +4135,16 @@ local function update_draw_track(machine, live)
     local pl_list = player_hand_list(live)
     local pl = multiset_of(pl_list)
     local cpu7240 = read_cpu_hand_at(machine, CPU_HAND_ADDR)
-    -- 追踪优先实读；@7240 空时用镜像（仍不要用「清空前缓存」，避免假增益）
+    -- 追踪优先实读；@7240 空时用可信镜像（拒玩家串台；勿用清空前缓存）
     local cpu_raw = cpu7240
-    if #cpu_raw == 0 then
+    if #cpu_raw == 0 or listen_accept.raw_looks_like_player(machine, cpu_raw) then
+        cpu_raw = {}
         for _, addr in ipairs(CPU_HAND_FALLBACKS) do
             if addr ~= CPU_HAND_ADDR then
                 local raws = read_cpu_hand_at(machine, addr)
-                if #raws > #cpu_raw then
+                if #raws > #cpu_raw
+                    and not listen_accept.raw_looks_like_player(machine, raws)
+                then
                     cpu_raw = raws
                 end
             end
@@ -1427,6 +4175,127 @@ local function update_draw_track(machine, live)
     local cpu_gains = multiset_gains(prev.cpu, cpu)
     local pl_river_grew = pl_rn > (prev.pl_rn or 0)
     local cpu_river_grew = cpu_rn > (prev.cpu_rn or 0)
+    local pl_river_shrank = pl_rn < (prev.pl_rn or 0)
+    local cpu_river_shrank = cpu_rn < (prev.cpu_rn or 0)
+
+    listen_accept._peek_pl_rn = pl_rn
+    listen_accept._peek_cpu_rn = cpu_rn
+    -- 玩家每多打进河一口，世代 +1；记末张；清电脑摸入（你刚打出，电脑还没摸）
+    if pl_river_grew then
+        local grew = pl_rn - (prev.pl_rn or 0)
+        cpu_hand_trusted.pl_discard_gen = (cpu_hand_trusted.pl_discard_gen or 0) + grew
+        local endv = live.player_discard_raw and live.player_discard_raw[pl_rn]
+        if endv and tile_valid(endv) then
+            cpu_hand_trusted.last_pl_discard = endv
+        end
+        cpu_hand_trusted.pending_draw = nil
+    end
+
+    -- 电脑吃/碰：只认「玩家刚打出的那张」从河里消失/被改写（勿用 lost[1]，易认错牌）
+    do
+        local last = cpu_hand_trusted.last_pl_discard
+        local prev_disc = prev.pl_discard_raw or {}
+        local cur_disc = live.player_discard_raw or {}
+        local claimed_gone = false
+        if last and tile_valid(last) then
+            if pl_river_shrank then
+                local lost = listen_accept.multiset_losses(multiset_of(prev_disc), multiset_of(cur_disc))
+                for _, v in ipairs(lost) do
+                    if v == last then
+                        claimed_gone = true
+                        break
+                    end
+                end
+                -- 缩短但集合对不上时：若上一口就在原河末，也认
+                if not claimed_gone and (prev.pl_rn or 0) >= 1 then
+                    if prev_disc[prev.pl_rn] == last then
+                        claimed_gone = true
+                    end
+                end
+            elseif pl_rn >= 1
+                and pl_rn == (prev.pl_rn or 0)
+                and prev_disc[pl_rn] == last
+                and (cur_disc[pl_rn] or 0) ~= last
+            then
+                claimed_gone = true
+            end
+        end
+        if claimed_gone
+            and not cpu_river_shrank
+            and cpu_hand_trusted.raw
+            and #cpu_hand_trusted.raw >= 4
+        then
+            listen_accept._peek_meld_why = pl_river_shrank and "shrink" or "endchg"
+            if listen_accept.patch_cache_after_cpu_meld(machine, last) then
+                pcall(meld.dump_hunt, machine, string.format(
+                    "auto-cpu-meld-claim=%02X",
+                    last
+                ))
+            end
+        end
+    end
+
+    -- @7250 块数增加但河缩检测漏了：按 RAM 强制对齐暗手（修「副露1 后一直 10」）
+    do
+        local cpu_m_now = meld.read_blocks(machine, meld.CPU_ADDR)
+        local ram_n = #cpu_m_now
+        local prev_cpu = cpu_hand_trusted.prev_cpu_meld_n
+        if type(prev_cpu) == "number"
+            and ram_n > prev_cpu
+            and cpu_hand_trusted.raw
+            and #cpu_hand_trusted.raw >= 4
+        then
+            local await = not cpu_river_grew
+            if not cpu_hand_trusted.no_draw_discard then
+                -- 若本帧尚未经 patch，先试正常扣牌
+                local last = cpu_hand_trusted.last_pl_discard
+                local did = false
+                if last and tile_valid(last) then
+                    listen_accept._peek_meld_why = "ram-grow"
+                    -- 绕过 same-gen：对齐函数直接改张数
+                    did = listen_accept.align_trust_to_cpu_melds(
+                        machine,
+                        ram_n,
+                        await,
+                        "ram-grow"
+                    )
+                else
+                    did = listen_accept.align_trust_to_cpu_melds(
+                        machine,
+                        ram_n,
+                        await,
+                        "ram-grow-noclaim"
+                    )
+                end
+                if did then
+                    pcall(meld.dump_hunt, machine, string.format(
+                        "auto-cpu-meld-ram=%d",
+                        ram_n
+                    ))
+                end
+            else
+                -- 已标记副露后必打，仍可能张数没扣够
+                listen_accept.align_trust_to_cpu_melds(
+                    machine,
+                    ram_n,
+                    true,
+                    "ram-grow-await"
+                )
+            end
+        elseif ram_n >= 1
+            and cpu_hand_trusted.raw
+            and #cpu_hand_trusted.raw
+                > meld.expected_closed_n(ram_n, cpu_hand_trusted.no_draw_discard) + 1
+        then
+            -- 稳态自愈：口数对但暗手多出 ≥2（漏扣副露或漏扣弃牌）
+            listen_accept.align_trust_to_cpu_melds(
+                machine,
+                ram_n,
+                cpu_hand_trusted.no_draw_discard and true or false,
+                "stuck-oversize"
+            )
+        end
+    end
 
     -- 玩家摸：手数增加且本帧你没打牌进河
     if n_pl > (prev.n_pl or 0) and not pl_river_grew and #pl_gains > 0 then
@@ -1449,11 +4318,61 @@ local function update_draw_track(machine, live)
         end
     end
 
-    -- 电脑摸：以电脑河变长为一巡结束信号
+    -- 电脑河变长：摸切/手切/副露后必打
     if cpu_river_grew then
-        local river_end = live.cpu_discard_raw[cpu_rn]
+        local river_end = live.cpu_discard_raw and live.cpu_discard_raw[cpu_rn]
+        -- 二口副露常不缩玩家河：电脑未摸就打牌 → 先补扣吃碰
+        -- 注意：@7502 常被写成「你刚打的那张」，不能当成 pending 摸入，否则永远挡掉补扣
+        if cpu_hand_trusted.last_pl_discard
+            and (cpu_hand_trusted.pl_discard_gen or 0) >= 1
+            and cpu_hand_trusted.meld_at_gen ~= cpu_hand_trusted.pl_discard_gen
+            and not cpu_hand_trusted.no_draw_discard
+            and cpu_hand_trusted.raw
+            and #cpu_hand_trusted.raw >= 4
+        then
+            local last = cpu_hand_trusted.last_pl_discard
+            local pending = cpu_hand_trusted.pending_draw
+            local pending_is_claim = pending and pending == last
+            local real_draw = pending and not pending_is_claim
+            if not real_draw then
+                if pending_is_claim then
+                    cpu_hand_trusted.pending_draw = nil
+                end
+                local cur_end = live.player_discard_raw and live.player_discard_raw[pl_rn]
+                local table_is_claim = table_v and table_v == last
+                -- 弃牌已离河末，或台面仍是该弃牌（吃碰未改河）
+                local claim_like = (not cur_end)
+                    or cur_end ~= last
+                    or table_is_claim
+                -- 即便 can_meld 认不出组合也要走 patch（内部 force-shrink）
+                if claim_like then
+                    listen_accept._peek_meld_why = "pre-discard"
+                    if listen_accept.patch_cache_after_cpu_meld(machine, last) then
+                        pcall(meld.dump_hunt, machine, string.format(
+                            "auto-cpu-meld-predisc=%02X",
+                            last
+                        ))
+                    end
+                end
+            end
+        end
+        local allow_disc = live.cpu_from_cache or cpu_hand_trusted.no_draw_discard
+        if allow_disc
+            and river_end
+            and tile_valid(river_end)
+            and (
+                cpu_hand_trusted.no_draw_discard
+                or (cpu_hand_trusted.last_discard_rn or 0) < cpu_rn
+            )
+        then
+            if listen_accept.patch_cache_after_cpu_discard(river_end, table_v) then
+                cpu_hand_trusted.last_discard_rn = cpu_rn
+            end
+        end
+        if listen_accept.wait_bcd and not listen_accept.feed_done and not listen_accept.hold then
+            pcall(listen_accept.tick_feed, machine)
+        end
         if #cpu_gains > 0 then
-            -- 摸≠打：增益=摸入；若增益里有与河末不同的优先那张
             local pick = nil
             for _, v in ipairs(cpu_gains) do
                 if v ~= river_end then
@@ -1463,14 +4382,22 @@ local function update_draw_track(machine, live)
             end
             last_cpu_draw = pick or cpu_gains[1]
         elseif n_cpu > 0 and (prev.n_cpu or 0) > 0 then
-            -- 摸切：手 multiset 净零，摸=打=河末
             if tile_valid(river_end) then
                 last_cpu_draw = river_end
             end
         end
-        -- 若手完全读不到：不更新，避免 last_cpu_draw=弃牌
+        cpu_hand_trusted.pending_draw = nil
+        if river_end and tile_valid(river_end) then
+            -- 摸切：河末即摸入
+            if last_cpu_draw and last_cpu_draw == river_end then
+                pcall(cpu_win_probe.on_cpu_draw, last_cpu_draw)
+            elseif last_cpu_draw then
+                pcall(cpu_win_probe.on_cpu_draw, last_cpu_draw)
+            end
+            pcall(cpu_win_probe.on_cpu_discard, machine, river_end)
+        end
     elseif n_cpu > (prev.n_cpu or 0) and not cpu_river_grew and #cpu_gains > 0 then
-        -- 尚可见「摸入未打」的一帧
+        -- 实读到摸入（或缓存模式下手数偶发可见）
         local pick = nil
         for _, v in ipairs(cpu_gains) do
             if table_v and v == table_v then
@@ -1479,6 +4406,51 @@ local function update_draw_track(machine, live)
             end
         end
         last_cpu_draw = pick or cpu_gains[1]
+        if live.cpu_from_cache and last_cpu_draw and not cpu_hand_trusted.no_draw_discard then
+            cpu_hand_trusted.pending_draw = last_cpu_draw
+        end
+        pcall(cpu_win_probe.on_cpu_draw, last_cpu_draw)
+    elseif live.cpu_from_cache
+        and not cpu_river_grew
+        and not pl_river_grew
+        and not cpu_hand_trusted.no_draw_discard
+        and table_v
+        and tile_valid(table_v)
+        and table_v ~= prev.table
+        and table_v ~= cpu_hand_trusted.last_pl_discard
+        and not (n_pl > (prev.n_pl or 0))
+    then
+        -- 缓存模式下看不见电脑手增减时：用 @7502 变作本巡摸入候选（排除「刚吃的那张」）
+        cpu_hand_trusted.pending_draw = table_v
+    end
+
+    pcall(cpu_win_probe.on_hand_count, n_cpu)
+
+    -- 供下一帧 Donden：与 read_cpu_hand 同一套 @7120 连续读（勿用 sorted 截断，会误判对调）
+    do
+        local pl_snap = read_cpu_hand_at(machine, HAND_ADDR)
+        if #pl_snap >= 7 then
+            local pp = {}
+            for i, v in ipairs(pl_snap) do
+                pp[i] = v
+            end
+            cpu_hand_trusted.prev_player = pp
+        end
+        -- 副露块也随 Donden 互换：记下本帧计数供下一帧比对（两槽取大，连续块）
+        local pl_m = meld.read_blocks(machine, meld.PLAYER_ADDR)
+        local pl_m2 = meld.read_blocks(machine, meld.PLAYER_MIRROR)
+        local cpu_m = meld.read_blocks(machine, meld.CPU_ADDR)
+        local pl_n = math.max(#pl_m, #pl_m2)
+        local prev_pl = cpu_hand_trusted.prev_pl_meld_n
+        if type(prev_pl) == "number" and pl_n > prev_pl then
+            pcall(meld.dump_hunt, machine, string.format(
+                "auto-pl-meld %d→%d",
+                prev_pl,
+                pl_n
+            ))
+        end
+        cpu_hand_trusted.prev_pl_meld_n = pl_n
+        cpu_hand_trusted.prev_cpu_meld_n = #cpu_m
     end
 
     draw_track_prev = {
@@ -1489,12 +4461,26 @@ local function update_draw_track(machine, live)
         cpu_rn = cpu_rn,
         n_pl = n_pl,
         n_cpu = n_cpu,
+        pl_discard_raw = live.player_discard_raw,
+        cpu_discard_raw = live.cpu_discard_raw,
     }
 end
 
 local function read_discard_hist(machine, addr)
     local raw, names = {}, {}
-    for i = 0, DISCARD_HIST_MAX - 1 do
+    -- 副露瞬间河首字节偶发 B7 等状态码：最多跳过 2 个非牌字节再读
+    local start = 0
+    while start < 2 do
+        local v = mem.read_u8(machine, addr + start)
+        if tile_valid(v) then
+            break
+        end
+        if not v or v == 0 or v == 0xFF then
+            break
+        end
+        start = start + 1
+    end
+    for i = start, DISCARD_HIST_MAX - 1 do
         local v = mem.read_u8(machine, addr + i)
         if not tile_valid(v) then
             break
@@ -1516,8 +4502,13 @@ end
 
 local function build_cpu_hand_tiles(cpu_raw)
     local tiles = {}
+    local wait = listen_accept.wait_bcd
     for _, v in ipairs(cpu_raw) do
-        tiles[#tiles + 1] = bcd_tile_obj(v)
+        local t = bcd_tile_obj(v)
+        if wait and v == wait then
+            t.force_hi = true
+        end
+        tiles[#tiles + 1] = t
     end
     return tiles
 end
@@ -1546,6 +4537,189 @@ local function wall_pool_counts(machine)
     return counts
 end
 
+function cpu_win_probe._pool_left(machine, bcd)
+    if not machine or not bcd then
+        return -1
+    end
+    local counts = wall_pool_counts(machine)
+    return counts[bcd] or 0
+end
+
+function cpu_win_probe._emit(code, detail)
+    local p = cpu_win_probe
+    write_log(
+        string.format(
+            "=== [cpu-win-probe] #%d code=%s id=%s %s mode=%s fc=%s skip=%s disc=%d draw=%s detail=%s %s ===\n",
+            p.session,
+            code,
+            p.id or "?",
+            p.label or "",
+            p.mode or "?",
+            p.first_chance and "Y" or "N",
+            p.saw_skip and "Y" or "N",
+            p.discard_n,
+            p.last_draw and tile_name(p.last_draw) or "-",
+            detail or "",
+            now()
+        ),
+        "a"
+    )
+    if code == "S_discard" or code == "S_pass" or code == "W_retry" or code == "W0" then
+        pcall(function()
+            ui_toast.show(
+                string.format("电脑必和探测 %s\n%s", code, detail or ""),
+                220
+            )
+        end)
+    end
+end
+
+function cpu_win_probe.arm(preset, mode, first_chance, tiles)
+    local p = cpu_win_probe
+    p.active = true
+    p.session = (p.session or 0) + 1
+    p.id = preset and preset.id or "?"
+    p.label = preset and preset.label or ""
+    p.mode = mode or "?"
+    p.first_chance = first_chance and true or false
+    p.complete14 = tiles and #tiles == 14
+    p.tenhou_only = preset and preset.tenhou_only and true or false
+    p.wait = {}
+    p.key = {}
+    if preset and preset.wait_bcd then
+        for _, v in ipairs(preset.wait_bcd) do
+            p.wait[v] = true
+        end
+    end
+    if preset and preset.key_bcd then
+        for _, v in ipairs(preset.key_bcd) do
+            p.key[v] = true
+        end
+    end
+    -- 完整 14 张：任意弃牌都算错过必和窗（天和/已听满）
+    if p.complete14 then
+        for _, v in ipairs(tiles or {}) do
+            p.key[v] = true
+        end
+    end
+    p.saw_skip = false
+    p.last_draw = nil
+    p.draw_was_wait = false
+    p.discard_n = 0
+    p.coded = false
+    p.last_n_cpu = tiles and #tiles or nil
+    cpu_win_probe._emit(
+        "ARM",
+        string.format(
+            "tiles=%d wait=%s tenhou_only=%s",
+            tiles and #tiles or 0,
+            (preset and preset.wait_hint) or "-",
+            p.tenhou_only and "Y" or "N"
+        )
+    )
+end
+
+function cpu_win_probe.on_cpu_draw(v)
+    local p = cpu_win_probe
+    if not p.active or not v or not tile_valid(v) then
+        return
+    end
+    p.last_draw = v
+    p.draw_was_wait = p.wait[v] == true
+        or (p.complete14 and false)
+        or false
+    -- 13 张听：摸入听张 = 必和摸胡窗
+    if p.wait[v] then
+        p.draw_was_wait = true
+        write_log(
+            string.format(
+                "=== [cpu-win-probe] #%d MUSTWIN-DRAW %s (%02X) %s ===\n",
+                p.session,
+                tile_name(v),
+                v,
+                now()
+            ),
+            "a"
+        )
+    end
+end
+
+function cpu_win_probe.on_cpu_discard(machine, v)
+    local p = cpu_win_probe
+    if not p.active or not v or not tile_valid(v) then
+        return
+    end
+    p.discard_n = p.discard_n + 1
+    local pool_left = cpu_win_probe._pool_left(machine, v)
+    local detail = string.format(
+        "out=%s(%02X) pool_left=%d must_draw=%s",
+        tile_name(v),
+        v,
+        pool_left,
+        p.draw_was_wait and tile_name(p.last_draw) or "-"
+    )
+    local code = nil
+    -- 天和/14 张窗：首打即弃和
+    if p.complete14 and p.discard_n == 1 and not p.coded then
+        code = "S_discard"
+        detail = detail .. " why=tenhou_or_14_first_discard"
+    elseif p.draw_was_wait and p.last_draw == v and not p.coded then
+        code = "S_discard"
+        detail = detail .. " why=tsumo_tile_cut"
+    elseif p.draw_was_wait and p.key[v] and not p.coded then
+        code = "S_discard"
+        detail = detail .. " why=break_yakuman_after_wait"
+    elseif p.draw_was_wait and not p.coded then
+        -- 摸到听张却打了别的（未立刻和）
+        code = "S_discard"
+        detail = detail .. " why=had_wait_drew_but_discarded_other"
+    elseif p.key[v] and p.discard_n <= 2 and not p.coded and (p.complete14 or p.tenhou_only) then
+        code = "S_discard"
+        detail = detail .. " why=key_tile_early"
+    end
+    if code then
+        p.saw_skip = true
+        p.coded = true
+        cpu_win_probe._emit(code, detail)
+    else
+        write_log(
+            string.format(
+                "=== [cpu-win-probe] #%d DISCARD %s %s ===\n",
+                p.session,
+                detail,
+                now()
+            ),
+            "a"
+        )
+    end
+    p.draw_was_wait = false
+end
+
+function cpu_win_probe.on_hand_count(n_cpu)
+    local p = cpu_win_probe
+    if not p.active then
+        return
+    end
+    local prev = p.last_n_cpu
+    p.last_n_cpu = n_cpu
+    if type(prev) ~= "number" or type(n_cpu) ~= "number" then
+        return
+    end
+    -- 手数从听牌/和形骤降至 0：局终。若从未弃过且完整 14 → W0；若曾 S_* → W_retry
+    if prev >= 10 and n_cpu == 0 then
+        if p.saw_skip then
+            cpu_win_probe._emit("W_retry", "hand_cleared_after_skip")
+        elseif p.complete14 and p.discard_n == 0 then
+            cpu_win_probe._emit("W0", "hand_cleared_no_discard")
+        elseif p.discard_n == 0 then
+            cpu_win_probe._emit("W0", "hand_cleared_no_discard_13listen")
+        else
+            cpu_win_probe._emit("END", string.format("hand_cleared disc=%d", p.discard_n))
+        end
+        p.active = false
+    end
+end
+
 local function read_wall_pool(machine)
     local counts = wall_pool_counts(machine)
     local target = force_draw.armed and force_draw.target_bcd() or nil
@@ -1571,14 +4745,89 @@ local function build_peek_state(machine, live)
     live = live or read_live_peek(machine)
     local cpu_hand = build_cpu_hand_tiles(live.cpu_raw)
     local pool_tiles, pool_n = read_wall_pool(machine)
+    local cpu_rn = #(live.cpu_discard_raw or {})
+    local pl_rn = #(live.player_discard_raw or {})
+    local pl_n = #(live.sorted_raw or {})
+    -- 你副露时 @7120 常被清空：回退 @72C0 镜像手数
+    if pl_n < 1 then
+        local mir = read_cpu_hand_at(machine, HAND_MIRROR_ADDR)
+        if #mir >= 1 then
+            pl_n = #mir
+        end
+    end
+    -- 副露/对调瞬间河表空读：HUD 暂用上次非零（逻辑追踪仍用本帧实读）
+    if pl_n > 0 then
+        hud_sticky.pl_n = pl_n
+    elseif hud_sticky.pl_n > 0 then
+        pl_n = hud_sticky.pl_n
+    end
+    if pl_rn > 0 then
+        hud_sticky.pl_rn = pl_rn
+    elseif hud_sticky.pl_rn > 0 then
+        pl_rn = hud_sticky.pl_rn
+    end
+    if cpu_rn > 0 then
+        hud_sticky.cpu_rn = cpu_rn
+    elseif hud_sticky.cpu_rn > 0 then
+        cpu_rn = hud_sticky.cpu_rn
+    end
     local line1_parts = {
         string.format("牌池剩 %d", pool_n),
+        string.format("你手%d", pl_n),
+        string.format("你河%d", pl_rn),
+        string.format("电脑河%d", cpu_rn),
     }
-    if #cpu_hand > 0 then
-        line1_parts[#line1_parts + 1] = string.format("电脑 %d", #cpu_hand)
-        if live.cpu_from_cache then
-            line1_parts[#line1_parts + 1] = "副露中"
+    do
+        -- 你副露 / 电脑副露：直接读 RAM 块内容（81吃/82碰）
+        local pl_blocks = meld.read_blocks(machine, meld.PLAYER_MIRROR)
+        if #pl_blocks == 0 then
+            pl_blocks = meld.read_blocks(machine, meld.PLAYER_ADDR)
         end
+        local cpu_blocks = meld.read_blocks(machine, meld.CPU_ADDR)
+        -- 电脑副露只信 @7250；对调后空表必须清计数（勿幽灵「副露2」）
+        -- 刚吃碰尚未写表的一帧：保留 no_draw 期间的计数
+        if #cpu_blocks > 0 then
+            cpu_hand_trusted.meld_count = #cpu_blocks
+        elseif not cpu_hand_trusted.no_draw_discard then
+            cpu_hand_trusted.meld_count = 0
+        end
+        local cpu_meld_n = #cpu_blocks
+        if cpu_meld_n == 0 and cpu_hand_trusted.no_draw_discard then
+            cpu_meld_n = cpu_hand_trusted.meld_count or 0
+        end
+        if #pl_blocks > 0 then
+            line1_parts[#line1_parts + 1] = string.format(
+                "你副露%d:%s",
+                #pl_blocks,
+                meld.format_blocks(pl_blocks)
+            )
+        end
+        if #cpu_blocks > 0 then
+            local expect = meld.expected_closed_n(
+                #cpu_blocks,
+                cpu_hand_trusted.no_draw_discard
+            )
+            line1_parts[#line1_parts + 1] = string.format(
+                "电脑副露%d→暗%d:%s",
+                #cpu_blocks,
+                expect,
+                meld.format_blocks(cpu_blocks)
+            )
+        elseif cpu_meld_n > 0 then
+            line1_parts[#line1_parts + 1] = string.format(
+                "电脑副露%d→暗%d",
+                cpu_meld_n,
+                meld.expected_closed_n(cpu_meld_n, true)
+            )
+        end
+    end
+    if #cpu_hand > 0 then
+        line1_parts[#line1_parts + 1] = string.format("电脑手%d", #cpu_hand)
+        if live.cpu_from_cache then
+            line1_parts[#line1_parts + 1] = "副露缓存"
+        end
+    else
+        line1_parts[#line1_parts + 1] = "电脑手空"
     end
     if live.table_tile then
         line1_parts[#line1_parts + 1] = "台面 " .. live.table_tile.name
@@ -1591,11 +4840,20 @@ local function build_peek_state(machine, live)
             line1_parts[#line1_parts + 1] = "点牌控摸"
         end
     end
-    local cpu_label = string.format("电脑手 (%d)", #cpu_hand)
+    local src_tag = ""
+    if live.cpu_from_cache then
+        src_tag = " · 副露缓存"
+    elseif live.cpu_src == 0x7240 then
+        src_tag = " · 实读"
+    elseif live.cpu_src then
+        src_tag = " · 镜像"
+    end
+    local cpu_label = string.format("电脑手 (%d)%s", #cpu_hand, src_tag)
     if #cpu_hand == 0 then
-        cpu_label = "电脑手（副露中/暂无）"
-    elseif live.cpu_from_cache then
-        cpu_label = cpu_label .. " · 副露中"
+        cpu_label = "电脑手（副露中·暂无可信读数）"
+    end
+    if listen_accept.wait_bcd then
+        cpu_label = cpu_label .. " · 喂荣:" .. listen_accept.wait_name()
     end
     return {
         title = "电子基盘 透视",
@@ -1607,8 +4865,8 @@ local function build_peek_state(machine, live)
         pool_label = string.format("牌池 · 剩 %d 张 · 点选控摸", pool_n),
         pool = pool_tiles,
         pool_rows = 2,
-        note1 = "点牌图 = 下一摸强制该种 · 再点同种取消",
-        note2 = "听牌可控摸 · 右Ctrl+8 关并恢复牌池 · F9 关透视",
+        note1 = "暗手张数=13-3×副露 · 副露随 Donden 互换",
+        note2 = "玩家副露不改电脑暗手 · 喂荣改手已暂停",
     }
 end
 
@@ -1755,6 +5013,8 @@ end
 
 function force_draw.run_tick(machine)
     force_draw.consume_pending(machine)
+    listen_accept.consume_pending(machine)
+    -- 喂荣 tick 只在主帧循环跑一次，避免双倍 countdown / 双 COMMIT
     if not force_draw.armed then
         return
     end
@@ -2286,6 +5546,34 @@ local function format_live_log(live, machine)
         t[#t + 1] = "  玩家河hex: " .. table.concat(hex, " ")
     else
         t[#t + 1] = "  玩家河@7280: -"
+    end
+    if machine then
+        local pl_m = meld.read_blocks(machine, meld.PLAYER_ADDR)
+        local pl_m2 = meld.read_blocks(machine, meld.PLAYER_MIRROR)
+        local cpu_m = meld.read_blocks(machine, meld.CPU_ADDR)
+        local meld_n = cpu_hand_trusted.meld_count or 0
+        t[#t + 1] = string.format(
+            "  副露 pl@7130(%d): %s",
+            #pl_m,
+            meld.format_blocks(pl_m)
+        )
+        t[#t + 1] = string.format(
+            "  副露 pl@72D0(%d): %s",
+            #pl_m2,
+            meld.format_blocks(pl_m2)
+        )
+        t[#t + 1] = string.format(
+            "  副露 cpu@7250(%d): %s",
+            #cpu_m,
+            meld.format_blocks(cpu_m)
+        )
+        t[#t + 1] = string.format(
+            "  暗手期望: cpu_meld_n=%d expect=%d trust=%d pl_meld_n=%d",
+            meld_n,
+            meld.expected_closed_n(meld_n, cpu_hand_trusted.no_draw_discard),
+            cpu_hand_trusted.raw and #cpu_hand_trusted.raw or 0,
+            #pl_m
+        )
     end
     return table.concat(t, "\n") .. "\n"
 end
@@ -3211,6 +6499,33 @@ local function hit_pool_tile_xy(view, x, y)
     return tiles_ui.hit_mjelctrn_pool(ux, uy, peek_state.pool)
 end
 
+local cpu_feed_click_bcd = nil
+
+local function hit_cpu_feed_xy(view, x, y)
+    if not peek_open or not tiles_ui or not tiles_ui.hit_mjelctrn_cpu then
+        return nil
+    end
+    local ux, uy
+    if tiles_ui.view_to_ui01 then
+        ux, uy = tiles_ui.view_to_ui01(view, x, y)
+    elseif tiles_ui.view_to_screen then
+        ux, uy = tiles_ui.view_to_screen(view, x, y)
+    end
+    if not ux then
+        return nil
+    end
+    return tiles_ui.hit_mjelctrn_cpu(ux, uy)
+end
+
+local function apply_cpu_feed_click(machine)
+    if not cpu_feed_click_bcd then
+        return
+    end
+    local bcd = cpu_feed_click_bcd
+    cpu_feed_click_bcd = nil
+    listen_accept.set_wait(bcd)
+end
+
 local function hit_hand_pat_xy(view, x, y)
     if not peek_open then
         return nil
@@ -3339,6 +6654,7 @@ local function toggle_peek(machine)
     if not peek_open then
         hand_pat.menu_open = false
         hand_pat.hits = {}
+        -- 关透视不再清喂荣锁定（锁定后可关面板等电脑打牌）
     end
     if tiles_ui then
         tiles_ui.ensure_art(machine)
@@ -3510,6 +6826,28 @@ local function report_scan(snap, title, mode)
     return "mjelctrn: no wall BCD signature (hot+bank dump in log)"
 end
 
+
+function meld.diff_windows(a, b, tag)
+    -- a/b 为 hot 区（基址 @7100）；副露块在 known 里会被 UNKNOWN 滤掉，这里单独 FULL diff
+    local windows = {
+        { name = "pl@7130", off = 0x7130 - 0x7100, len = 0x40 },
+        { name = "pl@72D0", off = 0x72D0 - 0x7100, len = 0x40 },
+        { name = "cpu@7250", off = 0x7250 - 0x7100, len = 0x40 },
+    }
+    for _, w in ipairs(windows) do
+        if #a >= w.off + w.len and #b >= w.off + w.len then
+            local sa = a:sub(w.off + 1, w.off + w.len)
+            local sb = b:sub(w.off + 1, w.off + w.len)
+            if sa ~= sb then
+                write_log(
+                    diff_bufs(sa, sb, tag .. " MELD " .. w.name, 0x7100 + w.off),
+                    "a"
+                )
+            end
+        end
+    end
+end
+
 local function diff_nvram_hot(snap_old, snap_new, label)
     local ra = region(snap_old, "z80_nvram")
     local rb = region(snap_new, "z80_nvram")
@@ -3520,6 +6858,7 @@ local function diff_nvram_hot(snap_old, snap_new, label)
     local b = rb.data:sub(NVRAM_HOT0 + 1, NVRAM_HOT1)
     local tag = label or "z80_nvram_hot"
     write_log(diff_bufs(a, b, tag, 0x7100), "a")
+    meld.diff_windows(a, b, tag)
     local unknown_runs = collect_unknown_runs(a, b, 0x7100)
     write_log(format_diff_runs(tag .. " UNKNOWN", unknown_runs, 32), "a")
     record_hunt_unknown_stats(unknown_runs)
@@ -3541,6 +6880,7 @@ local function set_baseline(machine, tag, pop_suffix)
     snap_prev = snap
     write_log(string.format("=== BASELINE %s %s ===\n", snap.tag, now()), "a")
     write_log(format_live_log(live, machine), "a")
+    pcall(meld.dump_hunt, machine, "baseline-" .. (snap.tag or "?"))
     local nv = region(snap, "z80_nvram")
     if nv then
         write_bin("smoke_logs/mjelctrn_nvram_baseline.bin", nv.data)
@@ -3562,6 +6902,7 @@ local function record_step(machine)
     local draw_verdict = nil
     write_log(string.format("=== STEP #%d %s ===\n", step_idx, now()), "a")
     write_log(format_live_log(live, machine), "a")
+    pcall(meld.dump_hunt, machine, string.format("step-%d", step_idx))
     local snap_new = snapshot_all(machine)
     snap_new.tag = string.format("step_%d", step_idx)
     local nv = region(snap_new, "z80_nvram")
@@ -3616,10 +6957,19 @@ local function on_soft_reset(machine)
     bleed.click = false
     bleed.press_frames = 0
     listen_accept.on = false
-    listen_accept.tap_rm()
+    listen_accept.read_tap_rm()
+    listen_accept.feed_tap_rm()
     listen_accept.clear_ram(machine)
     listen_accept.probe_reset()
+    listen_accept.wait_bcd = nil
+    listen_accept.feed_done = false
+    listen_accept.feed_pending_was = nil
+    listen_accept.feed_fallback_rn = nil
+    listen_accept.feed_sticky = false
+    listen_accept.pending_commit = nil
+    listen_accept.pending_clear_wait = nil
     pool_click_bcd = nil
+    cpu_feed_click_bcd = nil
     hand_pat.menu_open = false
     hand_pat.hits = {}
     hand_pat.click_id = nil
@@ -3761,6 +7111,7 @@ local function ensure_pause_poll()
                 bleed.arm(m)
             end
             apply_pool_click(m)
+            apply_cpu_feed_click(m)
             apply_hand_pat_click(m)
             if bleed.press_frames > 0 then
                 bleed.press_frames = bleed.press_frames - 1
@@ -3831,6 +7182,12 @@ local function ensure_pause_poll()
                 ptr_mark_busy(0.25)
                 return
             end
+            local feed_bcd = hit_cpu_feed_xy(view, x, y)
+            if feed_bcd then
+                cpu_feed_click_bcd = feed_bcd
+                ptr_mark_busy(0.25)
+                return
+            end
             local bcd = hit_pool_tile_xy(view, x, y)
             if bcd then
                 pool_click_bcd = bcd
@@ -3883,6 +7240,7 @@ return function(machine)
         bleed.arm(machine)
     end
     apply_pool_click(machine)
+    apply_cpu_feed_click(machine)
     apply_hand_pat_click(machine)
     if bleed.press_frames > 0 then
         bleed.press_frames = bleed.press_frames - 1
@@ -3893,6 +7251,9 @@ return function(machine)
     pcall(function()
         hand_pat.tick(machine)
     end)
+    pcall(listen_accept.tick_feed, machine)
+    pcall(listen_accept.tick_hold, machine)
+    pcall(listen_accept.consume_pending, machine)
     pcall(function()
         sangen_watch_tick(machine)
     end)

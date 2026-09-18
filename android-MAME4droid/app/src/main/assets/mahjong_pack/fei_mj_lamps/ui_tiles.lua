@@ -921,6 +921,7 @@ end
 
 local mjelctrn_layout = { key = "" }
 local mjelctrn_pool_hits = {} -- 每帧绘制时缓存，与 ui_container 坐标一致
+local mjelctrn_cpu_hits = {} -- 电脑手点选（喂荣听牌）
 
 local function mjelctrn_geom()
     local land = is_landscape()
@@ -1101,6 +1102,21 @@ local function draw_mjelctrn_panel(ui, st)
     local g = mjelctrn_geom()
     -- 更新点击热区（与是否走贴图缓存无关）
     mjelctrn_pool_hits = {}
+    mjelctrn_cpu_hits = {}
+    local q = st.queue or {}
+    for i = 1, math.min(g.row_n or 13, #q) do
+        local t = q[i]
+        if t and t.raw and t.raw ~= 0 then
+            local x0 = g.x0 + (i - 1) * (g.tw + g.gap)
+            mjelctrn_cpu_hits[#mjelctrn_cpu_hits + 1] = {
+                x0 = x0,
+                y0 = g.cpu_y,
+                x1 = x0 + g.tw,
+                y1 = g.cpu_y + g.th,
+                raw = t.raw & 0xFF,
+            }
+        end
+    end
     local pool = st.pool or {}
     local rows = st.pool_rows or g.pool_rows
     local per = g.pool_row_n
@@ -1167,6 +1183,19 @@ local function draw_mjelctrn_panel(ui, st)
             draw_row(ui, g.x0, y, g.ptw, g.pth, g.pgap, slice, per, false, 99)
         end
     end
+end
+
+-- ui_container 0–1 → 电脑手某一张 BCD（透视点选喂荣听牌）
+local function hit_mjelctrn_cpu(nx, ny)
+    if not nx or not ny then
+        return nil
+    end
+    for _, h in ipairs(mjelctrn_cpu_hits) do
+        if nx >= h.x0 and nx <= h.x1 and ny >= h.y0 and ny <= h.y1 and h.raw and h.raw ~= 0 then
+            return h.raw & 0xFF
+        end
+    end
+    return nil
 end
 
 -- ui_container 0–1 → 牌池格 BCD（与绘制同空间；勿用 view_to_screen）
@@ -1236,6 +1265,7 @@ return {
     end,
     hit_toggle = hit_toggle,
     hit_mjelctrn_pool = hit_mjelctrn_pool,
+    hit_mjelctrn_cpu = hit_mjelctrn_cpu,
     mark_btn = MARK,
     mark_rect = mark_target_rect,
     mark_target_rect = mark_target_rect,
