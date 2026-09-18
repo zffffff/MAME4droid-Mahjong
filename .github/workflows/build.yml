@@ -40,7 +40,10 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          # Google no longer serves legacy package "tools"; default would fail CI.
+          packages: platform-tools
 
       - name: Install Android SDK packages
         run: |
