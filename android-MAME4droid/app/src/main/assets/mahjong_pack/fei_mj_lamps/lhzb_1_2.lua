@@ -1,4 +1,23 @@
+-- lhzb / lhzb1* / lhzb2* 像素灯控（吃碰杠听胡 + 海底/对花/比倍）
+-- lhzb2* 另挂 fei_mj_lamps/lhzb2_wall.lua 做内存 hunt / 透视骨架
+local wall_hunt, wall_err = loadfile("fei_mj_lamps/lhzb2_wall.lua")
+local hunt = nil
+if wall_hunt then
+    local ok, res = pcall(wall_hunt)
+    if ok then
+        hunt = res
+    else
+        print(string.format("[lhzb2_wall] run error: %s", tostring(res)))
+    end
+else
+    print(string.format("[lhzb2_wall] loadfile failed: %s", tostring(wall_err)))
+end
+
 return function(machine, screen, blink_state)
+    if hunt then
+        pcall(hunt, machine)
+    end
+
     local out = fei_output(machine)
     local target_y = 77
     

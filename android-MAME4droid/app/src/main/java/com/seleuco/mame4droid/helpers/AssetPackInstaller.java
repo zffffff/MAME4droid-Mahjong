@@ -31,7 +31,7 @@ import java.util.List;
  * **不**写 install-dir {@code system_names}
  *（会话内「选择新系统」须与 basic 一样剥毒；中文名仅选台 assets）。<br>
  * <b>basic</b>: artwork + per-game lamp ini only — strips peek / pause / sangen /
- * accept / bleed (and related Lua) so only the normal key pack remains.
+ * accept / bleed / cuopai (and related Lua) so only the normal key pack remains.
  * Classic list stays English on MAME 1.38.3 ({@code system_names} does not refresh
  * the native list). Chinese titles are on the picker
  * ({@link com.seleuco.mame4droid.mahjong.MahjongCatalog}).
@@ -47,13 +47,14 @@ public class AssetPackInstaller {
 	/** Enhance skin / HUD assets — not for basic edition. */
 	private static final String[] ENHANCE_PNG_PREFIXES = {
 			"peek_", "mark_", "pause_", "continue_", "force_",
-			"sangen_", "accept_", "bleed_",
+			"sangen_", "accept_", "bleed_", "cuopai_",
 	};
 	private static final String[] ENHANCE_LAY_IDS = {
 			"btn_peek", "btn_mark", "btn_pause", "btn_sangen", "btn_accept", "btn_bleed",
+			"btn_cuopai",
 	};
 	private static final String[] ENHANCE_LUA_FILES = {
-			"rbmk_wall.lua", "mjelctrn_wall.lua", "ui_tiles.lua",
+			"rbmk_wall.lua", "mjelctrn_wall.lua", "ui_tiles.lua", "lhzb2_wall.lua",
 	};
 
 	/** Mods lamp-only rbmk.lua (no wall hunt). */
@@ -110,6 +111,53 @@ public class AssetPackInstaller {
 					+ "    out:set_value(\"lamp_hint_select_b\", is_sel and blink_state or 0)\n"
 					+ "    out:set_value(\"lamp_hint_select_c\", is_sel and blink_state or 0)\n"
 					+ "    out:set_value(\"lamp_hint_select_d\", is_sel and blink_state or 0)\n"
+					+ "end\n";
+
+	/** Mods lamp-only lhzb_1_2.lua (no lhzb2 wall hunt). */
+	private static final String LHZB_1_2_LUA_BASIC =
+			"return function(machine, screen, blink_state)\n"
+					+ "    local out = fei_output(machine)\n"
+					+ "    local target_y = 77\n"
+					+ "    \n"
+					+ "    local function is_yellow_active(x, y)\n"
+					+ "        local color = screen:pixel(x, y)\n"
+					+ "        local r = (color >> 16) & 0xFF\n"
+					+ "        local g = (color >> 8) & 0xFF\n"
+					+ "        local b = color & 0xFF\n"
+					+ "        return r > 200 and g > 140 and g < 180 and b < 20\n"
+					+ "    end\n"
+					+ "    \n"
+					+ "    if is_yellow_active(190, target_y) then out:set_value(\"lamp_chi\", blink_state) else out:set_value(\"lamp_chi\", 0) end\n"
+					+ "    if is_yellow_active(220, target_y) then out:set_value(\"lamp_pon\", blink_state) else out:set_value(\"lamp_pon\", 0) end\n"
+					+ "    if is_yellow_active(250, target_y) then out:set_value(\"lamp_kan\", blink_state) else out:set_value(\"lamp_kan\", 0) end\n"
+					+ "    if is_yellow_active(280, target_y) then out:set_value(\"lamp_reach\", blink_state) else out:set_value(\"lamp_reach\", 0) end\n"
+					+ "    if is_yellow_active(310, target_y) then out:set_value(\"lamp_ron\", blink_state) else out:set_value(\"lamp_ron\", 0) end\n"
+					+ "\n"
+					+ "    local function check_exact(x, y, r_target, g_target, b_target)\n"
+					+ "        local c = screen:pixel(x, y)\n"
+					+ "        if not c then return false end\n"
+					+ "        local r, g, b = (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF\n"
+					+ "        return r == r_target and g == g_target and b == b_target\n"
+					+ "    end\n"
+					+ "\n"
+					+ "    if check_exact(30, 20, 8, 74, 198) and check_exact(33, 20, 222, 148, 16) then \n"
+					+ "        out:set_value(\"lamp_hint_haidi\", blink_state) \n"
+					+ "    else \n"
+					+ "        out:set_value(\"lamp_hint_haidi\", 0) \n"
+					+ "    end\n"
+					+ "\n"
+					+ "    if check_exact(200, 15, 255, 165, 0) and check_exact(200, 17, 173, 74, 0) then\n"
+					+ "        out:set_value(\"lamp_hint_duihua\", blink_state)\n"
+					+ "    else\n"
+					+ "        out:set_value(\"lamp_hint_duihua\", 0)\n"
+					+ "    end\n"
+					+ "    \n"
+					+ "    local c_bibei = screen:pixel(58, 5)\n"
+					+ "    if ((c_bibei >> 16) & 0xFF) > 170 and ((c_bibei >> 8) & 0xFF) > 80 then \n"
+					+ "        out:set_value(\"lamp_hint_bibei\", blink_state) \n"
+					+ "    else \n"
+					+ "        out:set_value(\"lamp_hint_bibei\", 0) \n"
+					+ "    end\n"
 					+ "end\n";
 
 	private static final PackSpec[] PACKS = {
@@ -300,8 +348,8 @@ public class AssetPackInstaller {
 
 	/**
 	 * Basic edition: keep normal key-pack artwork + lamp scripts only.
-	 * Removes peek / pause / sangen / accept / bleed skin buttons and wall HUD Lua
-	 * (rbmk + mjelctrn family). Full edition skips this.
+	 * Removes peek / pause / sangen / accept / bleed / cuopai skin buttons and wall HUD Lua
+	 * (rbmk + mjelctrn + lhzb2 family). Full edition skips this.
 	 */
 	private void stripEnhanceExtrasForBasic(String installDir) {
 		if (installDir == null || installDir.isEmpty()) {
@@ -329,6 +377,7 @@ public class AssetPackInstaller {
 			deleteTree(new File(lamps, "art"));
 			writeTextFile(new File(lamps, "rbmk.lua"), RBMK_LUA_BASIC);
 			writeTextFile(new File(lamps, "mjelctrn.lua"), MJELCTRN_LUA_BASIC);
+			writeTextFile(new File(lamps, "lhzb_1_2.lua"), LHZB_1_2_LUA_BASIC);
 		}
 		Log.i(TAG, "Stripped enhance extras for basic key pack");
 		BasicBootProbe.log(mm, "basic_strip_enhance", "done");

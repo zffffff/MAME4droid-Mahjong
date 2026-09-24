@@ -8,11 +8,57 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import os
 import re
 import shutil
+import stat
 import sys
+import time
 from datetime import date
 from pathlib import Path
+
+
+def rmtree_retry(path: Path, attempts: int = 12) -> None:
+    """Windows: indexer/AV often locks PNGs right after write; retry deletes."""
+
+    def onerror(func, pth, _exc_info):
+        try:
+            os.chmod(pth, stat.S_IWRITE)
+        except OSError:
+            pass
+        time.sleep(0.15)
+        try:
+            func(pth)
+        except OSError:
+            pass
+
+    last = None
+    for i in range(attempts):
+        if not path.exists():
+            return
+        try:
+            shutil.rmtree(path, onerror=onerror)
+            if not path.exists():
+                return
+        except OSError as e:
+            last = e
+        time.sleep(0.25 * (i + 1))
+    if path.exists():
+        raise last or OSError(f"rmtree failed: {path}")
+
+
+def copy2_retry(src: Path, dst: Path, attempts: int = 8) -> None:
+    last = None
+    for i in range(attempts):
+        try:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            return
+        except OSError as e:
+            last = e
+            time.sleep(0.2 * (i + 1))
+    raise last or OSError(f"copy2 failed: {src} -> {dst}")
+
 
 MODS = Path(r"D:\Dev\MAMEmjKey\MAME_Mahjong_Mods")
 PACK = Path(
@@ -28,14 +74,22 @@ PEEK_FILES = (
     "fei_mj_lamps/ui_tiles.lua",
     "fei_mj_lamps/mjelctrn_wall.lua",
     "fei_mj_lamps/mjelctrn.lua",  # Mods 仅灯控；透视仓含 wall 入口
+    "fei_mj_lamps/lhzb2_wall.lua",
+    "fei_mj_lamps/lhzb_1_2.lua",  # Mods 仅灯控；透视仓含 lhzb2 wall 入口
 )
-PEEK_DIRS = ("fei_mj_lamps/art/tiles", "fei_mj_lamps/art/buttons")
+PEEK_DIRS = (
+    "fei_mj_lamps/art/tiles",
+    "fei_mj_lamps/art/buttons",
+    "fei_mj_lamps/art/lhzb2",
+)
 PEEK_LUA_REL = frozenset(
     {
         "rbmk_wall.lua",
         "ui_tiles.lua",
         "mjelctrn_wall.lua",
         "mjelctrn.lua",
+        "lhzb2_wall.lua",
+        "lhzb_1_2.lua",
     }
 )
 
@@ -272,7 +326,7 @@ def overlay_peek(dst_lamps: Path) -> None:
             print("WARN: peek source missing", src)
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)
+        copy2_retry(src, dst)
         print("peek overlay file", rel)
     for rel in PEEK_DIRS:
         src = PEEK / rel
@@ -285,7 +339,7 @@ def overlay_peek(dst_lamps: Path) -> None:
             if p.is_file():
                 target = dst / p.relative_to(src)
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(p, target)
+                copy2_retry(p, target)
                 n += 1
         print("peek overlay tiles", n, "files")
     ensure_rbmk_hunt(dst_lamps)
@@ -297,13 +351,13 @@ def overlay_rbmk_peek_artwork(dst_art: Path) -> None:
     rbmk.mkdir(parents=True, exist_ok=True)
     lay = MODS / "rbmk" / "default.lay"
     if lay.is_file():
-        shutil.copy2(lay, rbmk / "default.lay")
+        copy2_retry(lay, rbmk / "default.lay")
         print("peek overlay artwork default.lay")
     btn = PEEK / "fei_mj_lamps" / "art" / "buttons"
     if btn.is_dir():
         n = 0
         for p in btn.glob("*.png"):
-            shutil.copy2(p, rbmk / p.name)
+            copy2_retry(p, rbmk / p.name)
             n += 1
         print("peek overlay artwork buttons", n, "png")
     elif not PEEK.is_dir():
@@ -321,7 +375,7 @@ def overlay_mjelctrn_peek_artwork(dst_art: Path) -> None:
     if not lay.is_file():
         lay = MODS / "mjelctrn" / "default.lay"
     if lay.is_file():
-        shutil.copy2(lay, dst / "default.lay")
+        copy2_retry(lay, dst / "default.lay")
         print("peek overlay mjelctrn default.lay")
     else:
         print("WARN: mjelctrn default.lay missing")
@@ -329,9 +383,48 @@ def overlay_mjelctrn_peek_artwork(dst_art: Path) -> None:
     if btn.is_dir():
         n = 0
         for p in btn.glob("*.png"):
-            shutil.copy2(p, dst / p.name)
+            copy2_retry(p, dst / p.name)
             n += 1
         print("peek overlay mjelctrn buttons", n, "png")
+
+
+def overlay_lhzb2_peek_artwork(dst_art: Path) -> None:
+    """龙虎争霸2：叠透视仓 default.lay + 增强钮（peek/搓牌等）。"""
+    if not PEEK.is_dir():
+        print("note: skip lhzb2 peek artwork, no arcade-mj-enhance")
+        return
+    dst = dst_art / "lhzb2"
+    dst.mkdir(parents=True, exist_ok=True)
+    art = PEEK / "fei_mj_lamps" / "art" / "lhzb2"
+    if art.is_dir():
+        n = 0
+        for p in art.iterdir():
+            if p.is_file() and not p.name.endswith((".bak", ".bak_diag")):
+                copy2_retry(p, dst / p.name)
+                n += 1
+        print("peek overlay lhzb2 art", n, "files")
+    else:
+        print("WARN: enhance art/lhzb2 missing")
+    btn = PEEK / "fei_mj_lamps" / "art" / "buttons"
+    if btn.is_dir():
+        n = 0
+        for name in (
+            "peek_up.png",
+            "peek_down.png",
+            "pause_up.png",
+            "pause_down.png",
+            "continue_up.png",
+            "continue_down.png",
+            "mark_up.png",
+            "mark_down.png",
+            "cuopai_up.png",
+            "cuopai_down.png",
+        ):
+            src = btn / name
+            if src.is_file():
+                copy2_retry(src, dst / name)
+                n += 1
+        print("peek overlay lhzb2 buttons", n, "png")
 
 
 def ensure_rbmk_hunt(dst_lamps: Path) -> None:
@@ -432,6 +525,11 @@ def check() -> int:
             if "mjelctrn_wall.lua" in pack_mj:
                 peek_changed.append(k)
                 continue
+        if k == "lhzb_1_2.lua":
+            pack_lhzb = (PACK / "fei_mj_lamps" / "lhzb_1_2.lua").read_text(encoding="utf-8")
+            if "lhzb2_wall.lua" in pack_lhzb:
+                peek_changed.append(k)
+                continue
         lamp_changed.append(k)
     if lamp_changed:
         print("STALE: lua changed", lamp_changed)
@@ -481,6 +579,28 @@ def check() -> int:
                 if "btn_bleed" not in mj_lay_text or "btn_sangen" not in mj_lay_text:
                     print("STALE: mjelctrn default.lay missing bleed/sangen btns")
                     stale = True
+        lhzb_wall = PEEK / "fei_mj_lamps" / "lhzb2_wall.lua"
+        lhzb_lua = PACK / "fei_mj_lamps" / "lhzb_1_2.lua"
+        if lhzb_wall.is_file():
+            if not (PACK / "fei_mj_lamps" / "lhzb2_wall.lua").is_file():
+                print("STALE: pack lhzb2_wall.lua missing")
+                stale = True
+            lhzb_text = lhzb_lua.read_text(encoding="utf-8") if lhzb_lua.is_file() else ""
+            if "lhzb2_wall.lua" not in lhzb_text:
+                print("STALE: pack lhzb_1_2.lua missing wall load")
+                stale = True
+            if not (PACK / "artwork" / "lhzb2" / "peek_up.png").is_file():
+                print("STALE: artwork/lhzb2/peek_up.png missing")
+                stale = True
+            if not (PACK / "artwork" / "lhzb2" / "cuopai_up.png").is_file():
+                print("STALE: artwork/lhzb2/cuopai_up.png missing")
+                stale = True
+            lhzb_lay = PACK / "artwork" / "lhzb2" / "default.lay"
+            if lhzb_lay.is_file():
+                lhzb_lay_text = lhzb_lay.read_text(encoding="utf-8", errors="replace")
+                if "btn_cuopai" not in lhzb_lay_text or "btn_peek" not in lhzb_lay_text:
+                    print("STALE: lhzb2 default.lay missing peek/cuopai btns")
+                    stale = True
     else:
         print("note: arcade-mj-enhance not found, skip peek check:", PEEK)
 
@@ -508,7 +628,7 @@ def check() -> int:
 def main() -> None:
     dst_lamps = PACK / "fei_mj_lamps"
     if dst_lamps.exists():
-        shutil.rmtree(dst_lamps)
+        rmtree_retry(dst_lamps)
     shutil.copytree(MODS / "fei_mj_lamps", dst_lamps)
     print("synced fei_mj_lamps", len(list(dst_lamps.rglob("*"))))
     overlay_peek(dst_lamps)
@@ -595,7 +715,7 @@ def main() -> None:
     existing = {p.name for p in dst_art.iterdir() if p.is_dir()}
     wanted = set(wl)
     for name in sorted(existing - wanted):
-        shutil.rmtree(dst_art / name)
+        rmtree_retry(dst_art / name)
         print("removed stale artwork", name)
 
     groups = load_groups()
@@ -612,7 +732,7 @@ def main() -> None:
                 missing.append(name)
                 continue
         if dst.exists():
-            shutil.rmtree(dst)
+            rmtree_retry(dst)
         shutil.copytree(
             src,
             dst,
@@ -621,6 +741,7 @@ def main() -> None:
     print("artwork synced", len(wl) - len(missing), "missing", missing)
     overlay_rbmk_peek_artwork(dst_art)
     overlay_mjelctrn_peek_artwork(dst_art)
+    overlay_lhzb2_peek_artwork(dst_art)
 
     version = next_version()
     (PACK / "VERSION.txt").write_text(version + "\n", encoding="utf-8")
@@ -642,6 +763,12 @@ def main() -> None:
         assert "mjelctrn_wall.lua" in mj_text, "peek overlay lost mjelctrn wall load"
         assert (PACK / "artwork" / "mjelctrn" / "peek_up.png").is_file(), "peek overlay lost mjelctrn peek png"
         assert (PACK / "artwork" / "mjelctrn" / "bleed_up.png").is_file(), "peek overlay lost mjelctrn bleed png"
+    if PEEK.is_dir() and (PEEK / "fei_mj_lamps" / "lhzb2_wall.lua").is_file():
+        assert (dst_lamps / "lhzb2_wall.lua").is_file(), "peek overlay lost lhzb2_wall.lua"
+        lhzb_text = (dst_lamps / "lhzb_1_2.lua").read_text(encoding="utf-8")
+        assert "lhzb2_wall.lua" in lhzb_text, "peek overlay lost lhzb2 wall load"
+        assert (PACK / "artwork" / "lhzb2" / "peek_up.png").is_file(), "peek overlay lost lhzb2 peek png"
+        assert (PACK / "artwork" / "lhzb2" / "cuopai_up.png").is_file(), "peek overlay lost lhzb2 cuopai png"
     print("OK")
 
 

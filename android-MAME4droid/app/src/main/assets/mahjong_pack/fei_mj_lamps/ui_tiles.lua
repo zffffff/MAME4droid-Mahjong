@@ -921,7 +921,7 @@ end
 
 local mjelctrn_layout = { key = "" }
 local mjelctrn_pool_hits = {} -- 每帧绘制时缓存，与 ui_container 坐标一致
-local mjelctrn_cpu_hits = {} -- 电脑手点选（喂荣听牌）
+local mjelctrn_cpu_hits = {} -- 电脑手点选（喂荣锁定）
 
 local function mjelctrn_geom()
     local land = is_landscape()
@@ -932,15 +932,13 @@ local function mjelctrn_geom()
     end
     local L = lay_screen(land)
     local pad = land and 0.008 or 0.010
-    -- ui_container 与 layout 同 0–1：用 screen 矩形，避开左右 bezel
     local gx0 = (L.sx / L.vx) + pad
     local gx1 = ((L.sx + L.sw) / L.vx) - pad
     local gy0 = (L.sy / L.vy) + pad
     local title_h = land and 0.080 or 0.070
     local avail_w = gx1 - gx0
-    local row_n = 13
+    local row_n = 14
     local tw, th, gap = tile_from_width(avail_w, land, row_n)
-    -- 牌池用略小牌，多排显示 34 种
     local ptw, pth, pgap = tile_from_width(avail_w, land, 17)
     local lab = land and 0.034 or 0.028
     local row_pad = land and 0.008 or 0.006
@@ -953,7 +951,6 @@ local function mjelctrn_geom()
     local note_h = land and 0.036 or 0.030
     local note_gap = land and 0.012 or 0.010
     local gy1 = math.min(GY1_MAX, tiles_end + note_gap + note_h * 2 + 0.016)
-    -- 竖屏勿盖到底部按钮带（screen 下沿约 970/1640）
     if not land then
         local screen_bot = (L.sy + L.sh) / L.vy - pad
         gy1 = math.min(gy1, screen_bot)
@@ -1006,7 +1003,7 @@ local function mjelctrn_panel_sig(st, g)
         end
         return table.concat(t, ",")
     end
-    parts[#parts + 1] = row_sig(st.queue, 13)
+    parts[#parts + 1] = row_sig(st.queue, 14)
     parts[#parts + 1] = row_sig(st.pool, 34)
     return table.concat(parts, "|")
 end
@@ -1027,7 +1024,7 @@ local function rebuild_mjelctrn_panel_cache(machine, st, g)
     pcall(function()
         panel:fill(0xC0101420)
     end)
-    blit_row_bmp(panel, g, pw, ph, g.x0, g.cpu_y, g.tw, g.th, g.gap, st.queue, g.row_n or 13, false)
+    blit_row_bmp(panel, g, pw, ph, g.x0, g.cpu_y, g.tw, g.th, g.gap, st.queue, g.row_n or 14, false)
     local pool = st.pool or {}
     local rows = st.pool_rows or g.pool_rows or 2
     local per = g.pool_row_n or 17
@@ -1062,7 +1059,7 @@ local function draw_mjelctrn_labels(ui, st, g)
     if st.line1 and st.line1 ~= "" then
         ui:draw_text(g.x0, g.line1_y, st.line1, 0xffffffff)
     end
-    ui:draw_text(g.x0, g.cpu_lab_y, st.queue_label or "电脑手", 0xffffd0a0)
+    ui:draw_text(g.x0, g.cpu_lab_y, st.queue_label or "电脑手·点选锁定", 0xffffd0a0)
     ui:draw_text(g.x0, g.pool_lab_y, st.pool_label or "牌池", 0xffa0ffe0)
     if st.note1 and st.note1 ~= "" then
         ui:draw_text(g.x0, g.note_y, st.note1, 0xffffe090)
@@ -1104,7 +1101,7 @@ local function draw_mjelctrn_panel(ui, st)
     mjelctrn_pool_hits = {}
     mjelctrn_cpu_hits = {}
     local q = st.queue or {}
-    for i = 1, math.min(g.row_n or 13, #q) do
+    for i = 1, math.min(g.row_n or 14, #q) do
         local t = q[i]
         if t and t.raw and t.raw ~= 0 then
             local x0 = g.x0 + (i - 1) * (g.tw + g.gap)
@@ -1169,23 +1166,27 @@ local function draw_mjelctrn_panel(ui, st)
         ui, g.x0, g.cpu_y, g.tw, g.th, g.gap,
         st.queue, g.row_n, st.queue_hi_first, st.queue_dim_after
     )
-    for r = 0, rows - 1 do
+    local pool2 = st.pool or {}
+    local rows2 = st.pool_rows or g.pool_rows
+    local per2 = g.pool_row_n
+    for r = 0, rows2 - 1 do
         local slice = {}
-        local i0 = r * per
-        for i = 1, per do
-            local t = pool[i0 + i]
+        local i0 = r * per2
+        for i = 1, per2 do
+            local t = pool2[i0 + i]
             if t then
                 slice[#slice + 1] = t
             end
         end
         if #slice > 0 then
             local y = g.pool_y0 + r * (g.pth + g.pool_row_pad)
-            draw_row(ui, g.x0, y, g.ptw, g.pth, g.pgap, slice, per, false, 99)
+            draw_row(ui, g.x0, y, g.ptw, g.pth, g.pgap, slice, per2, false, 99)
         end
     end
+    draw_mjelctrn_counts(ui, st, g)
 end
 
--- ui_container 0–1 → 电脑手某一张 BCD（透视点选喂荣听牌）
+-- ui_container 0–1 → 电脑手某一张 BCD（点选锁定要电脑打出的牌）
 local function hit_mjelctrn_cpu(nx, ny)
     if not nx or not ny then
         return nil
