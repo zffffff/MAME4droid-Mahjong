@@ -1,0 +1,114 @@
+name: Build APK
+
+# Manual only — push/PR no longer builds APKs (saves Actions minutes).
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: "Which release APK to build"
+        required: true
+        default: basic
+        type: choice
+        options:
+          - basic
+          - full
+          - both
+
+env:
+  MAME4DROID_UPSTREAM_VERSION: "1.38.3"
+
+jobs:
+  build:
+    name: Assemble release
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          # Google no longer serves legacy package "tools"; default would fail CI.
+          packages: platform-tools
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install \
+            "platforms;android-36" \
+            "build-tools;35.0.0" \
+            "ndk;28.2.13676358"
+          # Android 17 / API 37 may not be on all CI mirrors yet; prefer it when present.
+          sdkmanager --install "platforms;android-37" || echo "platforms;android-37 unavailable; will rely on AGP sdkDownload"
+          yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Decode release keystore
+        working-directory: android-MAME4droid
+        env:
+          FEIJUCHANG_KEYSTORE_BASE64: ${{ secrets.FEIJUCHANG_KEYSTORE_BASE64 }}
+          FEIJUCHANG_KEYSTORE_PASSWORD: ${{ secrets.FEIJUCHANG_KEYSTORE_PASSWORD }}
+          FEIJUCHANG_KEY_ALIAS: ${{ secrets.FEIJUCHANG_KEY_ALIAS }}
+          FEIJUCHANG_KEY_PASSWORD: ${{ secrets.FEIJUCHANG_KEY_PASSWORD }}
+        run: |
+          if [ -z "$FEIJUCHANG_KEYSTORE_BASE64" ]; then
+            echo "No FEIJUCHANG_KEYSTORE_BASE64 secret; release will use debug signing."
+            exit 0
+          fi
+          echo "$FEIJUCHANG_KEYSTORE_BASE64" | base64 -d > feijuchang-release.jks
+          {
+            echo "storeFile=$(pwd)/feijuchang-release.jks"
+            echo "storePassword=$FEIJUCHANG_KEYSTORE_PASSWORD"
+            echo "keyAlias=$FEIJUCHANG_KEY_ALIAS"
+            echo "keyPassword=$FEIJUCHANG_KEY_PASSWORD"
+          } > keystore.properties
+          echo "Release keystore ready."
+
+      - name: Fetch upstream libMAME4droid.so
+        working-directory: android-MAME4droid
+        run: bash scripts/fetch-mame-lib.sh
+
+      - name: Build release APK(s)
+        working-directory: android-MAME4droid
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
+          FLAVOR: ${{ github.event.inputs.flavor }}
+        run: |
+          TASKS=""
+          case "$FLAVOR" in
+            basic) TASKS="assembleBasicRelease" ;;
+            full)  TASKS="assembleFullRelease" ;;
+            both)  TASKS="assembleBasicRelease assembleFullRelease" ;;
+            *) echo "Unknown flavor: $FLAVOR"; exit 1 ;;
+          esac
+          gradle --no-daemon --no-configuration-cache \
+            -Pandroid.builder.sdkDownload=true \
+            $TASKS
+
+      - name: Upload basic release APK
+        if: ${{ github.event.inputs.flavor == 'basic' || github.event.inputs.flavor == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiJuchang-basic-release
+          path: android-MAME4droid/app/build/outputs/apk/basic/release/*.apk
+          if-no-files-found: error
+
+      - name: Upload full release APK
+        if: ${{ github.event.inputs.flavor == 'full' || github.event.inputs.flavor == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: FeiJuchang-full-release
+          path: android-MAME4droid/app/build/outputs/apk/full/release/*.apk
+          if-no-files-found: error

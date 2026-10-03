@@ -1,0 +1,128 @@
+diff --git a/avgdvg.cpp b/avgdvg.cpp
+index 5d14c00..d18822a 100644
+--- a/avgdvg.cpp
++++ b/avgdvg.cpp
+@@ -53,11 +53,27 @@
+  *
+  *************************************/
+ 
++//DAV HACK
++//Off-screen overbright excess (monitor glow) researched by okaz-code
++extern float g_hack_offscreen_overdrive;
++
+ void avgdvg_device_base::vg_flush()
+ {
+ 	int cx0 = 0, cy0 = 0, cx1 = 0x5000000, cy1 = 0x5000000;
++		
++	if (type() == AVG_STARWARS) {
++		cx0 = -0x5000000;
++		cy0 = -0x5000000;
++	}
++	
+ 	int i = 0;
+ 
++	const rectangle &visarea = m_vector->screen().visible_area();
++	const float p_xmin = (float)(visarea.min_x) * 65536.0f;
++	const float p_ymin = (float)(visarea.min_y) * 65536.0f;
++	const float p_width = (float)std::max(visarea.width(), 1) * 65536.0f;
++	const float p_height = (float)std::max(visarea.height(), 1) * 65536.0f;
++
+ 	while (m_vectbuf[i].status == VGCLIP)
+ 		i++;
+ 	int xs = m_vectbuf[i].x;
+@@ -74,53 +89,55 @@
+ 			xs = xe;
+ 			ys = ye;
+ 
++			// --- MAME ORIGINAL HARDWARE CLIPPING ---
+ 			if ((x0 < cx0 && x1 < cx0) || (x0 > cx1 && x1 > cx1))
+ 				continue;
+ 
+-			if (x0 < cx0)
+-			{
+-				y0 += s64(cx0 - x0) * s64(y1 - y0) / (x1 - x0);
+-				x0 = cx0;
+-			}
+-			else if (x0 > cx1)
+-			{
+-				y0 += s64(cx1 - x0) * s64(y1 - y0) / (x1 - x0);
+-				x0 = cx1;
+-			}
+-			if (x1 < cx0)
+-			{
+-				y1 += s64(cx0 - x1) * s64(y1 - y0) / (x1 - x0);
+-				x1 = cx0;
+-			}
+-			else if (x1 > cx1)
+-			{
+-				y1 += s64(cx1 - x1) * s64(y1 - y0) / (x1 - x0);
+-				x1 = cx1;
+-			}
++			if (x0 < cx0) { y0 += s64(cx0 - x0) * s64(y1 - y0) / (x1 - x0); x0 = cx0; }
++			else if (x0 > cx1) { y0 += s64(cx1 - x0) * s64(y1 - y0) / (x1 - x0); x0 = cx1; }
++			if (x1 < cx0) { y1 += s64(cx0 - x1) * s64(y1 - y0) / (x1 - x0); x1 = cx0; }
++			else if (x1 > cx1) { y1 += s64(cx1 - x1) * s64(y1 - y0) / (x1 - x0); x1 = cx1; }
+ 
+ 			if ((y0 < cy0 && y1 < cy0) || (y0 > cy1 && y1 > cy1))
+ 				continue;
+ 
+-			if (y0 < cy0)
+-			{
+-				x0 += s64(cy0 - y0) * s64(x1 - x0) / (y1 - y0);
+-				y0 = cy0;
+-			}
+-			else if (y0 > cy1)
+-			{
+-				x0 += s64(cy1 - y0) * s64(x1 - x0) / (y1 - y0);
+-				y0 = cy1;
+-			}
+-			if (y1 < cy0)
+-			{
+-				x1 += s64(cy0 - y1) * s64(x1 - x0) / (y1 - y0);
+-				y1 = cy0;
+-			}
+-			else if (y1 > cy1)
+-			{
+-				x1 += s64(cy1 - y1) * s64(x1 - x0) / (y1 - y0);
+-				y1 = cy1;
+-			}
++			if (y0 < cy0) { x0 += s64(cy0 - y0) * s64(x1 - x0) / (y1 - y0); y0 = cy0; }
++			else if (y0 > cy1) { x0 += s64(cy1 - y0) * s64(x1 - x0) / (y1 - y0); y0 = cy1; }
++			if (y1 < cy0) { x1 += s64(cy0 - y1) * s64(x1 - x0) / (y1 - y0); y1 = cy0; }
++			else if (y1 > cy1) { x1 += s64(cy1 - y1) * s64(x1 - x0) / (y1 - y0); y1 = cy1; }
++
++			// =========================================================
++			// HACK START: OFF-SCREEN MONITOR GLOW (Star Wars Only)
++			// =========================================================
++			if (type() == AVG_STARWARS) {
++				float nx0 = ((float)x0 - p_xmin) / p_width;
++				float ny0 = ((float)y0 - p_ymin) / p_height;
++				float nx1 = ((float)x1 - p_xmin) / p_width;
++				float ny1 = ((float)y1 - p_ymin) / p_height;
++
++				auto outside = [](float x, float y) {
++					float dx = (x < 0.0f) ? -x : (x > 1.0f) ? (x - 1.0f) : 0.0f;
++					float dy = (y < 0.0f) ? -y : (y > 1.0f) ? (y - 1.0f) : 0.0f;
++					return std::max(dx, dy);
++				};
++
++				float overload = (float)m_vectbuf[i].intensity / 255.0f;
++
++				const float thr = 0.5f;    // Antes 0.70. Ahora capta casi cualquier láser brillante.
++				const float mind = 0.3f;   // Antes 0.30. Ahora reacciona con que salga un 5% del cristal.
++				const float coeff = 0.3f;   // Antes 0.30. Ahora aplica el 100% de la energía de resplandor.
++
++				if (overload > thr) {
++					if (std::max(outside(nx0, ny0), outside(nx1, ny1)) > mind) {
++						g_hack_offscreen_overdrive += (overload - thr) * coeff;
++					}
++				}
++			}
++			// =========================================================
++			// HACK END
++			// =========================================================
++			
++//END DAV HACK			
+ 
+ 			m_vector->add_point(x0, y0, m_vectbuf[i].color, 0);
+ 			m_vector->add_point(x1, y1, m_vectbuf[i].color, m_vectbuf[i].intensity);

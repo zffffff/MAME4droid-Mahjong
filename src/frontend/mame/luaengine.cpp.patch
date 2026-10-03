@@ -1,0 +1,62 @@
+diff --git a/luaengine.cpp b/luaengine.cpp
+index 05f8eb2..e8858a2 100644
+--- a/luaengine.cpp
++++ b/luaengine.cpp
+@@ -40,6 +40,11 @@
+ #include <sstream>
+ #include <thread>
+ 
++// DAV HACK
++// Netplay: freeze the Lua plugin pump during a session -- it would otherwise
++// re-fire on rollback fast-forward frames and desync the machine (non-idempotent).
++int myosd_droid_is_netplay_active(void);
++// END DAV HACK
+ 
+ //**************************************************************************
+ //  LUA ENGINE
+@@ -681,6 +686,11 @@
+ 
+ void lua_engine::on_machine_frame()
+ {
++// DAV HACK
++	if (myosd_droid_is_netplay_active())
++		return;
++// END DAV HACK
++
+ 	std::vector<int> tasks = std::move(m_frame_tasks);
+ 	m_frame_tasks.clear();
+ 	resume_tasks(m_lua_state, tasks, true); // TODO: doesn't need to return anything
+@@ -692,11 +702,21 @@
+ 
+ void lua_engine::on_machine_presave()
+ {
++// DAV HACK
++	if (myosd_droid_is_netplay_active())
++		return;
++// END DAV HACK
++
+ 	m_notifiers->on_presave();
+ }
+ 
+ void lua_engine::on_machine_postload()
+ {
++// DAV HACK
++	if (myosd_droid_is_netplay_active())
++		return;
++// END DAV HACK
++
+ 	// clear waiting tasks
+ 	m_timer->reset();
+ 	std::vector<int> expired;
+@@ -2338,6 +2358,11 @@
+ 
+ void lua_engine::resume(s32 param)
+ {
++// DAV HACK
++	if (myosd_droid_is_netplay_active())
++		return;
++// END DAV HACK
++
+ 	attotime const now = machine().time();
+ 	auto const pos = std::find_if(
+ 			m_waiting_tasks.begin(),

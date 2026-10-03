@@ -1,0 +1,141 @@
+apply plugin: 'com.android.application'
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+	keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+	// Upstream 1.38.1 uses compileSdk 37 (Android 17). CI runners may not ship
+	// platforms;android-37 yet; compile against 36 and keep target 37 + LNP permission.
+    compileSdk = 36
+
+    //ndkVersion = "21.3.6528147"
+
+	ndkVersion = "28.2.13676358"
+
+	buildFeatures {
+		buildConfig = true
+	}
+
+	compileOptions {
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+
+	signingConfigs {
+		release {
+			if (keystorePropertiesFile.exists()) {
+				storeFile file(keystoreProperties["storeFile"])
+				storePassword keystoreProperties["storePassword"]
+				keyAlias keystoreProperties["keyAlias"]
+				keyPassword keystoreProperties["keyPassword"]
+			} else if (System.getenv("FEIJUCHANG_KEYSTORE_PATH")) {
+				storeFile file(System.getenv("FEIJUCHANG_KEYSTORE_PATH"))
+				storePassword System.getenv("FEIJUCHANG_KEYSTORE_PASSWORD")
+				keyAlias System.getenv("FEIJUCHANG_KEY_ALIAS")
+				keyPassword System.getenv("FEIJUCHANG_KEY_PASSWORD")
+			}
+		}
+	}
+
+    defaultConfig {
+        minSdkVersion 29
+        targetSdkVersion 37
+        versionCode 208
+        versionName '1.38.1-mj33'
+
+        ndk {
+            moduleName = "mame4droid-jni"
+            //noinspection ChromeOsAbiSupport
+            abiFilters   "arm64-v8a"
+			//ndkPath "C:\\Android\\android-ndk-r27c"
+			ndkVersion = "28.2.13676358"
+        }
+    }
+
+	flavorDimensions += "edition"
+	productFlavors {
+		full {
+			dimension "edition"
+			applicationId "com.feijuchang.mahjong"
+			buildConfigField "boolean", "FEIJUCHANG_FULL_UX", "true"
+			resValue "string", "app_name", "飞剧场怀旧麻将"
+		}
+		basic {
+			dimension "edition"
+			applicationId "com.feijuchang.mahjong.basic"
+			buildConfigField "boolean", "FEIJUCHANG_FULL_UX", "false"
+			resValue "string", "app_name", "基础飞剧场"
+		}
+	}
+
+	base {
+		archivesName = "FeiJuchang-" + defaultConfig.versionName
+	}
+
+    bundle {
+        language {
+            // This property is set to true by default.
+            enableSplit = false
+        }
+        density {
+            // This property is set to true by default.
+            enableSplit = false
+        }
+        abi {
+            // This property is set to true by default.
+            enableSplit = false
+        }
+    }
+
+    packagingOptions {
+		//doNotStrip "**/*.so" //CUIDADO QUITAR EN RELEASE. Lo he añadido al final con nueva sintaxis
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    buildTypes {
+        release {
+			//minifyEnabled true
+			minifyEnabled false
+			//shrinkResources true
+
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
+			if (keystorePropertiesFile.exists() || System.getenv("FEIJUCHANG_KEYSTORE_PATH")) {
+				signingConfig = signingConfigs.release
+			} else {
+				signingConfig = signingConfigs.debug
+			}
+		}
+		debug {
+			minifyEnabled false
+			debuggable true
+			jniDebuggable true
+			//renderscriptDebuggable true
+		}
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file('src/main/jni/Android.mk')
+        }
+    }
+
+    namespace = 'com.seleuco.mame4droid'
+
+}
+
+dependencies {
+	//implementation "androidx.annotation:annotation:1.7.0"
+}
+
+androidComponents {
+	onVariants(selector().withBuildType("debug")) {
+		packaging.jniLibs.keepDebugSymbols.add("**/*.so")
+	}
+
+	registerSourceType("../../../../src") // will cause src/main/foobar (and src/debug/foobar etc.) to appear as sources in Android Studi
+}

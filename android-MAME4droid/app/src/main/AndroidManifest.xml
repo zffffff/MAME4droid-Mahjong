@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    android:installLocation="preferExternal">
+    <uses-permission android:name="android.permission.VIBRATE"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<!-- Netplay WifiLock (keeps the Wi-Fi radio out of power-save
+	     during a netplay session; WifiLock.acquire() requires WAKE_LOCK) -->
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<!-- Local Network Protections (Android 17 / API 37): LAN netplay UDP
+	     (both send and receive) is blocked until this runtime permission is
+	     granted. Internet/mobile play is exempt. Requested in context when the
+	     user creates/joins a game; harmless (ignored) on older Android. -->
+	<uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
+    <supports-screens
+          android:largeScreens="true"
+          android:normalScreens="true"
+          android:smallScreens="true"
+          android:anyDensity="true" android:resizeable="true"/>
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+
+	<uses-feature android:name="android.hardware.gamepad" android:required="false" />
+
+	<!-- Package visibility: detect / launch WeChat for 知识星球 coupon links -->
+	<queries>
+		<package android:name="com.tencent.mm" />
+	</queries>
+
+    <application android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
+        android:allowClearUserData="true" android:hardwareAccelerated="true"
+		android:isGame="true"
+		android:banner="@drawable/banner"
+        android:requestLegacyExternalStorage="true" android:maxSdkVersion="29"
+        android:usesCleartextTraffic="true"
+        android:allowBackup="false"
+        android:hasFragileUserData="true"
+        >
+
+		<!-- LAUNCHER intent-filters are flavor-specific:
+		     full and basic → GamePickerActivity (src/full, src/basic). -->
+		<activity android:name="com.seleuco.mame4droid.mahjong.GamePickerActivity"
+			android:exported="true"
+			android:launchMode="singleTask"
+			android:theme="@style/Theme.MAME4droid"
+			android:windowSoftInputMode="stateHidden" />
+
+		<activity android:name="com.seleuco.mame4droid.MAME4droid"
+			android:configChanges="keyboardHidden|orientation|screenSize"
+			android:launchMode="singleTask"
+			android:exported="true"
+			android:windowSoftInputMode="stateAlwaysHidden" android:theme="@style/Theme.MAME4droid">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/zip" />
+				<data android:mimeType="application/x-7z-compressed"/>
+				<data android:host="*" android:scheme="file" android:maxSdkVersion="23"/>
+                <data android:host="*" android:scheme="content" />
+            </intent-filter>
+        </activity>
+
+		<activity android:name="com.seleuco.mame4droid.prefs.UserPreferences" android:theme="@style/Theme.MAME4droid.TitleBar" android:label="@string/label_settings"/>
+		<activity android:name="com.seleuco.mame4droid.WebHelpActivity" android:launchMode="singleTop" android:theme="@style/Theme.MAME4droid.TitleBar" android:label="@string/label_help"/>
+		<activity android:name="com.seleuco.mame4droid.prefs.DefineKeys" android:theme="@style/Theme.MAME4droid.TitleBar" android:label="@string/label_define_buttons"/>
+		<activity android:name="com.seleuco.mame4droid.prefs.ListKeys" android:theme="@style/Theme.MAME4droid.TitleBar" android:label="@string/label_controller_buttons"/>
+		<activity android:name="com.seleuco.mame4droid.prefs.KeySelect" android:label="Select Key" android:theme="@android:style/Theme.Dialog"/>
+    </application>
+
+</manifest>

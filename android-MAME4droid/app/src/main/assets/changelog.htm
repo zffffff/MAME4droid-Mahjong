@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+
+<html>
+<head>
+<title>MAME4Droid (Current) Help</title>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="mystyle.css">
+
+</head>
+
+<body class="view">
+<div class="page">
+	<div class="header">
+<h1 class="title"> Changelog</h1>
+  </div><!-- /header -->
+	<div class="content">
+      <h3>MAME4droid CHANGELOG<br>
+      </h3>
+DEVELOPMENT:
+<ul>
+	<li><b>2026-07-08 Version 1.37 </b>
+		Added peer-to-peer NetPlay:<br/>
+		- <b>Two modes:</b> Lockstep (perfectly synchronized, higher input lag) and Rollback (low-latency, ideal for fast-reflex games).<br/>
+		- <b>Automatic fallback:</b> Rollback sessions that don't fit the savestate size/RAM budget, or detect a savestate layout mismatch between devices, automatically fall back to Lockstep.<br/>
+		- <b>Mid-game Resync:</b> force both devices back into perfect sync from the NetPlay dialog if a Rollback session ever visibly drifts.<br/>
+		- Only the Host picks the session mode; the Client just joins and adopts it automatically.<br/>
+		Refreshed and expanded the in-app Help: new NetPlay and Renderer &amp; Shaders pages, and an updated Installation guide covering the Storage Access Framework (SAF) folder picker used since Android 10.
+	</li>
+	<li><b>2026-24-4 Version 1.35 </b>
+		Added a new Native Video Renderer with significant improvements:<br/>
+		- <b>Vector Games:</b> Greatly improved rendering quality for a sharper and more authentic look.<br/>
+		- <b>Shaders:</b> Custom shaders are now applied only to the game screen, keeping the MAME UI/OSD clean and untouched.<br/>
+		- <b>Performance:</b> Optimized pipeline that is much faster when using high-resolution artworks and bezels.<br/>
+		- <b>Native Resolution:</b> Full support for the device's native resolution, delivering the best possible visual clarity and GPU efficiency.<br/>
+	</li>
+<li><b>2026-06-01 Version 1.35</b><br/>Added True HDR display support. Added highly accurate advanced CRT physics for vector games. Reviewed and improved input and multi-controller support. Updated to MAME 0.288.</li>
+<li><b>2026-10-4 Version 1.34 </b><br/>Updated to MAME 0.287.</li>
+<li><b>2026-1-3 Version 1.33 </b><br/>Updated to MAME 0.286.</li>
+<li><b>2026-1-2 Version 1.32 </b><br/>Updated to MAME 0.285.</li>
+<li><b>2026-5-1 Version 1.31 </b><br/>Updated to MAME 0.284.</li>
+<li><b>2025-1-12 Version 1.30 </b><br/>Updated to MAME 0.283. Build optimizations.</li>
+<li><b>2025-1-11 Version 1.29 </b><br/>Updated to MAME 0.282</li>
+<li><b>2025-17-10 Version 1.28.1 </b><br/>Updated to MAME 0.281.  Improved GLRenderer ES32. Fixed soft keyboard & controller customization issues on Android 16.</li>
+<li><b>2025-08-09 Version 1.27 </b><br/>Updated to MAME 0.280</li>
+<li><b>2025-04-08 Version 1.26 </b><br/>Updated to Android 16. Updated to MAME 0.279</li>
+<li><b>2025-01-07 Version 1.25 </b><br/>Updated to MAME 0.278</li>
+<li><b>2025-01-05 Version 1.24 </b><br/>Updated to MAME 0.277</li>
+<li><b>2025-01-04 Version 1.23 </b><br/>Updated to MAME 0.276</li>
+<li><b>2025-01-03 Version 1.22 </b><br/>Updated to MAME 0.275</li>
+<li><b>2025-01-02 Version 1.21 </b><br/>Updated to MAME 0.274 which adds a 64-bit ARMv8 recompiler (DRC). Support 16 KB page sizes so that new Android devices will work. Fixed issue where the notch was always used on Android 15.</li>
+<li><b>2025-02-01 Version 1.20 </b><br/>Updated to Android 15. Updated to MAME 0.273. Renamed to MAME4droid (Current)</li>
+<li><b>2024-02-12 Version 1.19 </b><br/>Updated to MAME 0.272. </li>
+<li><b>2024-04-11 Version 1.18 </b><br/>Updated to MAME 0.271. </li>
+<li><b>2024-27-09 Version 1.17 </b><br/>Updated to MAME 0.270. </li>
+<li><b>2024-09-09 Version 1.16 </b><br/>Updated to MAME 0.269. </li>
+<li><b>2024-08-05 Version 1.15 </b><br/>Updated to MAME 0.268. </li>
+<li><b>2024-07-03 Version 1.14 </b><br/>Updated to MAME 0.267. </li>
+<li><b>2024-05-30 Version 1.13 </b><br/>Updated to MAME 0.266. </li>
+<li><b>2024-04-26 Version 1.12 </b><br/>Updated to MAME 0.265. Improved MAME touch UI. Some font tweaking and frontend resolution bumped.</li>
+<li><b>2024-03-26 Version 1.11 </b><br/>Updated to MAME 0.264. Improved haptics. Added BSP-D8 controller support. Added some new nogeo shaders.</li>
+<li><b>2024-02-28 Version 1.10 </b><br/>Updated to MAME 0.263. Improved SAF support for MESS software media. Added right stick and analog triggers support to generic controllers</li>
+<li><b>2024-02-09 Version 1.9 </b><br/>Added media scraping thanks to Arcade Database by motoschifo. Added MAME meta data resources thanks to Arcade History, MAME info and progetto-SNAPS</li>
+<li><b>2024-01-31 Version 1.8 </b><br/>Updated to MAME 0.262. Added two small additional buttons so they can be configured through the input macro plugin for fighting games. Added touch controller transparency selectable</li>
+<li><b>2024-01-19 Version 1.7 </b><br/>Implemented new OpenGLES 3.2 faster renderer with advanced postprocessing effects using shaders. Added speed hacks to improve performance in games like K.Instinct. Fixed video stuttering on some occasions. Improved audio latency.</li>
+<li><b>2024-01-03 Version 1.6 </b><br/>Fixed N.System22 driver graphical glitches on ARM64. Emulated and frontend resolution independently selectable. Improved AndroidTV performance. </li>
+<li><b>2023-12-29 Version 1.5 </b><br/>Added option to set the entire app to a fixed orientation (like landscape). Bug fixes. </li>
+<li><b>2023-12-27 Version 1.4 </b><br/>Fixed E,F buttons not assigned. Added combo up/down+a to fast scroll in game list. Performance improvements.</li>
+<li><b>2023-12-21 Version 1.3 </b><br/>Improved touch lightgun so i can play t.crisis :). Bug fixes</li>
+<li><b>2023-12-20 Version 1.2 </b><br/>Fixed coin button does not work in several games. Added option in menu to improve performance in some 3D games like System 22.</li>
+<li><b>2023-12-19 Version 1.1 </b><br/>Bug fixes. Added combo start+a+b as service mode and coin+a+b as soft reset.</li>
+<li><b>2023-12-17 Version 1.0 </b><br/>First version.</li>
+          </ul>
+  </div><!-- /content -->
+
+<div class="header">
+<h4 class="title"><a class="link" href="javascript:history.go(-1)" data-direction="reverse">Go Back</a></h4>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

@@ -1,0 +1,15 @@
+diff --git a/main.h b/main.h
+index a62ccb4..0d7db92 100644
+--- a/main.h
++++ b/main.h
+@@ -44,6 +44,10 @@
+ public:
+ 	// construction/destruction
+ 	emulator_info() = default;
++	
++// DAV HACK
++	inline static std::string myosd_droid_version;
++// END DAV HACK
+ 
+ 	static const char *get_appname();
+ 	static const char *get_appname_lower();

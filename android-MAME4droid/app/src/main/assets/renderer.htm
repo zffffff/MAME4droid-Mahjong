@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>MAME4Droid Reloaded Help</title>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="mystyle.css">
+
+</head>
+<body class="view">
+<div class="page">
+	<div class="header">
+<h1 class="title">Renderer &amp; Shaders</h1>
+  </div><!-- /header -->
+	<div class="content">
+      <p>MAME4droid can draw games with two different renderers. Choose between them under
+      <em>Options-&gt;Settings-&gt;Renderer &amp; Shaders-&gt;Native Renderer (Shaders and HDR)</em>.</p>
+
+      <h3>The two renderers</h3>
+      <ul>
+        <li><strong>Legacy (Software) Renderer &mdash; the default:</strong> the older, extremely
+            well-tested rendering path. It has no shader support and no HDR, but it's the safest,
+            most compatible choice on every device, including low-end or older hardware. Stick with
+            this one if you just want things to work with minimum fuss, or if your device struggles
+            with the Native Renderer.
+        </li>
+        <li><strong>Native Renderer (Shaders and HDR):</strong> MAME's own modern rendering pipeline.
+            Turning it on unlocks shader effects, True HDR for vector games, Auto HDR for regular
+            (raster) games, and a much higher quality look for vector games in general (see below).
+            It needs more GPU power than the legacy renderer, but on any reasonably modern device it's
+            also <em>faster</em> when you're using high-resolution artwork/bezels, since its pipeline
+            was specifically optimized for that case.
+        </li>
+      </ul>
+      <p><strong>Important:</strong> once you enable the Native Renderer, also set <em>Options-&gt;Settings-&gt;Emulation-&gt;Emulated
+      Resolution</em> to <strong>Native</strong>. This lets high-resolution
+      artwork/bezels render at full quality with no performance penalty &mdash; leaving it at a lower
+      fixed resolution while using the Native Renderer wastes the extra image quality you just
+      unlocked.</p>
+
+      <h3>Shaders</h3>
+      <p>With the Native Renderer enabled, <em>Renderer &amp; Shaders-&gt;Effect shader</em> lets you
+      pick a post-processing effect (scanlines/CRT-style filters and similar), applied on top of the
+      emulated picture. The available list depends on your device/build; select <strong>none</strong>
+      to disable it. Shaders only affect the actual game screen &mdash; MAME's own menus and on-screen
+      display stay crisp and unfiltered, so changing this never makes MAME's UI harder to read.</p>
+
+      <h3>Vector games: advanced CRT simulation</h3>
+      <p>Vector games (Asteroids, Tempest, Star Wars, Battlezone, etc. draw the picture with lines
+      instead of a pixel grid) benefit the most from the Native Renderer. With <em>Vector Advanced
+      Effects</em> enabled, MAME4droid runs a physically-based simulation of how a real vector CRT
+      monitor actually drew those lines, instead of just drawing flat anti-aliased lines:</p>
+      <ul>
+        <li><strong>Optical bloom:</strong> light scattering/halos inside the tube glass around bright
+            vectors.
+        </li>
+        <li><strong>Phosphor persistence (trails):</strong> the fading afterglow left behind by the
+            electron beam, like a real phosphor screen.
+        </li>
+        <li><strong>Electron beam dynamics:</strong> short strokes (text, small ship details) burn
+            brighter, exactly like the real hardware.
+        </li>
+        <li><strong>Corner burn:</strong> bright "weld points" where the beam decelerates on sharp
+            corners.
+        </li>
+        <li><strong>Magnetic jitter/flicker:</strong> subtle coil noise and voltage fluctuation, for
+            an authentic imperfect-CRT look instead of a too-perfect vector image.
+        </li>
+      </ul>
+      <p>Every one of these has its own calibration sliders under <em>Vector Effects Calibration
+      (Expert Mode)</em> if you want to fine-tune the look; <strong>Restore CRT Defaults</strong>
+      resets them all if you get lost. <strong>FBO Half Resolution</strong> renders the vector glow
+      passes at half resolution to save GPU/battery, at the cost of slightly less crisp core lines
+      &mdash; a good trade on less powerful devices.</p>
+
+      <h3>HDR</h3>
+      <p>If your device and display support HDR, <em>HDR Settings-&gt;Enable HDR Display</em> unlocks
+      peak panel brightness and a wider color gamut:</p>
+      <ul>
+        <li><strong>Vector games (True HDR):</strong> phosphor brightness is rendered with real HDR
+            luminance instead of being clamped to standard-dynamic-range white, closer to how intense
+            the original CRT phosphors actually looked. <em>CRT Base/Max Luminance</em> calibrate the
+            baseline and peak brightness (in nits); <em>Dim Vector Artworks</em> darkens the bezel
+            around the game to make that contrast pop even more.
+        </li>
+        <li><strong>Raster games (Auto HDR):</strong> regular (non-vector) games and their artwork are
+            standard-dynamic-range content, so MAME4droid can optionally upgrade them toward HDR
+            luminance using inverse tone mapping (<em>Enable Auto HDR (Raster)</em>), with
+            <em>Auto HDR Intensity</em> controlling how aggressively highlights get expanded, and
+            <em>Raster Paper White Reference</em> setting the baseline brightness for comfort.
+        </li>
+      </ul>
+      <p><strong>Note:</strong> HDR quality varies a lot between devices/panels &mdash; results are
+      tuned primarily around well-behaved implementations (e.g. Google Pixel) and may look different,
+      better or worse, on other hardware. <strong>Restore HDR Defaults</strong> is there if your
+      calibration goes wrong.</p>
+
+  </div><!-- /content -->
+
+<div class="header">
+<h4 class="title"><a class="link" href="javascript:history.go(-1)" data-direction="reverse">Go Back</a></h4>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

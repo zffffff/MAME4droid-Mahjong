@@ -1,0 +1,7 @@
+# mcnpshnt ws / tile-select scan (placeholder)
+#
+# 配牌选择界面下：
+#   1) Lua 探针 mode=4 时会自动写入一次，或
+#   2) 在 MAME 目录 fei_mj_lamps/ 放入 mcnpshnt_ws_scan.trigger（内容 go），任意画面触发一次
+#
+# 输出含：全屏首个 239,0,107 坐标、x=140 竖条四色读数、x=120..160 内所有 239,0,107

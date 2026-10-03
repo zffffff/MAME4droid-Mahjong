@@ -1,0 +1,64 @@
+// license:BSD-3-Clause
+// copyright-holders: David Valdeita (Seleuco) & Filipe Paulino (FlykeSpice)
+/***************************************************************************
+
+    filter_shader.h
+
+    Effect shaders for MAME4droid's GLES2 renderer
+
+***************************************************************************/
+
+#pragma once
+
+#ifndef MAME4DROID_FILTERSHADER
+#define MAME4DROID_FILTERSHADER
+
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
+
+#include <array>
+#include <map>
+#include <string>
+
+/*
+ * Encapsulates a single-screen filter GLES 2 shader for overlay effects
+ */
+struct filter_data {
+    std::string source;
+    bool linear;
+};
+
+class filter_shader
+{
+public:
+    void load_filter(const std::string &filter_src, bool linear);
+    bool is_linear() const { return m_linear; }
+
+	void set_ortho(std::array<float, 4*4> ortho);
+	
+	void draw_quad(GLuint texture_id, const float* verts, const float* uv, int tex_w, int tex_h, int view_w, int view_h);
+
+    static std::vector<std::pair<std::string, filter_data>> load_filters(const std::string &root_path);
+
+	~filter_shader()
+	{
+		glDeleteProgram(m_program);
+	}
+
+private:
+    bool m_linear = false;
+    bool m_ortho_dirty = true;
+
+	//shader program
+	GLuint m_program = 0;
+	GLint m_uniform_MVPMatrix;
+	GLint m_uniform_InputSize;
+	GLint m_uniform_OutputSize;
+	GLint m_uniform_TextureSize;
+	GLint m_uniform_FrameCount;
+	unsigned m_framecount;
+
+	std::array<float, 4*4> m_ortho;
+};
+
+#endif //MAME4DROID_FILTERSHADER

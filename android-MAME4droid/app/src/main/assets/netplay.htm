@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>MAME4Droid Reloaded Help</title>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="mystyle.css">
+
+</head>
+<body class="view">
+<div class="page">
+	<div class="header">
+<h1 class="title">NetPlay</h1>
+  </div><!-- /header -->
+	<div class="content">
+      <p>NetPlay lets two devices play the same game together over Wi-Fi/network,
+      one acting as <strong>Host</strong> and the other as <strong>Client</strong>.
+      Both devices run the exact same ROM at the same time; only controller
+      inputs travel over the network.</p>
+
+      <h3>Modes</h3>
+      <p>Only the <strong>Host</strong> chooses the mode, from the NetPlay dialog before
+      creating the game. The Client doesn't need to pick anything: it automatically
+      adopts whatever mode the Host is using as soon as it connects.</p>
+      <ul>
+        <li><strong>Lockstep:</strong> the safest, most compatible mode. Both
+            devices wait for each other's input before advancing a frame, so
+            gameplay is always perfectly synchronized. The trade-off is input
+            lag: the worse the connection (higher ping), the more delay you'll
+            feel between pressing a button and seeing it happen. Works with
+            every game.
+        </li>
+        <li><strong>Rollback:</strong> the low-latency mode, ideal for
+            fast-reflex games (NeoGeo, CPS1/CPS2, fighting games...). Each
+            device predicts the peer's input and keeps playing immediately;
+            if the prediction turns out wrong once the real input arrives, it
+            silently rewinds a few frames and re-simulates them with the
+            correct input. Most of the time you don't feel any lag at all.
+            Costs more CPU/battery than Lockstep, and needs extra RAM to keep
+            a short history of savestates ready to rewind to.
+        </li>
+      </ul>
+
+      <h3>Input Delay</h3>
+      <p>Both modes hide network latency by delaying local input a few frames before it takes
+      effect (so it arrives at the same time as the matching peer input), instead of applying it
+      instantly. By default this is set to <strong>Auto</strong>: MAME4droid measures your
+      connection's ping and adjusts the delay by itself, so you don't need to touch anything. It
+      works a little differently depending on the mode:</p>
+      <ul>
+        <li>In <strong>Rollback</strong>, Auto continuously tracks about half the round-trip time,
+            within safe bounds &mdash; kept low, since rollback's own prediction/rewind absorbs
+            whatever latency the delay doesn't cover.
+        </li>
+        <li>In <strong>Lockstep</strong>, Auto adjusts in occasional steps (scheduled to land on
+            the same frame for both devices), reacting to sustained changes in latency rather than
+            every small ping fluctuation.
+        </li>
+      </ul>
+      <p>If you'd rather not leave it on Auto, <em>Options-&gt;Settings-&gt;NetPlay-&gt;NetPlay
+      delay</em> lets you pin it to a fixed value (1 to 6 frames) instead. As with the mode, this
+      is effectively decided by the <strong>Host</strong>: once connected, the Client adopts
+      whatever delay the Host ends up using for the session.</p>
+
+      <h3>Rollback compatibility and automatic fallback</h3>
+      <p>Rollback needs to save/restore the full machine state many times per
+      second, so it's not equally suited to every game. MAME4droid checks
+      this automatically at the start of a Rollback session and falls back
+      to Lockstep (with an on-screen warning) when needed &mdash; you don't have
+      to do anything:</p>
+      <ul>
+        <li><strong>Savestate too large:</strong> games with a lot of RAM (e.g.
+            those using a hard disk/CHD) produce a savestate too big to keep
+            many copies of in memory. If it doesn't fit the configured RAM
+            budget, that session automatically runs in Lockstep instead.
+        </li>
+        <li><strong>Different savestate layout across devices:</strong> the
+            two devices must register the exact same internal save data for
+            the driver (same MAME4droid build/version). If a mismatch is
+            detected before the game state is exchanged, both peers fall
+            back to Lockstep rather than risk a silent desync.
+        </li>
+      </ul>
+
+      <h3>Games known to have trouble with Rollback</h3>
+      <p>A handful of games read an analog control (steering wheel, spinner
+      / paddle, pedals) through a secondary chip (a protection MCU or a
+      second sound CPU) that polls it at hardware-timing precision instead
+      of once per frame. Rollback's rewind-and-replay can then capture a
+      slightly different analog reading than the original run did, which can
+      show up as an occasional desync in these games:</p>
+      <ul>
+        <li><strong>Arkanoid</strong> (and clones/bootlegs sharing its
+            paddle + protection MCU hardware)
+        </li>
+        <li><strong>Buggy Boy / Buggy Boy Jr. / TX-1 family</strong> (steering
+            wheel + pedals read by a second sound CPU)
+        </li>
+      </ul>
+      <p>If you notice desyncs on a game like this, choose <strong>Lockstep</strong>
+      for it instead &mdash; Lockstep never rewinds or re-simulates, so this class
+      of issue can't happen there. Other games with similar hardware (analog
+      dial/paddle/wheel/pedal controls read outside the normal per-frame
+      input path) could show the same behavior.</p>
+
+      <h3>Connection stats overlay</h3>
+      <p>While a session is active, a small ping/delay indicator can optionally show
+      at the bottom of the screen: current mode, ping (round-trip time) and input
+      delay, colored <strong>green</strong> for a good connection, <strong>yellow</strong>
+      for a noticeable one and <strong>red</strong> for a poor one. It refreshes every
+      couple of seconds and disappears automatically once the session ends. Turn it on
+      under <em>Options-&gt;Settings-&gt;NetPlay-&gt;Show connection stats overlay</em>
+      (off by default).</p>
+
+      <h3>Desync detector</h3>
+      <p>By default, a Rollback session also runs a background check that compares a
+      periodic state checksum between both devices. If it ever finds the two screens
+      have genuinely drifted apart, it shows a short red warning telling you the
+      current game may not be Rollback-safe &mdash; that's your cue to try
+      <strong>Resync</strong> or switch that session to <strong>Lockstep</strong>. The
+      check costs a little extra CPU every frame; if you'd rather save that cost on an
+      older device and are fine giving up the warning, turn it off under
+      <em>Options-&gt;Settings-&gt;NetPlay-&gt;Desync detector</em>.</p>
+
+      <h3>Hosting a game</h3>
+      <ul>
+        <li>Open the NetPlay dialog and tap <strong>Start Game</strong>.</li>
+        <li>Pick <strong>Lockstep</strong> or <strong>Rollback</strong> for this session.</li>
+        <li>MAME4droid opens a listening port (configurable under
+            <em>Options-&gt;Settings-&gt;NetPlay Port</em>, default 2080) and
+            the waiting screen shows your addresses, each labeled with its
+            use: <em>Your local IP</em> for a player on the same Wi-Fi /
+            network, <em>Your public IP</em> for a player joining over the
+            internet &mdash; the <strong>Share</strong> button sends them
+            through any messenger, ready to paste into the other player's
+            Join box.
+        </li>
+        <li>Load/select the game you want to play; once the Client connects,
+            it will be launched automatically on both devices.
+        </li>
+      </ul>
+
+      <h3>Joining a game</h3>
+      <ul>
+        <li>Open the NetPlay dialog and tap <strong>Join Game</strong>.</li>
+        <li>Enter the Host's IP address (and make sure you're both using the
+            same port).
+        </li>
+        <li>That's it &mdash; no mode to choose. As soon as the connection is
+            established, your device adopts the Host's mode and loads the
+            Host's selected game automatically.
+        </li>
+      </ul>
+      <p><strong>Note:</strong> both devices need to be reachable on the same
+      network (same Wi-Fi, or otherwise routed so the chosen port is open
+      between them), need the exact same ROM file, and should be running the
+      same MAME4droid version &mdash; a version mismatch is detected and the
+      connection is refused with a warning instead of risking a silent
+      desync.</p>
+
+      <h3>Internet play (no server needed)</h3>
+      <p>Two players on different networks can connect directly by
+      exchanging addresses over any messenger &mdash; no account, lobby or
+      server involved. Hosting works exactly the same as on a LAN: tap
+      <strong>Start Game</strong> and read the waiting screen &mdash; it
+      tells you what to share and what to do next.</p>
+      <p><strong>The usual case is automatic (UPnP):</strong> while you
+      host, MAME4droid asks your router to open the NetPlay port by itself.
+      If the waiting screen says <em>Router port mapped (UPnP)</em>, just
+      tap <strong>Share</strong> and send your addresses to the other
+      player: they tap <strong>Join Game</strong> and paste the internet
+      one. That's all &mdash; it works even if the other player is on
+      mobile data. The mapping is
+      removed when the session ends; the feature can be turned off under
+      <em>Options-&gt;Settings-&gt;NetPlay-&gt;UPnP port mapping</em>.</p>
+      <p><strong>If UPnP is not available</strong> (the line doesn't
+      appear, or the join won't land), MAME4droid can still hole-punch
+      through both routers. Punching needs the addresses exchanged BOTH
+      ways:</p>
+      <ul>
+        <li><strong>Step 1 (Host):</strong> tap <strong>Share</strong> on
+            the waiting screen and send your addresses to the other
+            player.</li>
+        <li><strong>Step 2 (Client):</strong> Join the Host's public
+            address; then tap <strong>Share</strong> on the connecting
+            screen to send your own public address back to the Host.</li>
+        <li><strong>Step 3 (Host):</strong> tap <strong>Peer IP</strong> on
+            the waiting screen and paste the Client's address. The
+            connection usually lands within a few seconds.</li>
+      </ul>
+      <p><strong>Requirements and limitations:</strong></p>
+      <ul>
+        <li>Works between most <strong>home Wi-Fi</strong> routers. Over
+            <strong>mobile data</strong> (4G/5G) hole punching usually
+            fails: carrier CGNAT tends to change the public port per
+            connection &mdash; even when no Symmetric warning was shown.
+            A mobile-data player <em>can</em> still join a Host whose port
+            is forwarded (UPnP above, or the manual fallback below).</li>
+        <li>If <em>Symmetric NAT detected</em> appears, internet play may
+            fail &mdash; try anyway, or use the port-forwarding fallback.</li>
+        <li>Strict or gaming routers (SPI firewall &mdash; e.g. ASUS
+            TUF/ROG) may silently drop punched connections even when both
+            NATs look fine. If the router settings offer a NAT type option,
+            choose <em>Full Cone</em>; otherwise use the port-forwarding
+            fallback.</li>
+        <li>If <strong>both</strong> players are behind CGNAT (no reachable
+            public IPv4 at either end), neither hole punching nor port
+            forwarding can work. That is an ISP limitation, not an app bug;
+            ask your ISP for a public IPv4 or play on a network that has
+            one.</li>
+        <li>Expect a higher ping than on a LAN &mdash; Rollback mode is
+            strongly recommended.</li>
+        <li>If both devices are on the <em>same</em> Wi-Fi, use the normal
+            local flow (local IP), not the public addresses.</li>
+      </ul>
+      <p><strong>Fallback that always works:</strong> the Host forwards UDP
+      port 2080 to their device on their router (routers call this Virtual
+      Server, Port Forwarding, or a custom <em>Open NAT</em> game profile)
+      and shares their public IP; the Client simply Joins it. Only the
+      Host's router needs this &mdash; it also lets a Client on mobile data
+      play. It is the manual equivalent of UPnP, for routers where UPnP is
+      off or broken.</p>
+
+      <h3>IPv6 (Network protocol)</h3>
+      <p><em>Options-&gt;Settings-&gt;NetPlay-&gt;Network protocol</em>
+      selects how the devices connect: <strong>IPv4</strong> (default),
+      <strong>IPv6</strong> or <strong>Auto (IPv6 + IPv4)</strong>. IPv6 has
+      no NAT: each device gets its own public address, so internet play
+      usually connects directly &mdash; no port forwarding, no UPnP, and the
+      CGNAT limitation above disappears. In particular, <strong>two phones on
+      mobile data (4G/5G) with IPv6</strong> — which most carriers provide —
+      connect to each other directly with zero router setup: this is the
+      easiest and most reliable way to play over the internet.
+      The default is <strong>IPv4</strong> because it is the most field-tested
+      path, but <strong>Auto</strong> is worth trying: it works with every
+      peer and picks the best route by itself.</p>
+      <ul>
+        <li><strong>IPv4:</strong> the classic behavior described above.</li>
+        <li><strong>IPv6:</strong> both players connect over IPv6 only. The
+            shared invite carries a <em>[bracketed]</em> address; Share and
+            Paste work exactly the same.</li>
+        <li><strong>Auto:</strong> the Host accepts both families and shares
+            every address it has (IPv6, IPv4 and local network); the Client
+            automatically picks whichever works with its own connection.
+            Choose this if you're not sure what the other player has.</li>
+      </ul>
+      <p>Both players should use the same setting (Auto pairs fine with
+      either). Some routers ship an IPv6 firewall that blocks inbound
+      connections: the built-in hole punching normally opens it by itself,
+      and otherwise allowing the NetPlay port in that firewall is the IPv6
+      equivalent of port forwarding.</p>
+      <p>If your router has IPv6 enabled but your ISP hands out no public IPv6
+      prefix, your devices still get a same-network (ULA) address: internet
+      play isn't possible, but two devices on the same network can still play
+      over IPv6. The Host lists that address labelled <em>same network
+      only</em>.</p>
+
+      <h3>During the game</h3>
+      <ul>
+        <li><strong>Resync:</strong> on a live Rollback session, the NetPlay
+            dialog offers a <strong>Resync</strong> button. It forces both
+            devices to freeze for a moment while the Host re-sends its exact
+            game state to the Client, snapping both machines back into sync.
+            Use it if you ever notice the two screens have visibly drifted
+            apart. Not needed (and not shown) in Lockstep, since Lockstep
+            can't drift in the first place.
+        </li>
+        <li><strong>Disconnect:</strong> ends the NetPlay session for both
+            devices and returns to normal offline play.
+        </li>
+      </ul>
+
+      <h3>Tips</h3>
+      <ul>
+        <li>A stable Wi-Fi connection matters much more than raw speed &mdash;
+            a stable 2.4GHz link often works better than a congested 5GHz one.
+        </li>
+        <li>Keep both devices' screens on and the app in the foreground during
+            the session; backgrounding can pause the connection.
+        </li>
+        <li>If Rollback feels choppy on a particular game, try switching that
+            session to Lockstep &mdash; some hardware (see above) simply isn't a
+            good fit for rollback.
+        </li>
+      </ul>
+
+  </div><!-- /content -->
+
+<div class="header">
+<h4 class="title"><a class="link" href="javascript:history.go(-1)" data-direction="reverse">Go Back</a></h4>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

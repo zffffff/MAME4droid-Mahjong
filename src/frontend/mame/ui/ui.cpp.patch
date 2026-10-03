@@ -1,0 +1,214 @@
+diff --git a/ui.cpp b/ui.cpp
+index a9982cd..29293ec 100644
+--- a/ui.cpp
++++ b/ui.cpp
+@@ -51,6 +51,13 @@
+ #include <functional>
+ #include <type_traits>
+ 
++// DAV HACK
++#include "audit.h"
++#include "ui/miscmenu.h"
++#include <filesystem>
++int myosd_netplay_get_ff_active();
++int myosd_droid_adjust_ui_font_rows(int current);
++// END DAV HACK
+ 
+ /***************************************************************************
+     LOCAL VARIABLES
+@@ -923,8 +930,162 @@ void mame_ui_manager::set_startup_text(const char *text, bool force)
+ //  render it; called by video.c
+ //-------------------------------------------------
+ 
++// DAV HACK:
++struct netplay;
++const char* myosd_droid_get_netplay_force_game(void);
++void myosd_droid_clear_netplay_force_game(void);
++int netplay_send_disconnect(struct netplay *handle);
++struct netplay *netplay_get_handle(void);
++void myosd_droid_netplay_warn(const char* msg);
++int myosd_droid_get_netplay_session_sound_rate(void);
++#include <string>
++extern std::string myosd_netplay_selected_game;
++// END DAV HACK
++
+ bool mame_ui_manager::update_and_render(render_target &target)
+ {
++	// DAV HACK
++	{
++		const char* netplay_game = myosd_droid_get_netplay_force_game();
++		auto &opts = mame_machine_manager::instance()->options();
++
++		// Static variables to keep track of the original options
++		static bool s_netplay_overrides_active = false;
++		static bool s_netplay_game_started = false;
++		struct NetplayOptionBackup {
++			std::string value;
++			int priority;
++		};
++		static NetplayOptionBackup s_backup_nvram_dir, s_backup_state_dir, s_backup_nvram_save;
++		static NetplayOptionBackup s_backup_frameskip, s_backup_throttle, s_backup_skip_gameinfo;
++		static NetplayOptionBackup s_backup_cfg_dir, s_backup_plugins, s_backup_cheat, s_backup_samplerate;
++		static NetplayOptionBackup s_backup_diff_dir;
++
++		auto backup_opt = [&](const char *name, NetplayOptionBackup &backup) {
++			auto entry = opts.get_entry(name);
++			if (entry) {
++				backup.value = entry->value();
++				backup.priority = entry->priority();
++			}
++		};
++
++		auto restore_opt = [&](const char *name, const NetplayOptionBackup &backup) {
++			auto entry = opts.get_entry(name);
++			if (entry) {
++				entry->set_value(std::string(backup.value), backup.priority, true);
++			}
++		};
++
++		if (netplay_game && netplay_game[0] != '\0') {
++			if (!s_netplay_overrides_active) {
++				backup_opt(OPTION_NVRAM_DIRECTORY, s_backup_nvram_dir);
++				backup_opt(OPTION_STATE_DIRECTORY, s_backup_state_dir);
++				backup_opt(OPTION_NVRAM_SAVE, s_backup_nvram_save);
++				backup_opt(OPTION_FRAMESKIP, s_backup_frameskip);
++				backup_opt(OPTION_THROTTLE, s_backup_throttle);
++				backup_opt(OPTION_SKIP_GAMEINFO, s_backup_skip_gameinfo);
++				backup_opt(OPTION_CFG_DIRECTORY, s_backup_cfg_dir);
++				backup_opt(OPTION_PLUGINS, s_backup_plugins);
++				backup_opt(OPTION_CHEAT, s_backup_cheat);
++				backup_opt(OPTION_SAMPLERATE, s_backup_samplerate);
++				backup_opt(OPTION_DIFF_DIRECTORY, s_backup_diff_dir);
++				s_netplay_overrides_active = true;
++				s_netplay_game_started = false;
++			}
++
++			int idx = driver_list::find(netplay_game);
++			if (idx != -1) {
++				const game_driver &driver = driver_list::driver(idx);
++				
++				opts.set_value(OPTION_NVRAM_DIRECTORY, "/dev/null", OPTION_PRIORITY_CMDLINE);
++				// opts.set_value(OPTION_STATE_DIRECTORY, "/dev/null", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_NVRAM_SAVE, "0", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_FRAMESKIP, "0", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_THROTTLE, "1", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_SKIP_GAMEINFO, "1", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_CFG_DIRECTORY, "/dev/null", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_PLUGINS, "0", OPTION_PRIORITY_CMDLINE);
++				opts.set_value(OPTION_CHEAT,   "0", OPTION_PRIORITY_CMDLINE);
++
++				// Netplay determinism: CHD games (e.g. Killer Instinct) write to their
++				// hard disk through a persistent per-device .dif overlay.
++				{
++					std::error_code fs_ec;
++					std::filesystem::remove_all("netplay_diff", fs_ec);
++					std::filesystem::create_directories("netplay_diff", fs_ec);
++					opts.set_value(OPTION_DIFF_DIRECTORY, "netplay_diff", OPTION_PRIORITY_CMDLINE);
++				}
++
++				{
++					int np_rate = myosd_droid_get_netplay_session_sound_rate();
++					if (np_rate > 0) {
++						std::string np_rate_str = std::to_string(np_rate);
++						opts.set_value(OPTION_SAMPLERATE, np_rate_str.c_str(), OPTION_PRIORITY_CMDLINE);
++						osd_printf_warning("NETPLAY AUTOSTART: pinned -samplerate %s\n", np_rate_str.c_str());
++					}
++				}
++				
++				osd_printf_warning("NETPLAY AUTOSTART: Got game '%s', driver idx: %d\n", netplay_game, idx);
++
++				driver_enumerator enumerator(machine().options(), driver.name);
++				enumerator.next();
++				media_auditor auditor(enumerator);
++				media_auditor::summary summary = auditor.audit_media(AUDIT_VALIDATE_FAST);
++
++				if (summary == media_auditor::CORRECT || summary == media_auditor::BEST_AVAILABLE || summary == media_auditor::NONE_NEEDED)
++				{
++					myosd_netplay_selected_game = driver.name;
++					
++					mame_machine_manager::instance()->schedule_new_driver(driver);
++					machine().schedule_hard_reset();
++					ui::menu::stack_reset(*this);
++				}
++				else
++				{
++					netplay_send_disconnect(netplay_get_handle());
++					myosd_droid_clear_netplay_force_game();
++
++					std::string err = "Error loading ROM.\nSome files are missing or have a bad checksum.";
++					
++					// Draw the text box warning (simulates red window)
++					myosd_droid_netplay_warn(string_format("TOAST:%s", err.c_str()).c_str());
++					osd_printf_warning("NETPLAY AUTOSTART: FAILED audit for '%s'\n", netplay_game);
++					s_netplay_game_started = true; // force restore on next frame
++				}
++			} else {
++				netplay_send_disconnect(netplay_get_handle());
++				myosd_droid_clear_netplay_force_game();
++				myosd_droid_netplay_warn(string_format("TOAST:Netplay: Unknown driver %s. Disconnected.", netplay_game).c_str());
++				osd_printf_warning("NETPLAY AUTOSTART: FAILED to find driver for '%s'\n", netplay_game);
++				s_netplay_game_started = true; // force restore on next frame
++			}
++		} else {
++			if (s_netplay_overrides_active) {
++				if (strcmp(machine().system().name, "___empty") != 0) {
++					// We successfully booted the game!
++					s_netplay_game_started = true;
++				} else if (s_netplay_game_started) {
++					// We returned from the game (or failed to start), and are now safely back in the UI!
++					restore_opt(OPTION_NVRAM_DIRECTORY, s_backup_nvram_dir);
++					restore_opt(OPTION_STATE_DIRECTORY, s_backup_state_dir);
++					restore_opt(OPTION_NVRAM_SAVE, s_backup_nvram_save);
++					restore_opt(OPTION_FRAMESKIP, s_backup_frameskip);
++					restore_opt(OPTION_THROTTLE, s_backup_throttle);
++					restore_opt(OPTION_SKIP_GAMEINFO, s_backup_skip_gameinfo);
++					restore_opt(OPTION_CFG_DIRECTORY, s_backup_cfg_dir);
++					restore_opt(OPTION_PLUGINS, s_backup_plugins);
++					restore_opt(OPTION_CHEAT, s_backup_cheat);
++					restore_opt(OPTION_SAMPLERATE, s_backup_samplerate);
++					restore_opt(OPTION_DIFF_DIRECTORY, s_backup_diff_dir);
++					s_netplay_overrides_active = false;
++					s_netplay_game_started = false;
++					osd_printf_warning("NETPLAY AUTOSTART: restored original options.\n");
++				}
++			}
++		}
++	}
++	// END DAV HACK
++
+ 	// always start clean
+ 	for (auto &target : machine().render().targets())
+ 	{
+@@ -1882,8 +2043,14 @@ uint32_t mame_ui_manager::handler_ingame()
+ 		machine().video().set_fastforward(true);
+ 		show_fps_temp(0.5);
+ 	}
+-	else
+-		machine().video().set_fastforward(false);
++// DAV HACK
++//	else
++//		machine().video().set_fastforward(false);
++	else {
++	    if (!myosd_netplay_get_ff_active())
++		    machine().video().set_fastforward(false);
++	}
++// END DAV HACK
+ 
+ 	// update mute when unthrottled
+ 	if (m_unthrottle_mute)
+@@ -2717,6 +2884,15 @@ void mame_ui_manager::load_ui_options()
+ 			osd_printf_error("**Error loading ui.ini**\n");
+ 		}
+ 	}
++
++	// DAV HACK: the OSD decides the boot-time UI row count (0 = keep)
++	int const rows = myosd_droid_adjust_ui_font_rows(options().font_rows());
++	if (rows > 0)
++	{
++		try { options().set_value(OPTION_FONT_ROWS, rows, OPTION_PRIORITY_CMDLINE); }
++		catch (options_exception &) { }
++	}
++	// END DAV HACK
+ }
+ 
+ //-------------------------------------------------

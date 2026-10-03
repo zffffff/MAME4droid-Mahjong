@@ -1,0 +1,78 @@
+diff --git a/video.cpp b/video.cpp
+index a8900d3..ada94c7 100644
+--- a/video.cpp
++++ b/video.cpp
+@@ -29,6 +29,10 @@
+ 
+ #include "rendersw.hxx"
+ 
++// DAV HACK
++bool myosd_netplay_is_rollback();
++extern volatile s64 g_myosd_frame_work_ns;   // defined in the OSD (myosd/video.cpp)
++// END DAV HACK
+ 
+ //**************************************************************************
+ //  DEBUGGING
+@@ -695,6 +699,28 @@ void video_manager::update_throttle(attotime emutime)
+ 
+ */
+ 
++// DAV HACK
++	// m_throttle_emutime is stored speed-scaled, so a bare m_speed change makes
++	// its baseline jump (spurious stall/audio-drain, or anomaly resync later in
++	// a session) -- the netplay rate controller steps m_speed continuously, so
++	// rescale the baseline + shift realtime on every change to keep the
++	// ahead/behind phase exact at zero cost.  Reset on new session (emutime==0).
++	static u32 m_throttle_last_speed = 0;
++	if (m_throttle_emutime.is_zero())
++		m_throttle_last_speed = 0;
++
++	if (m_throttle_last_speed != m_speed)
++	{
++		if (m_throttle_last_speed != 0 && m_speed != 0)
++		{
++			attotime const rescaled = (m_throttle_emutime * m_throttle_last_speed) / m_speed;
++			m_throttle_realtime += rescaled - m_throttle_emutime;
++			m_throttle_emutime = rescaled;
++		}
++		m_throttle_last_speed = m_speed;
++	}
++// END DAV HACK
++
+ 	// outer scope so we can break out in case of a resync
+ 	while (1)
+ 	{
+@@ -747,6 +773,12 @@ void video_manager::update_throttle(attotime emutime)
+ 			break;
+ 		}
+ 
++// DAV HACK
++		// diff_ticks = wall time since the previous throttle ended = this
++		// frame's emu WORK (pre-sleep); the OSD reads+clears it for ADPF
++		g_myosd_frame_work_ns = s64(double(diff_ticks) * 1e9 / double(ticks_per_second));
++// END DAV HACK
++
+ 		// convert this value into attoseconds for easier comparison
+ 		attoseconds_t real_delta_attoseconds = diff_ticks * attoseconds_per_tick;
+ 
+@@ -774,8 +806,20 @@ void video_manager::update_throttle(attotime emutime)
+ 		}
+ 
+ 		// if we're behind, it's time to just get out
++// DAV HACK
++//		if (real_is_ahead_attoseconds < 0)
++//			return;
+ 		if (real_is_ahead_attoseconds < 0)
++        {
++            if (myosd_netplay_is_rollback()) {
++                // Rollback netplay: never try to catch up to the OS clock. This prevents
++                // MAME's throttle from fighting the rollback stall / DRC pacing.  Lockstep
++                // paces itself via the per-frame peer wait, so it keeps stock behaviour.
++                break;
++            }
+ 			return;
++        }
++// END DAV HACK
+ 
+ 		// compute the target real time, in ticks, where we want to be
+ 		osd_ticks_t target_ticks = m_throttle_last_ticks + real_is_ahead_attoseconds / attoseconds_per_tick;

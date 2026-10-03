@@ -1,0 +1,22 @@
+diff --git a/save.h b/save.h
+index 34afc26..20dafd7 100644
+--- a/save.h
++++ b/save.h
+@@ -356,6 +356,17 @@
+ 	static size_t get_size(save_manager &save);
+ 	save_error save();
+ 	save_error load();
++// DAV HACK
++	// Netplay rollback: expose the raw buffer so ram_state can be sent over the
++	// network (get_data) and a peer's received state can be injected without an
++	// intermediate save() (set_data), backing the rollback ring buffer and its
++	// CRC desync detector.
++	const auto& get_data() const { return m_data.vec(); }
++	void set_data(const uint8_t* buffer, size_t size) {
++		m_data.vec(std::vector<char>((const char*)buffer, (const char*)(buffer + size)));
++		m_valid = true;
++	}
++// END DAV HACK
+ };
+ 
+ class rewinder

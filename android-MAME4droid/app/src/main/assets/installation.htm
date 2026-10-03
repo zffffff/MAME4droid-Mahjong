@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>MAME4Droid Reloaded Help</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="mystyle.css">
+
+</head>
+<body class="view">
+<div class="page">
+    <div class="header">
+        <h1 class="title">Installation</h1>
+    </div><!-- /header -->
+    <div class="content">
+        <h3>First Run: Where to Store Your ROMs</h3>
+        <p>The very first time you start MAME4droid, it asks you where you want to keep your ROM
+            files (and the rest of MAME's data: artwork, samples, save states, etc). You get two
+            choices:</p>
+        <ul>
+            <li><strong>Internal:</strong> MAME4droid creates an empty folder inside its own private
+                app storage and uses that. You then copy your ROMs into it yourself, either from a PC
+                over USB/ADB, or with a file manager app that can browse the app's private folder.
+                This data is deleted automatically when you uninstall the app.
+                <br><strong>Not recommended:</strong> this folder lives in the app's private sandbox,
+                so external launchers/frontends and most file managers most likely won't be able to
+                reach it &mdash; Android's storage security model is built around SAF-granted folders
+                (see below), not private app storage.
+            </li>
+            <li><strong>External Storage:</strong> you pick an existing folder anywhere on your
+                device (an SD card, a folder you already use for ROMs, a cloud-synced folder, etc.)
+                using Android's standard folder picker. MAME4droid asks Android for permission to
+                read/write that one folder and remembers it for next time. This data survives
+                uninstalling the app, and you can freely move files in and out of it with any regular
+                file manager, no PC needed.
+            </li>
+        </ul>
+        <p><strong>Important:</strong> with <em>External Storage</em>, the folder you pick <em>is</em>
+            your ROMs folder itself &mdash; MAME4droid does <em>not</em> create a <em>roms</em>
+            subfolder inside it. Put your ZIPped ROM files directly in the folder you picked. Inside
+            that same folder, you can additionally create these optional subfolders yourself:</p>
+        <p><em>artwork/</em> for your bezel/marquee artwork sets<br>
+            <em>samples/</em> for sound samples<br>
+            <em>software/</em> for software-list media (cassette/disk images used by
+            non-arcade systems with removable software, like 8-bit home computers)<br>
+            <em>sta/</em> for save states, only if you also enable <em>Save States in ROMs Path</em>
+            (see below)</p>
+        <p>Everything else (MAME configuration, hiscores, NVRAM, snapshots) always stays in
+            MAME4droid's own internal data, regardless of where your ROMs live.</p>
+        <p>With <em>Internal</em> storage instead, MAME4droid creates the full folder tree below
+            (including a <em>roms/</em> subfolder) inside its own private app storage.</p>
+
+        <h3>About the folder picker (Storage Access Framework)</h3>
+        <p>Since Android 10, apps are no longer allowed to freely read and write anywhere on shared
+            storage &mdash; they only get access to folders the user explicitly grants through
+            Android's own picker (this is called the Storage Access Framework, or SAF). That's the
+            picker that opens when you choose <em>External Storage</em> above, or when you change your
+            ROMs folder later. It's a bit slower than direct file access, so MAME4droid caches the
+            folder's file listing to stay fast in day-to-day use once your ROMs are indexed. If a ROM
+            you just added doesn't show up, or you run into any other odd folder issue, you can turn
+            off <em>Cache ROMs folder index</em> or force a <em>Rescan ROMs folder</em> under
+            <em>Options-&gt;Settings-&gt;General</em>.</p>
+        <p><strong>Tip:</strong> keep your ROMs folder flat (no ROMs buried in subfolders) and don't
+            mix in unrelated, unzipped files &mdash; the folder should really only contain your ZIPped
+            MAME ROM sets.</p>
+
+        <h3>Changing Your ROMs Location Later</h3>
+        <p>You don't have to get it right the first time. Go to <em>Options-&gt;Settings-&gt;General-&gt;Change
+            ROMs Path</em> to run that same Internal/External Storage choice again (the app restarts
+            afterwards). If you're switching to a new external folder, remember to actually move or
+            copy your ROM files there first.</p>
+        <p>If you want your save states to live alongside your ROMs on external storage (so
+            Android doesn't clean them up when you eventually uninstall), enable <em>Options-&gt;Settings-&gt;General-&gt;Save
+            States in ROMs Path</em>.</p>
+
+        <h3>Advanced: Relocating the Whole Installation</h3>
+        <p>Separately from your ROMs folder, experienced users can relocate MAME4droid's entire data
+            folder (not just ROMs, but every configuration/support folder listed below) to a specific
+            path under <em>Options-&gt;Settings-&gt;Advanced-&gt;Installation Path</em>. This one is
+            typed in manually rather than picked, and is intended for advanced use only: entering a
+            valid but unintended path will make MAME4droid treat it as a brand new, empty
+            installation. Leave this alone unless you specifically need it.</p>
+
+        <h3>Folder Layout</h3>
+        <p>This is MAME4droid's internal data folder tree (used as-is with <em>Internal</em> storage;
+            with <em>External Storage</em> only <em>roms/artwork/samples/software</em> below actually
+            live in your picked folder, as explained above, and the folder names there don't have the
+            trailing slash). It's the same layout desktop MAME uses, so you can reuse existing
+            artwork/samples collections. Check the <a class="link" href="external.htm" rel="external">Resources
+                and Assets</a> section for where to find these assets, and <a class="link"
+                                                                                href="games.htm"
+                                                                                rel="external">Supported
+                Games</a> for ROM naming rules.</p>
+        <p>artwork/ -&gt; Artwork directory<br>
+            cfg/ -&gt; MAME configuration files directory<br>
+            hi/ -&gt; Hiscores directory<br>
+            nvram/ -&gt; NVRAM files directory<br>
+            roms/ -&gt; ROMs directory<br>
+            samples/ -&gt; Samples directory<br>
+            snap/ -&gt; Screen snapshots directory<br>
+            sta/ -&gt; Save states directory</p>
+
+    </div><!-- /content -->
+
+    <div class="header">
+        <h4 class="title"><a class="link" href="javascript:history.go(-1)" data-direction="reverse">Go
+            Back</a></h4>
+    </div>
+
+</div><!-- /page -->
+</body>
+</html>

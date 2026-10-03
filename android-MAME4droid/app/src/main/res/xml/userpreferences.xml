@@ -1,0 +1,985 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/cat_configuration">
+
+    <PreferenceScreen
+            android:key="PREFSCR_EMU"
+            android:title="@string/prefscr_emu_title"
+            android:summary="@string/prefscr_emu_summary"
+            android:persistent="false">
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_resolution_options"
+			android:title="@string/pref_emu_res_title"
+			android:key="PREF_EMU_RESOLUTION_3"
+			android:entryValues="@array/pref_resolution_values"
+			android:defaultValue="1" />
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_osd_resolution_options"
+			android:title="@string/pref_osd_res_title"
+			android:key="PREF_EMU_RESOLUTION_OSD_3"
+			android:entryValues="@array/pref_osd_resolution_values"
+			android:defaultValue="9" />
+
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_sound_options"
+			android:title="@string/pref_sound_title"
+			android:key="PREF_EMU_SOUND"
+			android:entryValues="@array/pref_sound_values"
+			android:defaultValue="44100" />
+
+	   	<CheckBoxPreference android:key="PREF_EMU_SHOW_FPS"
+			android:title="@string/pref_show_fps_title" android:summary="@string/pref_show_fps_summary"
+			android:defaultValue="false" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_EMU_AUTO_FRAMESKIP"
+			android:title="@string/pref_auto_frameskip_title" android:summary="@string/pref_auto_frameskip_summary"
+			android:defaultValue="false" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="CHEATS"
+			android:title="@string/pref_cheats_title" android:summary="@string/pref_cheats_summary"
+			android:defaultValue="false" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_HISCORE"
+			android:title="@string/pref_hiscore_title" android:summary="@string/pref_hiscore_summary"
+			android:defaultValue="False" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_INPUTMACRO"
+			android:title="@string/pref_inputmacro_title" android:summary="@string/pref_inputmacro_summary"
+			android:defaultValue="False" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_AUTOFIRE"
+			android:title="@string/pref_autofire_title" android:summary="@string/pref_autofire_summary"
+			android:defaultValue="False" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="SKIP_GAMEINFO"
+			android:title="@string/pref_skip_gameinfo_title" android:summary="@string/pref_skip_gameinfo_summary"
+			android:defaultValue="false" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FRAME_PACING"
+			android:title="@string/pref_frame_pacing_title" android:summary="@string/pref_frame_pacing_summary"
+			android:defaultValue="true" />
+
+		<CheckBoxPreference android:key="PREF_ZOOM_TO_WINDOW"
+			android:title="@string/pref_zoom_to_window_title" android:summary="@string/pref_zoom_to_window_summary"
+			android:defaultValue="true" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_EMU_DISABLE_DRC_4"
+			android:title="@string/pref_disable_drc_title" android:summary="@string/pref_disable_drc_summary"
+			android:defaultValue="false" android:disableDependentsState="true" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_EMU_DRC_USE_C_4"
+			android:title="@string/pref_drc_use_c_title" android:summary="@string/pref_drc_use_c_summary"
+			android:defaultValue="false" android:dependency="PREF_EMU_DISABLE_DRC_4" />
+
+	    <PreferenceScreen android:key="vector" android:title="@string/prefscr_vector_title"
+	        android:summary="@string/prefscr_vector_summary" android:persistent="false">
+
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_BEAM2X_2"
+			android:title="@string/pref_beam2x_title" android:summary="@string/pref_beam2x_summary"
+			android:defaultValue="false" />
+
+	    <com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_FLICKER"
+			android:title="@string/pref_flicker_title" android:summary="@string/pref_flicker_summary"
+			android:defaultValue="false" />
+
+	    </PreferenceScreen>
+
+	    <PreferenceScreen android:key="defaultData"
+			android:title="@string/pref_default_data_title" android:summary="@string/pref_default_data_summary" />
+
+	</PreferenceScreen>
+
+
+	<PreferenceScreen android:key="inputSettings" android:title="@string/prefscr_input_title"
+	    android:summary="@string/prefscr_input_summary" android:persistent="false">
+
+		<CheckBoxPreference android:key="PREF_VIBRATE_2"
+			android:title="@string/pref_vibrate_title" android:summary="@string/pref_vibrate_summary"
+			android:defaultValue="false" />
+
+    <PreferenceScreen android:key="touchController" android:title="@string/prefscr_touch_controller_title"
+	        android:summary="@string/prefscr_touch_controller_summary" android:persistent="false">
+
+		<ListPreference
+			android:entries="@array/pref_controller_type_options"
+			android:title="@string/pref_controller_type_title"
+			android:key="PREF_CONTROLLER_TYPE_2"
+			android:entryValues="@array/pref_controller_type_values"
+			android:defaultValue="1" />
+
+        <PreferenceScreen android:key="customControlLayout"
+			android:title="@string/pref_custom_layout_title" android:summary="@string/pref_custom_layout_summary" />
+
+		<PreferenceScreen android:key="defaultControlLayout"
+			android:title="@string/pref_default_layout_title" android:summary="@string/pref_default_layout_summary" />
+
+		<ListPreference
+			android:entries="@array/pref_alpha_options"
+			android:title="@string/pref_buttons_alpha_title"
+			android:key="PREF_BUTTONS_ALPHA"
+			android:entryValues="@array/pref_alpha_values"
+			android:defaultValue="60" />
+
+		<ListPreference
+			android:entries="@array/pref_buttons_size_options"
+			android:title="@string/pref_buttons_size_title"
+			android:key="PREF_BUTTONS_SIZE"
+			android:entryValues="@array/pref_buttons_size_values"
+			android:defaultValue="3" />
+
+		<ListPreference
+			android:entries="@array/pref_buttons_size_options"
+			android:title="@string/pref_stick_size_title"
+			android:key="PREF_STICK_SIZE"
+			android:entryValues="@array/pref_buttons_size_values"
+			android:defaultValue="3" />
+
+		<ListPreference
+			android:entries="@array/pref_numbuttons_options"
+			android:title="@string/pref_numbuttons_title"
+			android:key="PREF_NUMBUTTONS"
+			android:entryValues="@array/pref_numbuttons_values"
+			android:defaultValue="-1" />
+
+		<CheckBoxPreference android:key="PREF_HIDE_STICK"
+			android:title="@string/pref_hide_stick_title" android:summary="@string/pref_hide_stick_summary"
+			android:defaultValue="false" />
+
+		<CheckBoxPreference android:key="PREF_ALWAYS_GH_BUTTONS"
+			android:title="@string/pref_always_gh_title" android:summary="@string/pref_always_gh_summary"
+			android:defaultValue="false" />
+
+		<CheckBoxPreference android:key="PREF_ANIMATED_INPUT"
+			android:title="@string/pref_animated_title" android:summary="@string/pref_animated_summary"
+			android:defaultValue="true" />
+
+		<ListPreference
+			android:entries="@array/pref_analog_vibrate_options"
+			android:title="@string/pref_analog_vibrate_title"
+			android:summary="@string/pref_analog_vibrate_summary"
+			android:key="PREF_ANALOG_VIBRATE_MODE"
+			android:entryValues="@array/pref_analog_vibrate_values"
+			android:dependency="PREF_VIBRATE_2"
+			android:defaultValue="1" />
+
+		<CheckBoxPreference android:key="PREF_TOUCH_DZ"
+			android:title="@string/pref_touch_dz_title" android:summary="@string/pref_touch_dz_summary"
+			android:defaultValue="true" />
+
+	    <ListPreference
+			android:entries="@array/pref_dz_options"
+			android:title="@string/pref_analog_dz_title"
+			android:key="PREF_ANALOG_DZ"
+			android:entryValues="@array/pref_dz_values"
+			android:defaultValue="2" />
+
+	</PreferenceScreen>
+
+    <PreferenceScreen android:key="externalController" android:title="@string/prefscr_ext_controller_title"
+	        android:summary="@string/prefscr_ext_controller_summary" android:persistent="false">
+
+		<CheckBoxPreference android:key="PREF_CONTROLLER_AUTODETECT"
+			android:title="@string/pref_autodetect_title"
+			android:summary="@string/pref_autodetect_summary"
+			android:defaultValue="True"/>
+
+		<PreferenceScreen android:key="defineKeys"
+			android:title="@string/pref_map_buttons_title"
+			android:summary="@string/pref_map_buttons_summary" />
+
+		<PreferenceScreen android:key="defaultsKeys"
+			android:title="@string/pref_restore_defaults_title"
+			android:summary="@string/pref_restore_defaults_summary" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+			android:key="PREF_INPUT_FAKE_ID"
+			android:title="@string/pref_fake_id_title"
+			android:summary="@string/pref_fake_id_summary"
+			android:defaultValue="false" />
+<!--
+		<CheckBoxPreference android:key="PREF_DISABLE_RIGHT_STICK"
+			android:title="Disable right stick" android:summary="Disable right stick when controller is autodetected"
+			android:defaultValue="false" android:dependency="PREF_CONTROLLER_AUTODETECT"/>
+-->
+		<CheckBoxPreference android:key="PREF_CONTROLLER_DISABLE_BUTTONS_IN_FRONTEND"
+			android:title="@string/pref_hide_touch_frontend_title"
+			android:summary="@string/pref_hide_touch_frontend_summary"
+			android:defaultValue="false"/>
+
+		<CheckBoxPreference android:key="PREF_CONTROLLER_DISABLE_BUTTONS_IN_GAME"
+			android:title="@string/pref_hide_touch_ingame_title"
+			android:summary="@string/pref_hide_touch_ingame_summary"
+			android:defaultValue="false"/>
+
+	     <ListPreference
+			android:entries="@array/pref_dz_options"
+			android:title="@string/pref_analog_dz_title"
+			android:key="PREF_GAMEPAD_DZ"
+			android:entryValues="@array/pref_dz_values"
+			android:defaultValue="3" />
+
+    </PreferenceScreen>
+
+		<PreferenceScreen android:key="mouse" android:title="@string/prefscr_mouse_title"
+			android:summary="@string/prefscr_mouse_summary" android:persistent="false">
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_MOUSE"
+				android:title="@string/pref_mouse_title" android:summary="@string/pref_mouse_summary"
+				android:defaultValue="true" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_TOUCH_MOUSE"
+				android:title="@string/pref_touch_mouse_title" android:summary="@string/pref_touch_mouse_summary"
+				android:defaultValue="True" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_TOUCH_GAME_MOUSE"
+				android:title="@string/pref_game_mouse_title" android:summary="@string/pref_game_mouse_summary"
+				android:defaultValue="True" android:dependency="PREF_TOUCH_MOUSE"/>
+
+			<CheckBoxPreference android:key="PREF_TOUCH_GAME_MOUSE_FORCE"
+				android:title="@string/pref_game_mouse_force_title" android:summary="@string/pref_game_mouse_force_summary"
+				android:defaultValue="False" android:dependency="PREF_TOUCH_GAME_MOUSE"/>
+<!--
+			<CheckBoxPreference android:key="PREF_TOUCH_GAME_MOUSE_HIDE_CONTROLLER"
+				android:title="Hide touch controller" android:summary="Enable to auto hide touch controller when game mouse is enabled"
+				android:defaultValue="False" android:dependency="PREF_TOUCH_GAME_MOUSE"/>
+-->
+
+		</PreferenceScreen>
+
+		<PreferenceScreen android:key="mouse" android:title="@string/prefscr_keyboard_title"
+			android:summary="@string/prefscr_keyboard_summary" android:persistent="false">
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_KEYBOARD"
+				android:title="@string/pref_keyboard_title" android:summary="@string/pref_keyboard_summary"
+				android:defaultValue="true" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_KEYBOARD_HIDE_CONTROLLER"
+				android:title="@string/pref_keyboard_hide_controller_title" android:summary="@string/pref_keyboard_hide_controller_summary"
+				android:defaultValue="True" android:dependency="PREF_KEYBOARD"/>
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_VIRTUAL_KEYBOARD"
+				android:title="@string/pref_virtual_keyboard_title" android:summary="@string/pref_virtual_keyboard_summary"
+				android:defaultValue="True" />
+
+		</PreferenceScreen>
+
+		<PreferenceScreen android:key="lightgunController" android:title="@string/prefscr_lightgun_title"
+			android:summary="@string/prefscr_lightgun_summary" android:persistent="false">
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_TOUCH_LIGHTGUN"
+				android:title="@string/pref_touch_lightgun_title" android:summary="@string/pref_touch_lightgun_summary"
+				android:defaultValue="True" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_TOUCH_LIGHTGUN_FORCE"
+				android:title="@string/pref_lightgun_force_title" android:summary="@string/pref_lightgun_force_summary"
+				android:defaultValue="False" android:dependency="PREF_TOUCH_LIGHTGUN"/>
+
+			<CheckBoxPreference android:key="PREF_LIGHTGUN_LONGPRESS"
+				android:title="@string/pref_lightgun_longpress_title" android:summary="@string/pref_lightgun_longpress_summary"
+				android:defaultValue="True" android:dependency="PREF_TOUCH_LIGHTGUN"/>
+
+			<CheckBoxPreference android:key="PREF_BOTTOM_RELOAD"
+				android:title="@string/pref_bottom_reload_title" android:summary="@string/pref_bottom_reload_summary"
+				android:defaultValue="True" android:dependency="PREF_TOUCH_LIGHTGUN"/>
+
+		</PreferenceScreen>
+
+
+	<PreferenceScreen android:key="tiltController" android:title="@string/prefscr_tilt_title"
+	    android:summary="@string/prefscr_tilt_summary" android:persistent="false">
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_TILT_SENSOR"
+			android:title="@string/pref_tilt_sensor_title"
+			android:summary="@string/pref_tilt_sensor_summary"
+			android:defaultValue="false" />
+
+	    <ListPreference
+			android:entries="@array/pref_dz_options"
+			android:title="@string/pref_tilt_dz_title"
+			android:key="PREF_TILT_DZ"
+			android:entryValues="@array/pref_dz_values"
+			android:defaultValue="3" android:dependency="PREF_TILT_SENSOR"/>
+
+		<com.seleuco.mame4droid.prefs.SensitivityPrefScreen
+			android:key="PREF_TILT_SENSITIVITY"
+			android:title="@string/pref_tilt_sensitivity_title"
+			android:summary="@string/pref_tilt_sensitivity_summary"
+			android:defaultValue="6" android:dependency="PREF_TILT_SENSOR"/>
+
+		<ListPreference
+			android:entries="@array/pref_tilt_neutralz_options"
+			android:title="@string/pref_tilt_neutral_title"
+			android:key="PREF_TILT_NEUTRAL"
+			android:entryValues="@array/pref_tilt_neutralz_values"
+			android:defaultValue="5" android:dependency="PREF_TILT_SENSOR" />
+
+		<CheckBoxPreference android:key="PREF_TILT_ANALOG"
+			android:title="@string/pref_tilt_analog_title" android:summary="@string/pref_tilt_analog_summary"
+			android:defaultValue="true"  android:dependency="PREF_TILT_SENSOR"/>
+
+		<CheckBoxPreference android:key="PREF_TILT_TOUCH"
+			android:title="@string/pref_tilt_touch_title" android:summary="@string/pref_tilt_touch_summary"
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>
+
+		<CheckBoxPreference android:key="PREF_TILT_INVERT_X"
+			android:title="@string/pref_tilt_invert_x_title" android:summary="@string/pref_tilt_invert_x_summary"
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>
+
+		<CheckBoxPreference android:key="PREF_TILT_SWAP_YZ"
+			android:title="@string/pref_tilt_swap_yz_title" android:summary="@string/pref_tilt_swap_yz_summary"
+			android:defaultValue="false"  android:dependency="PREF_TILT_SENSOR"/>
+
+    </PreferenceScreen>
+
+
+		<ListPreference
+			android:entries="@array/pref_stick_options"
+			android:title="@string/pref_stick_type_title"
+			android:key="PREF_STICK_TYPE"
+			android:entryValues="@array/pref_stick_values"
+			android:defaultValue="-1" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_TOUCH_UI"
+			android:title="@string/pref_touch_ui_title" android:summary="@string/pref_touch_ui_summary"
+			android:defaultValue="True"/>
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_NODEADZONEANDSAT"
+			android:title="@string/pref_override_sat_dz_title" android:summary="@string/pref_override_sat_dz_summary"
+			android:defaultValue="True" />
+
+	    <CheckBoxPreference android:key="PREF_PXASP1"
+			android:title="@string/pref_pxasp1_title" android:summary="@string/pref_pxasp1_summary"
+			android:defaultValue="False" />
+
+    </PreferenceScreen>
+
+		<PreferenceScreen
+			android:key="shaders"
+			android:persistent="false"
+			android:title="@string/prefscr_shaders_title">
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:defaultValue="false"
+				android:key="PREF_SHADERS_ENABLED_2"
+				android:summary="@string/pref_shaders_enabled_summary"
+				android:title="@string/pref_shaders_enabled_title" />
+
+			<ListPreference
+				android:defaultValue="none"
+				android:dependency="PREF_SHADERS_ENABLED_2"
+				android:key="PREF_SHADER_EFFECT_3"
+				android:title="@string/pref_effect_shader_title" />
+
+			<CheckBoxPreference android:key="PREF_BITMAP_FILTERING"
+				android:title="@string/pref_smooth_scaling_title" android:summary="@string/pref_smooth_scaling_summary"
+				android:defaultValue="true" />
+
+			<PreferenceScreen
+				android:key="PREFSCR_HDR_SETTINGS"
+				android:dependency="PREF_SHADERS_ENABLED_2"
+				android:title="@string/prefscr_hdr_title"
+				android:summary="@string/prefscr_hdr_summary"
+				android:persistent="false">
+
+				<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+					android:key="PREF_HDR"
+					android:title="@string/pref_hdr_title"
+					android:summary="@string/pref_hdr_summary"
+					android:defaultValue="false" />
+
+				<PreferenceCategory android:title="@string/cat_crt_vector_hdr">
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_BASE_NITS"
+						android:dependency="PREF_HDR"
+						android:title="@string/pref_base_nits_title"
+						android:summary="@string/pref_base_nits_summary"
+						android:max="100"
+						android:defaultValue="15" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_MAX_NITS"
+						android:dependency="PREF_HDR"
+						android:title="@string/pref_max_nits_title"
+						android:summary="@string/pref_max_nits_summary"
+						android:max="100"
+						android:defaultValue="60" />
+				</PreferenceCategory>
+
+				<CheckBoxPreference
+					android:key="PREF_HDR_DIM_VECTOR_ARTWORKS"
+					android:dependency="PREF_HDR"
+					android:title="@string/pref_dim_vector_title"
+					android:summary="@string/pref_dim_vector_summary"
+					android:defaultValue="true" />
+
+				<PreferenceCategory android:title="@string/cat_raster_hdr">
+					<SeekBarPreference
+						android:key="PREF_HDR_RASTER_PAPER_WHITE"
+						android:dependency="PREF_HDR"
+						android:title="@string/pref_paper_white_title"
+						android:summary="@string/pref_paper_white_summary"
+						android:max="100"
+						android:defaultValue="25" />
+
+					<CheckBoxPreference
+						android:key="PREF_HDR_RASTER_FAKE_HDR"
+						android:dependency="PREF_HDR"
+						android:title="@string/pref_fake_hdr_title"
+						android:summary="@string/pref_fake_hdr_summary"
+						android:defaultValue="false" />
+
+					<SeekBarPreference
+						android:key="PREF_HDR_RASTER_HDR_MULTIPLIER"
+						android:dependency="PREF_HDR_RASTER_FAKE_HDR"
+						android:title="@string/pref_hdr_multiplier_title"
+						android:summary="@string/pref_hdr_multiplier_summary"
+						android:max="100"
+						android:defaultValue="35" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_defaults">
+					<PreferenceScreen android:key="defaultHDRData"
+						android:title="@string/pref_restore_hdr_title"
+						android:summary="@string/pref_restore_hdr_summary" />
+				</PreferenceCategory>
+
+			</PreferenceScreen>
+
+
+			<CheckBoxPreference
+				android:key="PREF_VECTOR_IMPROVED"
+				android:dependency="PREF_SHADERS_ENABLED_2"
+				android:title="@string/pref_vector_improved_title"
+				android:summary="@string/pref_vector_improved_summary"
+				android:defaultValue="true" />
+
+			<PreferenceScreen
+				android:key="PREFSCR_VECTOR_SETTINGS"
+				android:dependency="PREF_VECTOR_IMPROVED"
+				android:title="@string/prefscr_vector_calib_title"
+				android:summary="@string/prefscr_vector_calib_summary"
+				android:persistent="false">
+
+				<PreferenceCategory android:title="@string/cat_graphics_pipeline">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_FBO_HALF_RES"
+						android:title="@string/pref_fbo_half_title"
+						android:summary="@string/pref_fbo_half_summary"
+						android:defaultValue="true" />
+				</PreferenceCategory>
+
+				<CheckBoxPreference
+					android:key="PREF_VECTOR_EFFECT_LINEAR_GAMMA"
+					android:title="@string/pref_linear_gamma_title"
+					android:summary="@string/pref_linear_gamma_summary"
+					android:defaultValue="true" />
+
+				<PreferenceCategory android:title="@string/cat_crt_drive">
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_GLOBAL_DRIVE"
+						android:title="@string/pref_global_drive_title"
+						android:summary="@string/pref_global_drive_summary"
+						android:max="100"
+						android:defaultValue="40" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_bloom">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_BLOOM"
+						android:title="@string/pref_bloom_title"
+						android:summary="@string/pref_bloom_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_BLOOM_KAWASE_PASSES"
+						android:dependency="PREF_VECTOR_EFFECT_BLOOM"
+						android:title="@string/pref_kawase_passes_title"
+						android:summary="@string/pref_kawase_passes_summary"
+						android:max="6"
+						android:defaultValue="3" />
+
+					<SeekBarPreference
+						android:key="PREF_BLOOM_KAWASE_RADIUS"
+						android:dependency="PREF_VECTOR_EFFECT_BLOOM"
+						android:title="@string/pref_kawase_radius_title"
+						android:summary="@string/pref_kawase_radius_summary"
+						android:max="100"
+						android:defaultValue="50" />
+
+					<SeekBarPreference
+						android:key="PREF_BLOOM_KAWASE_THRESHOLD"
+						android:dependency="PREF_VECTOR_EFFECT_BLOOM"
+						android:title="@string/pref_kawase_threshold_title"
+						android:summary="@string/pref_kawase_threshold_summary"
+						android:max="100"
+						android:defaultValue="35" />
+
+					<SeekBarPreference
+						android:key="PREF_BLOOM_KAWASE_INTENSITY"
+						android:dependency="PREF_VECTOR_EFFECT_BLOOM"
+						android:title="@string/pref_kawase_intensity_title"
+						android:summary="@string/pref_kawase_intensity_summary"
+						android:max="100"
+						android:defaultValue="44" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_offscreen_glow">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_OFFSCREEN_GLOW"
+						android:title="@string/pref_offscreen_glow_title"
+						android:summary="@string/pref_offscreen_glow_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_OFFSCREEN_GLOW_MULT"
+						android:dependency="PREF_VECTOR_EFFECT_OFFSCREEN_GLOW"
+						android:title="@string/pref_offscreen_glow_mult_title"
+						android:summary="@string/pref_offscreen_glow_mult_summary"
+						android:max="100"
+						android:defaultValue="15" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_vector_core">
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_CORE_LINE_WIDTH"
+						android:title="@string/pref_core_line_width_title"
+						android:summary="@string/pref_core_line_width_summary"
+						android:max="100"
+						android:defaultValue="50" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_CORE_POINT_WIDTH"
+						android:title="@string/pref_core_point_width_title"
+						android:summary="@string/pref_core_point_width_summary"
+						android:max="100"
+						android:defaultValue="30" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_POINT_ENERGY_BOOST"
+						android:title="@string/pref_point_boost_title"
+						android:summary="@string/pref_point_boost_summary"
+						android:max="100"
+						android:defaultValue="15" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_overbright">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_OVERBRIGHT"
+						android:title="@string/pref_overbright_title"
+						android:summary="@string/pref_overbright_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_OVERBRIGHT_MAX"
+						android:dependency="PREF_VECTOR_EFFECT_OVERBRIGHT"
+						android:title="@string/pref_overbright_max_title"
+						android:summary="@string/pref_overbright_max_summary"
+						android:max="100"
+						android:defaultValue="50" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_OVERBRIGHT_LINE_MULT"
+						android:dependency="PREF_VECTOR_EFFECT_OVERBRIGHT"
+						android:title="@string/pref_overbright_line_title"
+						android:summary="@string/pref_overbright_line_summary"
+						android:max="100"
+						android:defaultValue="40" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_OVERBRIGHT_POINT_MULT"
+						android:dependency="PREF_VECTOR_EFFECT_OVERBRIGHT"
+						android:title="@string/pref_overbright_point_title"
+						android:summary="@string/pref_overbright_point_summary"
+						android:max="100"
+						android:defaultValue="55" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_OVERBRIGHT_CROSSTALK"
+						android:dependency="PREF_VECTOR_EFFECT_OVERBRIGHT"
+						android:title="@string/pref_overbright_crosstalk_title"
+						android:summary="@string/pref_overbright_crosstalk_summary"
+						android:max="100"
+						android:defaultValue="25" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_beam_physics">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_BEAM_DYNAMICS"
+						android:title="@string/pref_beam_dynamics_title"
+						android:summary="@string/pref_beam_dynamics_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_SHORT_LINE_INTENSITY"
+						android:dependency="PREF_VECTOR_EFFECT_BEAM_DYNAMICS"
+						android:title="@string/pref_short_line_intensity_title"
+						android:summary="@string/pref_short_line_intensity_summary"
+						android:max="100"
+						android:defaultValue="30" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_SHORT_LINE_WIDTH"
+						android:dependency="PREF_VECTOR_EFFECT_BEAM_DYNAMICS"
+						android:title="@string/pref_short_line_width_title"
+						android:summary="@string/pref_short_line_width_summary"
+						android:max="100"
+						android:defaultValue="10" />
+
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_CORNER_BURN"
+						android:title="@string/pref_corner_burn_title"
+						android:summary="@string/pref_corner_burn_summary"
+						android:defaultValue="false" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_CORNER_DOT_THRESHOLD"
+						android:dependency="PREF_VECTOR_EFFECT_CORNER_BURN"
+						android:title="@string/pref_corner_threshold_title"
+						android:summary="@string/pref_corner_threshold_summary"
+						android:max="100"
+						android:defaultValue="50" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_CORNER_BURN_BOOST"
+						android:dependency="PREF_VECTOR_EFFECT_CORNER_BURN"
+						android:title="@string/pref_corner_boost_title"
+						android:summary="@string/pref_corner_boost_summary"
+						android:max="100"
+						android:defaultValue="10" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_CORNER_BURN_WIDTH_MULT"
+						android:dependency="PREF_VECTOR_EFFECT_CORNER_BURN"
+						android:title="@string/pref_corner_confinement_title"
+						android:summary="@string/pref_corner_confinement_summary"
+						android:max="100"
+						android:defaultValue="50" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_phosphor">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_PHOSPHOR_RESPONSE"
+						android:title="@string/pref_phosphor_response_title"
+						android:summary="@string/pref_phosphor_response_summary"
+						android:defaultValue="false" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_PHOSPHOR_BASE_RESPONSE"
+						android:dependency="PREF_VECTOR_EFFECT_PHOSPHOR_RESPONSE"
+						android:title="@string/pref_phosphor_base_title"
+						android:summary="@string/pref_phosphor_base_summary"
+						android:max="100"
+						android:defaultValue="40" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_PHOSPHOR_LUMA_BOOST"
+						android:dependency="PREF_VECTOR_EFFECT_PHOSPHOR_RESPONSE"
+						android:title="@string/pref_phosphor_luma_title"
+						android:summary="@string/pref_phosphor_luma_summary"
+						android:max="100"
+						android:defaultValue="60" />
+
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_PERSISTENCE"
+						android:title="@string/pref_persistence_title"
+						android:summary="@string/pref_persistence_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_PHOSPHOR_DECAY"
+						android:dependency="PREF_VECTOR_EFFECT_PERSISTENCE"
+						android:title="@string/pref_phosphor_decay_title"
+						android:summary="@string/pref_phosphor_decay_summary"
+						android:max="100"
+						android:defaultValue="20" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_yoke">
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_JITTER"
+						android:title="@string/pref_jitter_title"
+						android:summary="@string/pref_jitter_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_BEAM_JITTER_AMOUNT"
+						android:dependency="PREF_VECTOR_EFFECT_JITTER"
+						android:title="@string/pref_jitter_amount_title"
+						android:summary="@string/pref_jitter_amount_summary"
+						android:max="100"
+						android:defaultValue="15" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_BEAM_FLICKER_AMOUNT"
+						android:dependency="PREF_VECTOR_EFFECT_JITTER"
+						android:title="@string/pref_flicker_amount_title"
+						android:summary="@string/pref_flicker_amount_summary"
+						android:max="100"
+						android:defaultValue="20" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_exposure">
+
+					<CheckBoxPreference
+						android:key="PREF_VECTOR_EFFECT_AUTO_EXPOSURE"
+						android:title="@string/pref_auto_exposure_title"
+						android:summary="@string/pref_auto_exposure_summary"
+						android:defaultValue="true" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_FIXED_EXPOSURE"
+						android:title="@string/pref_fixed_exposure_title"
+						android:summary="@string/pref_fixed_exposure_summary"
+						android:max="100"
+						android:defaultValue="35" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_AUTO_EXPOSURE_MULT"
+						android:dependency="PREF_VECTOR_EFFECT_AUTO_EXPOSURE"
+						android:title="@string/pref_auto_exposure_mult_title"
+						android:summary="@string/pref_auto_exposure_mult_summary"
+						android:max="100"
+						android:defaultValue="40" />
+
+					<SeekBarPreference
+						android:key="PREF_VECTOR_EFFECT_AUTO_EXPOSURE_THRESHOLD"
+						android:dependency="PREF_VECTOR_EFFECT_AUTO_EXPOSURE"
+						android:title="@string/pref_auto_exposure_threshold_title"
+						android:summary="@string/pref_auto_exposure_threshold_summary"
+						android:max="100"
+						android:defaultValue="50" />
+				</PreferenceCategory>
+
+				<PreferenceCategory android:title="@string/cat_defaults">
+					<PreferenceScreen android:key="defaultVectorData"
+						android:title="@string/pref_restore_crt_title"
+						android:summary="@string/pref_restore_crt_summary" />
+				</PreferenceCategory>
+
+			</PreferenceScreen>
+
+<!--			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_SHADER_30"
+				android:dependency="PREF_SHADERS_ENABLED_2"
+				android:title="Force shaders as 3.0" android:summary="Force shaders to use 3.0 shader language for better accuracy, but some shaders may fail on older devices"
+				android:defaultValue="False" />-->
+
+		</PreferenceScreen>
+
+		<PreferenceScreen
+			android:key="scrape"
+			android:persistent="false"
+			android:summary="@string/prefscr_scrape_summary"
+			android:title="@string/prefscr_scrape_title">
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:defaultValue="false"
+				android:key="PREF_SCRAPE_ENABLED"
+				android:summary="@string/pref_scrape_enabled_summary"
+				android:title="@string/pref_scrape_enabled_title" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:key="PREF_SCRAPE_ICONS"
+				android:dependency="PREF_SCRAPE_ENABLED"
+				android:title="@string/pref_scrape_icons_title" android:summary="@string/pref_scrape_icons_summary"
+				android:defaultValue="True" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:key="PREF_SCRAPE_SNAPSHOTS"
+				android:dependency="PREF_SCRAPE_ENABLED"
+				android:title="@string/pref_scrape_snapshots_title" android:summary="@string/pref_scrape_snapshots_summary"
+				android:defaultValue="True" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:key="PREF_SCRAPE_ALL"
+				android:dependency="PREF_SCRAPE_ENABLED"
+				android:title="@string/pref_scrape_all_title" android:summary="@string/pref_scrape_all_summary"
+				android:defaultValue="False" />
+
+			<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+				android:key="PREF_SCRAPE_RESIZE"
+				android:dependency="PREF_SCRAPE_ENABLED"
+				android:title="@string/pref_scrape_resize_title" android:summary="@string/pref_scrape_resize_summary"
+				android:defaultValue="True" />
+
+		</PreferenceScreen>
+
+    <PreferenceScreen android:key="general" android:title="@string/prefscr_general_title"
+        android:summary="@string/prefscr_general_summary" android:persistent="false">
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_language_options"
+			android:title="@string/pref_language_title"
+			android:key="PREF_LANGUAGE"
+			android:entryValues="@array/pref_language_values"
+			android:defaultValue="" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+			android:key="PREF_MAME_LANGUAGE"
+			android:title="@string/pref_mame_language_title"
+			android:summary="@string/pref_mame_language_summary"
+			android:defaultValue="true" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn
+			android:key="PREF_FORCE_UNIFONT"
+			android:title="@string/pref_force_unifont_title"
+			android:summary="@string/pref_force_unifont_summary"
+			android:defaultValue="false" />
+
+		<PreferenceScreen android:key="changeRomPath"
+			android:title="@string/pref_change_rom_path_title" android:summary="@string/pref_change_rom_path_summary" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="SAVESATES_IN_ROM_PATH"
+			android:title="@string/pref_savestates_rom_path_title" android:summary="@string/pref_savestates_rom_path_summary"
+			android:defaultValue="true" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_SAF_CACHE_ENABLED"
+			android:title="@string/pref_saf_cache_title" android:summary="@string/pref_saf_cache_summary"
+			android:defaultValue="true" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_SAF_FORCE_RESCAN"
+			android:title="@string/pref_saf_rescan_title" android:summary="@string/pref_saf_rescan_summary"
+			android:defaultValue="false" android:dependency="PREF_SAF_CACHE_ENABLED" />
+
+		<!-- Hidden in production: not ready for general use yet.
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_SAF_LAZY_NORMAL_BOOT"
+			android:title="@string/pref_saf_lazy_title" android:summary="@string/pref_saf_lazy_summary"
+			android:defaultValue="false" />
+		-->
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:title="@string/pref_orientation_title"
+			android:key="PREF_ORIENTATION"
+			android:entries="@array/pref_orientation_options"
+			android:entryValues="@array/pref_orientation_values"
+			android:defaultValue="0" />
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:title="@string/pref_overlay_title"
+			android:key="PREF_OVERLAY"
+			android:entries="@array/pref_overlay_options"
+			android:entryValues="@array/pref_overlay_values"
+			android:defaultValue="none" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_WARN_ON_EXIT"
+			android:title="@string/pref_warn_on_exit_title" android:summary="@string/pref_warn_on_exit_summary"
+			android:defaultValue="true" />
+
+	    <com.seleuco.mame4droid.prefs.ListPrefWithWarn android:key="PREF_GLOBAL_NAVBAR_MODE"
+			android:title="@string/pref_navbar_title"
+			android:entries="@array/pref_navbar_options"
+			android:entryValues="@array/pref_navbar_values"
+			android:defaultValue="1"/>
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_USE_NOTCH"
+			android:title="@string/pref_use_notch_title" android:summary="@string/pref_use_notch_summary"
+			android:defaultValue="false" />
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn android:key="PREF_GLOBAL_SIMPLE_UI"
+			android:title="@string/pref_simple_ui_title" android:summary="@string/pref_simple_ui_summary"
+			android:defaultValue="false" />
+
+		<CheckBoxPreference android:key="PREF_GLOBAL_SCALE_BEYOND"
+			android:title="@string/pref_scale_beyond_title" android:summary="@string/pref_scale_beyond_summary"
+			android:defaultValue="true" />
+
+	    <CheckBoxPreference android:key="PREF_GLOBAL_OVERSCAN"
+			android:title="@string/pref_overscan_title" android:summary="@string/pref_overscan_summary"
+			android:defaultValue="false" />
+
+	</PreferenceScreen>
+
+    <PreferenceScreen android:key="netplay" android:title="@string/netplay"
+        android:summary="@string/prefscr_netplay_summary" android:persistent="false">
+		<EditTextPreference android:title="@string/pref_netplay_port_title" android:key="PREF_NETPLAY_PORT" android:defaultValue="2080" />
+		<ListPreference android:entries="@array/pref_netplay_delay_options" android:title="@string/pref_netplay_delay_title" android:key="PREF_NETPLAY_DELAY" android:entryValues="@array/pref_netplay_delay_values" android:defaultValue="0" />
+		<CheckBoxPreference android:title="@string/pref_netplay_stats_title" android:summary="@string/pref_netplay_stats_summary" android:key="PREF_NETPLAY_STATS_ENABLED" android:defaultValue="false" />
+		<CheckBoxPreference android:title="@string/pref_netplay_desync_title" android:summary="@string/pref_netplay_desync_summary" android:key="PREF_NETPLAY_DESYNC_DETECTOR_ENABLED" android:defaultValue="true" />
+		<CheckBoxPreference android:title="@string/pref_netplay_upnp_title" android:summary="@string/pref_netplay_upnp_summary" android:key="PREF_NETPLAY_UPNP" android:defaultValue="true" />
+		<ListPreference android:entries="@array/pref_netplay_ip_protocol_options" android:title="@string/pref_netplay_ipproto_title" android:summary="@string/pref_netplay_ipproto_summary" android:key="PREF_NETPLAY_IP_PROTOCOL" android:entryValues="@array/pref_netplay_ip_protocol_values" android:defaultValue="0" />
+    </PreferenceScreen>
+
+    <PreferenceScreen android:key="advanced" android:title="@string/prefscr_advanced_title"
+        android:summary="@string/prefscr_advanced_summary" android:persistent="false">
+
+		<ListPreference
+			android:entries="@array/pref_global_video_render_options"
+			android:title="@string/pref_video_engine_title"
+			android:key="PREF_GLOBAL_VIDEO_RENDER_MODE"
+			android:entryValues="@array/pref_global_video_render_values"
+			android:defaultValue="1" />
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_sound_engine_options"
+			android:title="@string/pref_sound_engine_title" android:key="PREF_SOUND_ENGINE_2"
+			android:entryValues="@array/pref_sound_engine_values"
+			android:defaultValue="1" />
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn
+			android:entries="@array/pref_osd_numprocessors_options"
+			android:title="@string/pref_num_threads_title"
+			android:key="PREF_EMU_NUM_PROCESSORS"
+			android:entryValues="@array/pref_osd_numprocessors_values"
+			android:defaultValue="-1" />
+
+		<com.seleuco.mame4droid.prefs.ListPrefWithWarn android:entries="@array/pref_low_norm_or_hight_options"
+			android:title="@string/pref_main_th_priority_title" android:key="PREF_MAIN_THREAD_PRIORITY"
+			android:entryValues="@array/pref_low_norm_or_hight_values"
+			android:defaultValue="2" />
+
+        <com.seleuco.mame4droid.prefs.EditTextPrefWithWarn
+                android:dialogTitle="@string/pref_installation_path_dialog"
+                android:key="PREF_INSTALLATION_DIR"
+                android:title="@string/pref_installation_path_title"
+                android:defaultValue=""/>
+
+		<com.seleuco.mame4droid.prefs.CheckBoxPrefWithWarn  android:key="PREF_MAMEINI"
+			android:title="@string/pref_mameini_title" android:summary="@string/pref_mameini_summary"
+			android:defaultValue="False" />
+
+		<CheckBoxPreference android:key="PREF_GLOBAL_DEBUG"
+			android:title="@string/pref_debug_title" android:summary="@string/pref_debug_summary"
+			android:defaultValue="false" />
+
+	</PreferenceScreen>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="@string/cat_portrait_display">
+
+		<ListPreference android:entries="@array/pref_scaleMode_options"
+			android:title="@string/pref_scaling_mode_title" android:key="PREF_PORTRAIT_SCALING_MODE"
+			android:entryValues="@array/pref_scaleMode_values"
+			android:defaultValue="1" />
+
+		<CheckBoxPreference android:key="PREF_PORTRAIT_TOUCH_CONTROLLER"
+			android:title="@string/pref_touch_controller_visible_title" android:summary="@string/pref_touch_controller_visible_summary"
+			android:defaultValue="true" />
+
+		<CheckBoxPreference android:key="PREF_PORTRAIT_FULLSCREEN"
+			android:title="@string/pref_fullscreen_portrait_title" android:summary="@string/pref_fullscreen_portrait_summary"
+			android:defaultValue="false"
+			android:dependency="PREF_PORTRAIT_TOUCH_CONTROLLER"
+			/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory android:title="@string/cat_landscape_display">
+
+		<ListPreference android:entries="@array/pref_scaleMode_options"
+			android:title="@string/pref_scaling_mode_title" android:key="PREF_LANDSCAPE_SCALING_MODE"
+			android:entryValues="@array/pref_scaleMode_values"
+			android:defaultValue="1" />
+
+		<CheckBoxPreference android:key="PREF_LANDSCAPE_TOUCH_CONTROLLER"
+			android:title="@string/pref_touch_controller_visible_title" android:summary="@string/pref_touch_controller_visible_summary"
+			android:defaultValue="true" />
+
+	</PreferenceCategory>
+
+
+
+
+</PreferenceScreen>

@@ -1,0 +1,48 @@
+diff --git a/schedule.cpp b/schedule.cpp
+index a475fd9..ce1a5de 100644
+--- a/schedule.cpp
++++ b/schedule.cpp
+@@ -596,6 +596,43 @@
+ 	add_quantum(attotime::zero, duration);
+ }
+ 
++// DAV HACK
++//-------------------------------------------------
++//  clear_temporary_quanta - clear all temporary
++//  quanta and reset to minimum
++//-------------------------------------------------
++
++void device_scheduler::clear_temporary_quanta()
++{
++	quantum_slot *next;
++	for (quantum_slot *quant = m_quantum_list.first(); quant != nullptr; quant = next)
++	{
++		next = quant->next();
++		if (!quant->m_expire.is_never())
++			m_quantum_allocator.reclaim(m_quantum_list.detach(*quant));
++	}
++	
++	if (m_quantum_list.empty())
++		add_quantum(attotime(0, m_quantum_minimum), attotime::never);
++
++	m_suspend_changes_pending = true;
++	rebuild_execute_list();
++}
++
++//-------------------------------------------------
++//  canonicalize_timer_order - netplay rollback hook.
++//  Normalizes active timers so a netplay forward run
++//  is byte-identical to a rollback savestate load.
++//  This prevents desyncs between forward and rollback
++//  states using existing MAME save logic.
++//-------------------------------------------------
++
++void device_scheduler::canonicalize_timer_order()
++{
++	postload();
++}
++
++// END DAV HACK
+ 
+ //-------------------------------------------------
+ //  timer_alloc - allocate a global non-device

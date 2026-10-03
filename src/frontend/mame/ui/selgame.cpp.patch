@@ -1,0 +1,61 @@
+diff --git a/selgame.cpp b/selgame.cpp
+index 62b834e..9425bd8 100644
+--- a/selgame.cpp
++++ b/selgame.cpp
+@@ -194,6 +194,13 @@
+ //  handle
+ //-------------------------------------------------
+ 
++// DAV HACK 
++#include <string>
++} // end namespace ui
++extern std::string myosd_netplay_selected_game;
++namespace ui {
++// END DAV HACK
++
+ bool menu_select_game::handle(event const *ev)
+ {
+ 	if (!m_prev_selected && (item_count() > 0))
+@@ -283,6 +290,16 @@
+ 			}
+ 		}
+ 	}
++	// DAV HACK: Intercept game name for Netplay
++	ui_software_info const *software;
++	ui_system_info const *system;
++	get_selection(software, system);
++	if (system && system->driver) {
++		::myosd_netplay_selected_game = system->driver->name;
++	} else {
++		::myosd_netplay_selected_game.clear();
++	}
++	// END DAV HACK
+ 
+ 	return changed;
+ }
+@@ -1015,12 +1032,25 @@
+ 
+ void menu_select_game::make_topbox_text(std::string &line0, std::string &line1, std::string &line2) const
+ {
++// DAV HACK	
++  /*
+ 	line0 = string_format(_("%1$s %2$s ( %3$d / %4$d systems (%5$d BIOS) )"),
+ 			emulator_info::get_appname(),
+ 			bare_build_version,
+ 			m_available_items,
+ 			(driver_list::total() - 1),
+ 			m_persistent_data.bios_count());
++*/
++    //MAME4droid
++
++    line0 = string_format(_("%1$s(%2$s) %5$s by David Valdeita (Seleuco) Systems: %3$d/%4$d"),
++                          "MAME4droid",
++                          bare_build_version,
++                          m_available_items,
++                          (driver_list::total() - 1),
++                          emulator_info::myosd_droid_version
++                          );
++// END DAV HACK
+ 
+ 	if (m_populated_favorites)
+ 	{
